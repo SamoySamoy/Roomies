@@ -1,0 +1,12 @@
+{
+  "ext": "js,ts",
+  "ignore": ["node_modules", "logs", "build", "dist", "coverage", "public"],
+  "watch": ["./"],
+  "restartable": "rs",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "execMap": {
+    "ts": "node -r ts-node/register"
+  }
+}
