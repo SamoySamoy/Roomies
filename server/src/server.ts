@@ -4,8 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import apiRouters from './routers';
-
+import { prisma } from './prisma/db';
+import usersRouter from "./routes/users";
 dotenv.config();
 
 const PORT = process.env.PORT || 8000;
@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api', apiRouters);
+app.use(usersRouter);
 
 app.get('*', (req, res) => {
   return res.status(200).json({
@@ -36,3 +36,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
 });
+
+
