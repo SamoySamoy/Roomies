@@ -4,7 +4,6 @@ import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { prisma } from './prisma/db';
 import usersRouter from "./routes/users";
 dotenv.config();
 

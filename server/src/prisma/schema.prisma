@@ -15,7 +15,7 @@ model Profile {
   password String @db.Text
   ip String? @db.Text
   imageUrl String? @db.Text
-  hashId String @db.Text
+
 
   servers  Server[]
   members  Member[]
