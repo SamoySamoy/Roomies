@@ -5,7 +5,7 @@ import { MemberRole } from '@prisma/client';
 
 const router: Router = express.Router();
 
-// Create a new server
+// Create new server
 router.post(
   '/api/servers/create',
   authenticateToken,
@@ -37,7 +37,7 @@ router.post(
             },
           },
         });
-        res.send(server)
+        res.status(200).json(server)
       }
     } catch (error) {
       console.error(error);
@@ -47,7 +47,7 @@ router.post(
 );
 
 // Get all servers
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/api/servers', async (req: Request, res: Response) => {
   try {
     const servers = await prisma.server.findMany();
     res.status(200).json(servers);
@@ -58,7 +58,7 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // Get a specific server by ID
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/api/servers/:id', async (req: Request, res: Response) => {
   try {
     const serverId = req.params.id;
     const server = await prisma.server.findUnique({
@@ -78,7 +78,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // Update a server by ID
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/api/servers/:id', async (req: Request, res: Response) => {
   try {
     const serverId = req.params.id;
     const { name, imageUrl } = req.body;
@@ -99,7 +99,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // Delete a server by ID
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/api/servers/:id', async (req: Request, res: Response) => {
   try {
     const serverId = req.params.id;
 

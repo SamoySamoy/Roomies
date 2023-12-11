@@ -51,7 +51,7 @@ router.post('/api/users/login', async (req: Request, res: Response) => {
       if (hashedPassword === storedPassword) {
         await addIp(email, ip);
         const token = jwt.sign({ email }, 'roomies', { expiresIn: '1h' });
-        res.status(200).json(token);
+        res.status(200).json({ token: token });
       } else {
         res.status(400).json({ error: 'Wrong email or password' });
       }
@@ -65,7 +65,7 @@ router.post('/api/users/login', async (req: Request, res: Response) => {
 // get user info by id
 router.get('/api/users/:id', async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id;
     const user = await prisma.profile.findUnique({
       where: { id: id },
       select: {
