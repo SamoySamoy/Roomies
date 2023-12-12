@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import usersRouter from "./routes/users";
 import serversRouter from "./routes/servers"
+import channelsRouter from "./routes/channels"
 dotenv.config();
 
 const PORT = process.env.PORT || 8000;
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.use(usersRouter);
 app.use(serversRouter);
+app.use(channelsRouter)
 
 app.get('*', (req, res) => {
   return res.status(200).json({

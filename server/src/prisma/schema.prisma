@@ -25,9 +25,16 @@ model Profile {
   updatedAt DateTime @updatedAt
 }
 
+enum ServerType {
+  PUBLIC
+  PRIVATE
+  HIDDEN
+}
+
 model Server {
   id         String @id @default(uuid())
   name       String
+  type       ServerType @default(PUBLIC)  
   imageUrl   String? @db.Text
   inviteCode String? @unique
 
