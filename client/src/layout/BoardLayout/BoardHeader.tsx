@@ -10,10 +10,10 @@ const BoardHeader = () => {
         <Link to={'/'}>
           <p className='text-primary'>ROOMIES</p>
         </Link>
-        <Link to={'/board/explore'}>
+        <Link to={'/explore'}>
           <Button variant={'link'}>Explore</Button>
         </Link>
-        <Link to={'/board/rooms'}>
+        <Link to={'/rooms'}>
           <Button variant={'link'}>Rooms</Button>
         </Link>
       </div>

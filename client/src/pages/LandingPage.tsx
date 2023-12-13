@@ -7,8 +7,11 @@ type Props = {};
 const LandingPage = (props: Props) => {
   return (
     <div>
-      <Link to={'/board/explore'}>
+      <Link to={'/explore'}>
         <Button>To Explore page</Button>
+      </Link>
+      <Link to={'/rooms'}>
+        <Button>To Rooms page</Button>
       </Link>
       <p className='text-background'>background</p>
       <p className='text-foreground'>foreground</p>

@@ -3,13 +3,13 @@ import RoomSidebar from './RoomSidebar';
 
 const RoomLayout = () => {
   return (
-    <div className='flex h-full '>
-      <div className='w-[200]x] h-full'>
+    <div className='h-full'>
+      <div className='hidden md:flex flex-col h-full w-[72px] z-30 fixed inset-y-0'>
         <RoomSidebar />
       </div>
-      <div className='flex-1'>
+      <main className='md:pl-[72px] h-full'>
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

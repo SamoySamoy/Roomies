@@ -20,7 +20,7 @@ const LandingHeader = () => {
           </ActionTooltip>
           <ActionTooltip label='Create a new account and discover more'>
             <Button>
-              <span className='text-white font-bold'>Get start</span>
+              <span className='text-background font-bold'>Get start</span>
             </Button>
           </ActionTooltip>
         </div>
