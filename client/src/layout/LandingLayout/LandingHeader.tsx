@@ -5,22 +5,22 @@ import { Link } from 'react-router-dom';
 
 const LandingHeader = () => {
   return (
-    <div className='h-16 w-full px-2 py-1 bg-background flex justify-between items-center border-b border-solid border-gray-400/20 dark:border-gray-400/50'>
-      <div className='font-bold text-4xl text-foreground'>
+    <div className='flex h-16 w-full items-center justify-between border-b border-solid border-gray-400/20 bg-background px-2 py-1 dark:border-gray-400/50'>
+      <div className='text-4xl font-bold text-foreground'>
         <Link to={'/'}>
           <p className='text-primary'>ROOMIES</p>
         </Link>
       </div>
       <div className='flex gap-4'>
         <div className='flex gap-4'>
-          <ActionTooltip label='Login to connect with your friends'>
+          <ActionTooltip labelNode='Login to connect with your friends'>
             <Button variant='outline' className='font-bold'>
               Sign In
             </Button>
           </ActionTooltip>
-          <ActionTooltip label='Create a new account and discover more'>
+          <ActionTooltip labelNode='Create a new account and discover more'>
             <Button>
-              <span className='text-background font-bold'>Get start</span>
+              <span className='font-bold text-background'>Get start</span>
             </Button>
           </ActionTooltip>
         </div>

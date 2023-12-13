@@ -3,9 +3,9 @@ import { Outlet } from 'react-router-dom';
 
 const LandingLayout = () => {
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex h-full flex-col'>
       <LandingHeader />
-      <div className='flex-1 flex'>
+      <div className='flex flex-1'>
         <Outlet />
       </div>
     </div>

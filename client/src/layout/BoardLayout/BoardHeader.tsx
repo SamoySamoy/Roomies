@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 
 const BoardHeader = () => {
   return (
-    <div className='h-16 w-full px-2 py-1 bg-background flex justify-between items-center border-b border-solid border-gray-400/20 dark:border-gray-400/50'>
-      <div className='font-bold text-4xl text-foreground flex gap-6 items-center'>
+    <div className='flex h-16 w-full items-center justify-between border-b border-solid border-gray-400/20 bg-background px-2 py-1 dark:border-gray-400/50'>
+      <div className='flex items-center gap-6 text-4xl font-bold text-foreground'>
         <Link to={'/'}>
           <p className='text-primary'>ROOMIES</p>
         </Link>
@@ -20,14 +20,14 @@ const BoardHeader = () => {
 
       <div className='flex gap-4'>
         <div className='flex gap-4'>
-          <ActionTooltip label='Login to connect with your friends'>
+          <ActionTooltip labelNode='Login to connect with your friends'>
             <Button variant='outline' className='font-bold'>
               Login
             </Button>
           </ActionTooltip>
-          <ActionTooltip label='Create a new account and discover more'>
+          <ActionTooltip labelNode='Create a new account and discover more'>
             <Button>
-              <span className='text-white font-bold'>Sign Up</span>
+              <span className='font-bold text-white'>Sign Up</span>
             </Button>
           </ActionTooltip>
         </div>

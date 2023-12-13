@@ -1,15 +1,23 @@
 import { Outlet } from 'react-router-dom';
-import RoomSidebar from './RoomSidebar';
+import ServerListSidebar from './ServerListSidebar';
+import ChannelListSidebar from './ChannelListSidebar';
 
 const RoomLayout = () => {
   return (
     <div className='h-full'>
-      <div className='hidden md:flex flex-col h-full w-[72px] z-30 fixed inset-y-0'>
-        <RoomSidebar />
+      <div className='fixed inset-y-0 z-30 hidden h-full w-[72px] flex-col md:flex'>
+        <ServerListSidebar />
       </div>
-      <main className='md:pl-[72px] h-full'>
-        <Outlet />
-      </main>
+      <div className='h-full md:pl-[72px]'>
+        <div className='h-full'>
+          <div className='hidden md:flex h-full w-60 z-20 flex-col fixed inset-y-0'>
+            <ChannelListSidebar />
+          </div>
+          <main className='h-full md:pl-60'>
+            <Outlet />
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

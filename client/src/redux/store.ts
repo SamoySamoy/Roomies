@@ -1,14 +1,21 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
+import { modalSlice } from './slices/modalSlice';
+import { authSlice } from './slices/authSlice';
+import { baseApiSlice } from './apis/baseApiSlide';
 
 export const store = configureStore({
   reducer: {
+    [baseApiSlice.reducerPath]: baseApiSlice.reducer,
+    [modalSlice.name]: modalSlice.reducer,
+    [authSlice.name]: authSlice.reducer,
     // Add the generated reducer as a specific top-level slice
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseApiSlice.middleware),
+  devTools: process.env.NODE_ENV === 'production' ? false : true,
 });
 
 // optional, but required for refetchOnFocus/refetchOnReconnect behaviors
