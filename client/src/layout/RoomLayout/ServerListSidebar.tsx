@@ -27,7 +27,7 @@ const ServerListSidebar = () => {
         <ThemeToggle />
         <ActionTooltip
           side='right'
-          labelNode={<p className='text-sm font-bold text-foreground'>Your profile</p>}
+          label={<p className='text-sm font-bold text-foreground'>Your profile</p>}
         >
           <Avatar className='duration-400 h-11 w-11 cursor-pointer transition-all hover:scale-110'>
             <AvatarImage src='https://picsum.photos/seed/picsum/100' />
@@ -47,7 +47,7 @@ const CreateServerButton = () => {
       <ActionTooltip
         side='right'
         align='center'
-        labelNode={<p className='text-sm font-bold'>Create a server</p>}
+        label={<p className='text-sm font-bold'>Create a server</p>}
       >
         <button
           onClick={() =>
@@ -87,7 +87,7 @@ const ServerItem = ({ name, channels, members, type, id, imageUrl }: (typeof ser
     <ActionTooltip
       side='right'
       align='center'
-      labelNode={
+      label={
         <div className='flex items-start gap-2'>
           <div className='flex flex-1 flex-col gap-2'>
             <p className='text-sm font-bold text-foreground'>{name}</p>

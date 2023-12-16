@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -7,10 +10,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ServerImageUpload from '../ServerImageUpload';
 import useModal from '@/hooks/useModal';
+
+const formSchema = z.object({
+  serverName: z.string().trim().min(1, {
+    message: 'Server name is required.',
+  }),
+  imageName: z.string().trim().min(1, {
+    message: 'Server image is required.',
+  }),
+});
+
+type FormSchema = z.infer<typeof formSchema>;
 
 const EditServerModal = () => {
   const {
@@ -20,28 +42,36 @@ const EditServerModal = () => {
     data: { server },
   } = useModal();
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState(server?.imageUrl);
-  const [serverName, setServerName] = useState(server?.name || '');
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      serverName: server?.name || '',
+      // In this case have imageName or imageUrl still ok
+      imageName: server?.imageUrl || '',
+    },
+  });
 
-  const isServerChanged = serverName !== server?.name;
-  const isServerImageChanged = Boolean(imageUrl && imageUrl !== server?.imageUrl);
-  const isChanged = isServerChanged || isServerImageChanged;
-  const isSummitable = Boolean(isChanged && serverName && imageUrl);
+  const isServerNameChanged = form.getFieldState('serverName').isDirty;
+  const isServerImageChanged = form.getFieldState('imageName').isDirty;
+  const isChanged = isServerNameChanged || isServerImageChanged;
 
   useEffect(() => {
-    setImageUrl(server?.imageUrl);
-    setServerName(server?.name || '');
+    form.setValue('serverName', server?.name || '');
+    form.setValue('imageName', server?.imageUrl || '');
   }, [server]);
 
   const clearForm = () => {
     setImageFile(null);
-    setServerName('');
+    form.reset();
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (values: FormSchema) => {
     try {
       const formData = new FormData();
-      formData.append('serverName', serverName);
+      console.log(values);
+      if (isServerNameChanged) {
+        formData.append('serverName', values.serverName);
+      }
       if (isServerImageChanged) {
         console.log(imageFile);
         formData.append('imageFile', imageFile!);
@@ -72,37 +102,62 @@ const EditServerModal = () => {
             Give your server a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>
-        <div className='flex flex-col gap-4 px-6'>
-          <div className='flex flex-col items-center justify-center gap-2'>
-            <label className='text-xs font-bold uppercase text-zinc-500 dark:text-secondary/70'>
-              Server image
-            </label>
-            <ServerImageUpload
-              onChange={f => {
-                setImageUrl(f?.name);
-                setImageFile(f);
-              }}
-              preset={server?.imageUrl}
-            />
-          </div>
-          <div>
-            <label className='text-xs font-bold uppercase text-zinc-500 dark:text-secondary/70'>
-              Server name
-            </label>
-            <Input
-              disabled={false}
-              className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
-              placeholder='Enter server name'
-              value={serverName}
-              onChange={e => setServerName(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter className='bg-gray-100 px-6 py-4'>
-          <Button disabled={!isSummitable} onClick={onSubmit} variant='primary'>
-            <span className='text-foreground'>Save</span>
-          </Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+            <div className='space-y-8 px-6'>
+              <div className='flex items-center justify-center text-center'>
+                <FormField
+                  control={form.control}
+                  name='imageName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <ServerImageUpload
+                          onChange={f => {
+                            setImageFile(f);
+                            field.onChange(f?.name || '');
+                          }}
+                          preset={server?.imageUrl}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name='serverName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      Server name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={form.formState.isLoading}
+                        className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                        placeholder='Enter server name'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter className='bg-gray-100 px-6 py-4'>
+              <Button
+                type='submit'
+                variant='primary'
+                disabled={form.formState.isLoading || !isChanged}
+              >
+                <span className='text-foreground'>Save</span>
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

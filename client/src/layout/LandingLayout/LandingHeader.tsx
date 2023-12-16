@@ -13,12 +13,12 @@ const LandingHeader = () => {
       </div>
       <div className='flex gap-4'>
         <div className='flex gap-4'>
-          <ActionTooltip labelNode='Login to connect with your friends'>
+          <ActionTooltip label='Login to connect with your friends'>
             <Button variant='outline' className='font-bold'>
               Sign In
             </Button>
           </ActionTooltip>
-          <ActionTooltip labelNode='Create a new account and discover more'>
+          <ActionTooltip label='Create a new account and discover more'>
             <Button>
               <span className='font-bold text-background'>Get start</span>
             </Button>

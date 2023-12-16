@@ -7,6 +7,22 @@ export type MemberRole = 'admin' | 'moderator' | 'guest';
 
 export type ChannelType = 'text' | 'audio' | 'video';
 
+export enum ServerTypeEnum {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  HIDDEN = 'HIDDEN',
+}
+export enum MemberRoleEnum {
+  ADMIN = 'ADMIN',
+  MODERATOR = 'MODERATOR',
+  GUEST = 'GUEST',
+}
+export enum ChannelTypeEnum {
+  TEXT = 'TEXT',
+  AUDIO = 'AUDIO',
+  VIDEO = 'VIDEO',
+}
+
 export interface Profile {
   id: string;
   email: string;
@@ -38,7 +54,7 @@ export interface Member {
   id: string;
   role: MemberRole;
   profileId: string;
-  // profile: Profile;
+  profile: Profile;
   serverId: string;
   server: Server;
   messages: Message[];
