@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 import { ServerType } from '@/lib/types';
 
 import { servers } from '@/lib/fakeData';

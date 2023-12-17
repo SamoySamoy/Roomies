@@ -1,11 +1,12 @@
-import { Edit, Hash, Lock, LucideIcon, Mic, Trash, Video } from 'lucide-react';
+import { LucideIcon, Edit, Hash, Lock, Mic, Trash, Video } from 'lucide-react';
 // import { useParams, useRouter } from "next/navigation";
 
 import { cn } from '@/lib/utils';
 import ActionTooltip from '@/components/ActionToolTip';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 import { ModalType } from '@/redux/slices/modalSlice';
 import { Channel, ChannelType, MemberRole, Server } from '@/lib/types';
+import { useNavigate } from 'react-router-dom';
 
 interface ServerChannelProps {
   channel: Channel;
@@ -24,12 +25,15 @@ const iconMap: Record<ChannelType, LucideIcon> = {
 
 const ChannelListChannel = ({ channel, server, role }: ServerChannelProps) => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
   // const params = useParams();
   // const router = useRouter();
 
   const Icon = iconMap[channel.type];
 
   const onClick = () => {
+    navigate('/rooms/1231231/channels/21312301');
+    // navigate('channels/21312301');
     // router.push(`/servers/${params?.serverId}/channels/${channel.id}`)
   };
 

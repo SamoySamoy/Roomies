@@ -1,12 +1,15 @@
+import { useAppDispatch, useAppSelector } from '@/redux/store';
+import { closeModal, openModal, OpenModalPlayLoad } from '@/redux/slices/modalSlice';
+
 import CreateServerModal from '@/components/modals/CreateServerModal';
 import InviteModal from '@/components/modals/InviteModal';
 import EditServerModal from '@/components/modals/EditServerModal';
 import MembersModal from '@/components/modals/MembersModal';
-import { CreateChannelModal } from '@/components/modals/CreateChannelModal';
+import CreateChannelModal from '@/components/modals/CreateChannelModal';
+import EditChannelModal from '@/components/modals/EditChannelModal';
 import LeaveServerModal from '@/components/modals/LeaveServerModal';
 import DeleteServerModal from '@/components/modals/DeleteServerModal';
 import DeleteChannelModal from '@/components/modals/DeleteChannelModal';
-import { EditChannelModal } from '@/components/modals/EditChannelModal';
 
 export default function ModalProvider() {
   return (
@@ -23,3 +26,15 @@ export default function ModalProvider() {
     </>
   );
 }
+
+export const useModal = () => {
+  const dispatch = useAppDispatch();
+  const { isOpen, modalType, data } = useAppSelector(state => state.modal);
+  return {
+    isOpen,
+    modalType,
+    openModal: (arg: OpenModalPlayLoad) => dispatch(openModal(arg)),
+    closeModal: () => dispatch(closeModal()),
+    data,
+  };
+};

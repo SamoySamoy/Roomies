@@ -4,6 +4,7 @@ import { ShieldAlert, ShieldCheck } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import MemberAvatar from '@/components/MemberAvatar';
+import { useNavigate } from 'react-router-dom';
 
 interface ServerMemberProps {
   // member: Member & { profile: Profile };
@@ -21,12 +22,15 @@ const roleIconMap: Record<MemberRole, React.ReactNode> = {
 };
 
 const ChannelListMember = ({ member, server }: ServerMemberProps) => {
+  const navigate = useNavigate();
   // const params = useParams();
   // const router = useRouter();
 
   const icon = roleIconMap[member.role];
 
   const onClick = () => {
+    // navigate("/rooms/1231231/channels/21312301");
+    navigate('conversations/21312301');
     // router.push(`/servers/${params?.serverId}/conversations/${member.id}`)
   };
 
