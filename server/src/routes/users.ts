@@ -110,27 +110,6 @@ router.get('/api/users/all/:id', async (req: Request, res: Response) => {
   }
 });
 
-// get user servers info by id
-router.get('/api/users/servers/:id', async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
-    const user = await prisma.profile.findUnique({
-      where: { id: id },
-      select: {
-        servers: true,
-      },
-    });
-
-    if (user) {
-      res.status(200).json(user);
-    } else {
-      res.status(400).json({ error: 'Email not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 // get user servers info by id
 router.get('/api/users/servers/:id', async (req: Request, res: Response) => {
