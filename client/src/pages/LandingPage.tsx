@@ -10,8 +10,14 @@ const LandingPage = (props: Props) => {
       <Link to={'/explore'}>
         <Button>To Explore page</Button>
       </Link>
-      <Link to={'/rooms'}>
+      <Link to={'/rooms/12345'}>
         <Button>To Rooms page</Button>
+      </Link>
+      <Link to={'/auth/login'}>
+        <Button>To Login page</Button>
+      </Link>
+      <Link to={'/auth/register'}>
+        <Button>To Register page</Button>
       </Link>
       <p className='text-background'>background</p>
       <p className='text-foreground'>foreground</p>

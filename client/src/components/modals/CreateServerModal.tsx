@@ -21,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ServerImageUpload from '../ServerImageUpload';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 
 const formSchema = z.object({
   serverName: z.string().trim().min(1, {

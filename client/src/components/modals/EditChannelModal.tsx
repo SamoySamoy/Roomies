@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ChannelType, ChannelTypeEnum } from '@/lib/types';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 
 const formSchema = z.object({
   name: z
@@ -43,7 +43,7 @@ const formSchema = z.object({
   type: z.string(),
 });
 
-export const EditChannelModal = () => {
+const EditChannelModal = () => {
   const {
     isOpen,
     modalType,
@@ -165,3 +165,5 @@ export const EditChannelModal = () => {
     </Dialog>
   );
 };
+
+export default EditChannelModal;

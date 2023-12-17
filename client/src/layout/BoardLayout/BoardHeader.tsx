@@ -13,7 +13,7 @@ const BoardHeader = () => {
         <Link to={'/explore'}>
           <Button variant={'link'}>Explore</Button>
         </Link>
-        <Link to={'/rooms'}>
+        <Link to={'/rooms/12345'}>
           <Button variant={'link'}>Rooms</Button>
         </Link>
       </div>
