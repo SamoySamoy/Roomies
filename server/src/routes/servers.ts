@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { authenticateToken, AuthenticatedRequest } from '../utils/authentication';
 import { prisma } from '../prisma/db';
-import { MemberRole } from '@prisma/client';
+import { MemberRole, ServerType } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 const router: Router = express.Router();
@@ -58,10 +58,25 @@ router.post(
   },
 );
 
-// Get all servers
+// Get all servers by type and userId
 router.get('/api/servers', async (req: Request, res: Response) => {
   try {
+    const { type, profileId } = req.body;
+    const filter: {
+      type?: ServerType;
+      profileId?: string;
+    } = {};
+
+    if (type) {
+      filter.type = type;
+    }
+
+    if (profileId) {
+      filter.profileId = profileId;
+    }
+
     const servers = await prisma.server.findMany({
+      where: filter,
       include: {
         members: true,
         channels: true,
@@ -74,8 +89,8 @@ router.get('/api/servers', async (req: Request, res: Response) => {
   }
 });
 
-// Get a specific server by ID
-router.get('/api/servers/:id', async (req: Request, res: Response) => {
+// Get a specific server info by serverID (all)
+router.get('/api/servers/all/:id', async (req: Request, res: Response) => {
   try {
     const serverId = req.params.id;
     const server = await prisma.server.findUnique({
@@ -98,12 +113,79 @@ router.get('/api/servers/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Get a specific server info by serverID (members)
+router.get('/api/servers/members/:id', async (req: Request, res: Response) => {
+  try {
+    const serverId = req.params.id;
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+      include: {
+        members: true,
+        channels: true,
+      },
+    });
+
+    if (!server) {
+      res.status(404).json({ error: 'Server not found' });
+      return;
+    }
+
+    res.status(200).json(server.members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Get a specific server info by serverID (channels)
+router.get('/api/servers/channels/:id', async (req: Request, res: Response) => {
+  try {
+    const serverId = req.params.id;
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+      include: {
+        members: true,
+        channels: true,
+      },
+    });
+
+    if (!server) {
+      res.status(404).json({ error: 'Server not found' });
+      return;
+    }
+
+    res.status(200).json(server.channels);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Update a server by ID
 router.put(
   '/api/servers/:id',
   authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
+      const { name, imageUrl, type } = req.body;
+      const updatedServerData: {
+        name?: string;
+        imageUrl?: string;
+        type?: ServerType;
+      } = {};
+
+      if (name !== undefined) {
+        updatedServerData.name = name;
+      }
+
+      if (imageUrl !== undefined) {
+        updatedServerData.imageUrl = imageUrl;
+      }
+
+      if (type !== undefined) {
+        updatedServerData.type = type;
+      }
+
       const userEmail = req.user?.email;
       if (!userEmail) {
         return res.status(400).json({ error: 'User email not found in token' });
@@ -122,17 +204,12 @@ router.put(
         res.status(404).json({ error: 'Server not found or you are not admin of this server' });
         return;
       }
-      const { name, imageUrl, type } = req.body;
 
       const updatedServer = await prisma.server.update({
         where: {
           id: serverId,
         },
-        data: {
-          name,
-          imageUrl,
-          type
-        },
+        data: updatedServerData,
       });
 
       const returnServer = await prisma.server.findUnique({
@@ -142,6 +219,7 @@ router.put(
           channels: true,
         },
       });
+
       res.status(200).json(returnServer);
     } catch (error) {
       console.error(error);
@@ -265,7 +343,7 @@ router.post(
 
 // join server
 router.post(
-    '/api/servers/join/:id',
+  '/api/servers/join/:id',
   authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {

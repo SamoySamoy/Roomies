@@ -86,8 +86,8 @@ router.post('/api/users/login', async (req: Request, res: Response) => {
   }
 });
 
-// get user info by id
-router.get('/api/users/:id', async (req: Request, res: Response) => {
+// get all user info by id
+router.get('/api/users/all/:id', async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const user = await prisma.profile.findUnique({
@@ -109,5 +109,73 @@ router.get('/api/users/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+// get user servers info by id
+router.get('/api/users/servers/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const user = await prisma.profile.findUnique({
+      where: { id: id },
+      select: {
+        servers: true,
+      },
+    });
+
+    if (user) {
+      res.status(200).json(user.servers);
+    } else {
+      res.status(400).json({ error: 'Email not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// get user members info by id
+router.get('/api/users/members/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const user = await prisma.profile.findUnique({
+      where: { id: id },
+      select: {
+        members: true,
+      },
+    });
+
+    if (user) {
+      res.status(200).json(user.members);
+    } else {
+      res.status(400).json({ error: 'Email not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// get user channels info by id
+router.get('/api/users/channels/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const user = await prisma.profile.findUnique({
+        where: { id: id },
+        select: {
+          channels: true,
+        },
+      });
+  
+      if (user) {
+        res.status(200).json(user.channels);
+      } else {
+        res.status(400).json({ error: 'Email not found' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 
 export default router;

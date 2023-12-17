@@ -12,6 +12,7 @@ router.post(
   authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
+      const { name, serverId, type } = req.body;
       const userEmail = req.user?.email;
       if (!userEmail) {
         return res.status(400).json({ error: 'User email not found in token' });
@@ -20,7 +21,6 @@ router.post(
         where: { email: userEmail },
         select: { id: true },
       });
-      const { name, serverId, type } = req.body;
       if (!serverId) {
         return res.status(400).json({ error: 'Server Id missing' });
       }
@@ -102,8 +102,8 @@ router.post(
   },
 );
 
-// Get a specific channel by channel ID
-router.get('/api/channels/:id', async (req: Request, res: Response) => {
+// Get a specific channel info by channel ID (all)
+router.get('/api/channels/all/:id', async (req: Request, res: Response) => {
   try {
     const channelId = req.params.id;
     const channel = await prisma.channel.findUnique({
@@ -122,6 +122,27 @@ router.get('/api/channels/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// Get a specific channel info by channel ID (messages)
+router.get('/api/channels/messages/:id', async (req: Request, res: Response) => {
+    try {
+      const channelId = req.params.id;
+      const channel = await prisma.channel.findUnique({
+        where: { id: channelId },
+        include: { messages: true },
+      });
+  
+      if (!channel) {
+        res.status(404).json({ error: 'Channel not found' });
+        return;
+      }
+  
+      res.status(200).json(channel.messages);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 // Update a channel
 router.put(
