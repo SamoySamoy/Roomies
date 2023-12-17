@@ -1,16 +1,21 @@
 import * as dotenv from 'dotenv';
-import express from 'express';
+import { createServer } from 'http';
 import path from 'path';
+import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import usersRouter from "./routes/users";
-import serversRouter from "./routes/servers"
-import channelsRouter from "./routes/channels"
-dotenv.config();
 
+import usersRouter from './routes/users';
+import serversRouter from './routes/servers';
+import channelsRouter from './routes/channels';
+import { setupWs } from './ws';
+
+dotenv.config();
 const PORT = process.env.PORT || 8000;
 const app = express();
+const httpServer = createServer(app);
+setupWs(httpServer);
 
 app.use(cors());
 app.use(helmet());
@@ -28,7 +33,7 @@ app.get('/', (req, res) => {
 
 app.use(usersRouter);
 app.use(serversRouter);
-app.use(channelsRouter)
+app.use(channelsRouter);
 
 app.get('*', (req, res) => {
   return res.status(200).json({
@@ -36,8 +41,6 @@ app.get('*', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
 });
-
-
