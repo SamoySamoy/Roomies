@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 interface MemberAvatarProps {
-  src: string;
+  src?: string;
   fallback: React.ReactNode;
   className?: string;
 }

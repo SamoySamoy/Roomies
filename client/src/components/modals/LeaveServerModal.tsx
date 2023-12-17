@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 
 const LeaveServerModal = () => {
   const {

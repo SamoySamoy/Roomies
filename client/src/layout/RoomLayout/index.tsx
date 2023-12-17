@@ -1,8 +1,17 @@
-import { Outlet } from 'react-router-dom';
-import ServerListSidebar from './ServerListSidebar';
-import ChannelListSidebar from './ChannelListSidebar';
+import { Outlet, useNavigate } from 'react-router-dom';
+import ServerListSidebar from '@/components/ServerListSidebar';
+import ChannelListSidebar from '@/components/ChannelListSidebar';
+import { useEffect } from 'react';
 
 const RoomLayout = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('channels/213123', {
+      replace: true,
+    });
+  }, []);
+
   return (
     <div className='h-full'>
       <div className='fixed inset-y-0 z-30 hidden h-full w-[72px] flex-col md:flex'>

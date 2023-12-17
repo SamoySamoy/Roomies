@@ -1,7 +1,7 @@
 import { Plus, Settings } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
 import { ChannelType, MemberRole } from '@/lib/types';
-import useModal from '@/hooks/useModal';
+import { useModal } from '@/context/ModalProvider';
 
 interface ServerSectionProps {
   label: string;

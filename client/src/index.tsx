@@ -5,8 +5,17 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ThemeProvider from '@/context/ThemeProvider';
 import ModalProvider from '@/context/ModalProvider';
-import { LandingPage, ExplorePage, RoomPage, ErrorPage } from '@/pages';
-import { BoardLayout, RoomLayout, LandingLayout } from '@/layout';
+import {
+  LandingPage,
+  ExplorePage,
+  RoomPage,
+  ErrorPage,
+  ChannelPage,
+  ConversationPage,
+  LoginPage,
+  RegisterPage,
+} from '@/pages';
+import { BoardLayout, RoomLayout, LandingLayout, AuthLayout } from '@/layout';
 import { Provider as ReduxProvider } from 'react-redux';
 import { store } from '@/redux/store';
 import { Toaster } from '@/components/ui/toaster';
@@ -23,10 +32,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </Route>
             {/*  */}
             {/* <Route Component={BoardLayout} path='/board'> */}
-            <Route Component={ExplorePage} path='explore' />
+            <Route Component={ExplorePage} path='/explore' />
             {/*  */}
-            <Route path='rooms' Component={RoomLayout}>
-              <Route Component={RoomPage} index />
+            <Route path='/rooms/:roomId' Component={RoomLayout}>
+              <Route path='channels/:channelId' Component={ChannelPage} />
+              <Route path='conversations/:memberId' Component={ConversationPage} />
+            </Route>
+            <Route path='/auth' Component={AuthLayout}>
+              <Route path='login' Component={LoginPage} />
+              <Route path='register' Component={RegisterPage} />
             </Route>
             {/* </Route> */}
             {/*  */}
