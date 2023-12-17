@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -7,26 +10,52 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ServerImageUpload from '../ServerImageUpload';
 import useModal from '@/hooks/useModal';
 
+const formSchema = z.object({
+  serverName: z.string().trim().min(1, {
+    message: 'Server name is required.',
+  }),
+  imageName: z.string().trim().min(1, {
+    message: 'Server image is required.',
+  }),
+});
+
+type FormSchema = z.infer<typeof formSchema>;
+
 const CreateServerModal = () => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [serverName, setServerName] = useState('');
   const { isOpen, modalType, closeModal } = useModal();
-  const isSummitable = Boolean(serverName.trim() && imageFile);
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      serverName: '',
+      imageName: '',
+    },
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const clearForm = () => {
     setImageFile(null);
-    setServerName('');
+    form.reset();
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (values: FormSchema) => {
     try {
+      console.log(values);
+      console.log(imageFile);
       const formData = new FormData();
-      formData.append('serverName', serverName);
+      formData.append('serverName', values.serverName);
       formData.append('imageFile', imageFile!);
 
       clearForm();
@@ -54,31 +83,57 @@ const CreateServerModal = () => {
             Give your server a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>
-        <div className='flex flex-col gap-4 px-6'>
-          <div className='flex flex-col items-center justify-center gap-2'>
-            <label className='text-xs font-bold uppercase text-zinc-500 dark:text-secondary/70'>
-              Server image
-            </label>
-            <ServerImageUpload onChange={f => setImageFile(f)} />
-          </div>
-          <div>
-            <label className='text-xs font-bold uppercase text-zinc-500 dark:text-secondary/70'>
-              Server name
-            </label>
-            <Input
-              disabled={false}
-              className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
-              placeholder='Enter server name'
-              value={serverName}
-              onChange={e => setServerName(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter className='bg-gray-100 px-6 py-4'>
-          <Button disabled={!isSummitable} onClick={onSubmit} variant='primary'>
-            <span className='text-foreground'>Create</span>
-          </Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+            <div className='space-y-8 px-6'>
+              <div className='flex items-center justify-center text-center'>
+                <FormField
+                  control={form.control}
+                  name='imageName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <ServerImageUpload
+                          onChange={f => {
+                            setImageFile(f);
+                            field.onChange(f?.name || '');
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name='serverName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      Server name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={form.formState.isLoading}
+                        className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                        placeholder='Enter server name'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter className='bg-gray-100 px-6 py-4'>
+              <Button type='submit' variant='primary' disabled={form.formState.isLoading}>
+                <span className='text-foreground'>Create</span>
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

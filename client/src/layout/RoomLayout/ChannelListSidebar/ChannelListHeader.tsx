@@ -63,7 +63,14 @@ function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
         )}
         {isAdmin && (
           <DropdownMenuItem
-            // onClick={() => onOpen('members', { server })}
+            onClick={() =>
+              openModal({
+                modalType: 'members',
+                data: {
+                  server,
+                },
+              })
+            }
             className='px-3 py-2 text-sm cursor-pointer'
           >
             Manage Members
@@ -72,7 +79,11 @@ function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
         )}
         {isModerator && (
           <DropdownMenuItem
-            // onClick={() => onOpen('createChannel')}
+            onClick={() =>
+              openModal({
+                modalType: 'createChannel',
+              })
+            }
             className='px-3 py-2 text-sm cursor-pointer'
           >
             Create Channel
@@ -82,7 +93,14 @@ function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
         {isModerator && <DropdownMenuSeparator />}
         {isAdmin && (
           <DropdownMenuItem
-            // onClick={() => onOpen('deleteServer', { server })}
+            onClick={() =>
+              openModal({
+                modalType: 'deleteServer',
+                data: {
+                  server,
+                },
+              })
+            }
             className='text-rose-500 px-3 py-2 text-sm cursor-pointer'
           >
             Delete Server
@@ -91,7 +109,14 @@ function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
         )}
         {!isAdmin && (
           <DropdownMenuItem
-            // onClick={() => onOpen('leaveServer', { server })}
+            onClick={() =>
+              openModal({
+                modalType: 'leaveServer',
+                data: {
+                  server,
+                },
+              })
+            }
             className='text-rose-500 px-3 py-2 text-sm cursor-pointer'
           >
             Leave Server

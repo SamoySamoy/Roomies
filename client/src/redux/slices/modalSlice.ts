@@ -1,11 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { Server } from '@/lib/types';
+import { Channel, Server } from '@/lib/types';
+import { ChannelType } from '@/lib/types';
 
-export type ModalType = 'createServer' | 'invite' | 'editServer';
+export type ModalType =
+  | 'createServer'
+  | 'editServer'
+  | 'leaveServer'
+  | 'deleteServer'
+  | 'createChannel'
+  | 'editChannel'
+  | 'deleteChannel'
+  | 'invite'
+  | 'members';
 
 export type ModalData = {
   server?: Server;
+  channelType?: ChannelType;
+  channel?: Channel;
 };
 
 export type ModalState = {
