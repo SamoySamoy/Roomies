@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 
 const InviteModal = () => {
   const {

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 
 type ChannelListHeaderProps = {
   server: Server;

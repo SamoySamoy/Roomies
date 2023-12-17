@@ -3,7 +3,7 @@ import { LucideIcon, Edit, Hash, Lock, Mic, Trash, Video } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import ActionTooltip from '@/components/ActionToolTip';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 import { ModalType } from '@/redux/slices/modalSlice';
 import { Channel, ChannelType, MemberRole, Server } from '@/lib/types';
 import { useNavigate } from 'react-router-dom';

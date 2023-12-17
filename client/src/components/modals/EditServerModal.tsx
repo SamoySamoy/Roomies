@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import ServerImageUpload from '../ServerImageUpload';
-import { useModal } from '@/context/ModalProvider';
+import FileUpload from '@/components/FileUpload';
+import { useModal } from '@/hooks/useModal';
 
 const formSchema = z.object({
   serverName: z.string().trim().min(1, {
@@ -112,12 +112,15 @@ const EditServerModal = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <ServerImageUpload
+                        <FileUpload
                           onChange={f => {
                             setImageFile(f);
                             field.onChange(f?.name || '');
                           }}
                           preset={server?.imageUrl}
+                          accept={{
+                            'image/*': [],
+                          }}
                         />
                       </FormControl>
                       <FormMessage />

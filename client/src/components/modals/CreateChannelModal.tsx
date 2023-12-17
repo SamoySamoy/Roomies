@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ChannelType, ChannelTypeEnum } from '@/lib/types';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 
 const formSchema = z.object({
   name: z

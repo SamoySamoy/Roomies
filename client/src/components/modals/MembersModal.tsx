@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,

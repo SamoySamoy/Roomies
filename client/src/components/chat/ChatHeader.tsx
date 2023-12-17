@@ -2,6 +2,7 @@ import { Hash } from 'lucide-react';
 
 import MobileToggle from '@/components/MobileToggle';
 import MemberAvatar from '@/components/MemberAvatar';
+import SocketIndicator from '@/components/SocketIndicator';
 
 // import { SocketIndicator } from '@/components/socket-indicator';
 // import { ChatVideoButton } from './chat-video-button';
@@ -22,10 +23,10 @@ const ChatHeader = ({ serverId, name, type, imageUrl }: ChatHeaderProps) => {
         <MemberAvatar src={imageUrl} fallback='UN' className='h-8 w-8 md:h-8 md:w-8 mr-2' />
       )}
       <p className='font-semibold text-md text-black dark:text-white'>{name}</p>
-      {/* <div className='ml-auto flex items-center'>
-        {type === 'conversation' && <ChatVideoButton />}
+      <div className='ml-auto flex items-center'>
+        {/* {type === 'conversation' && <ChatVideoButton />} */}
         <SocketIndicator />
-      </div> */}
+      </div>
     </div>
   );
 };

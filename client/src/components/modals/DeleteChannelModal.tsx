@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useModal } from '@/context/ModalProvider';
+import { useModal } from '@/hooks/useModal';
 
 const DeleteChannelModal = () => {
   const {
