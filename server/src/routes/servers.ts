@@ -122,7 +122,7 @@ router.put(
         res.status(404).json({ error: 'Server not found or you are not admin of this server' });
         return;
       }
-      const { name, imageUrl } = req.body;
+      const { name, imageUrl, type } = req.body;
 
       const updatedServer = await prisma.server.update({
         where: {
@@ -131,6 +131,7 @@ router.put(
         data: {
           name,
           imageUrl,
+          type
         },
       });
 
@@ -186,9 +187,9 @@ router.delete(
   },
 );
 
-// Leave server by id
-router.put(
-  '/api/servers/leave/:id ',
+// Leave server
+router.post(
+  '/api/servers/leave/:id',
   authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
@@ -222,7 +223,7 @@ router.put(
       if (!server) {
         return res.status(400).json({
           error:
-            'You can not leave this server (maybe you are the admin or you are not member of this server)',
+            'You can not leave this server (you are the admin or you are not member of this server)',
         });
       }
       const updateServer = await prisma.server.update({
@@ -261,4 +262,72 @@ router.put(
     }
   },
 );
+
+// join server
+router.post(
+    '/api/servers/join/:id',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userEmail = req.user?.email;
+      if (!userEmail) {
+        return res.status(400).json({ error: 'User email not found in token' });
+      }
+      const profile = await prisma.profile.findUnique({
+        where: { email: userEmail },
+        select: { id: true },
+      });
+
+      if (!profile) {
+        return res.status(400).json({ error: 'You are unauthenticated' });
+      }
+
+      const serverId = req.params.id;
+      const { inviteCode } = req.body;
+      const existingServer = await prisma.server.findFirst({
+        where: {
+          inviteCode: inviteCode,
+          members: {
+            some: {
+              profileId: profile?.id,
+            },
+          },
+        },
+      });
+
+      if (existingServer) {
+        return res.status(400).json({ error: 'You already in this server' });
+      }
+
+      const updateServer = await prisma.server.update({
+        where: {
+          inviteCode: inviteCode,
+        },
+        data: {
+          members: {
+            create: [
+              {
+                profileId: profile.id,
+              },
+            ],
+          },
+        },
+      });
+      const returnServer = await prisma.server.findUnique({
+        where: {
+          id: serverId,
+        },
+        include: {
+          members: true,
+          channels: true,
+        },
+      });
+      res.status(200).json(returnServer);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  },
+);
+
 export default router;
