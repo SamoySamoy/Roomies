@@ -15,7 +15,7 @@ type ChannelListHeaderProps = {
   role: MemberRole;
 };
 
-function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
+function RoomHeader({ role, server }: ChannelListHeaderProps) {
   const { openModal } = useModal();
   const isAdmin = role === 'admin';
   const isModerator = isAdmin || role === 'moderator';
@@ -128,4 +128,4 @@ function ChannelListHeader({ role, server }: ChannelListHeaderProps) {
   );
 }
 
-export default ChannelListHeader;
+export default RoomHeader;
