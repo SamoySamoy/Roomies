@@ -6,9 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
-import usersRouter from './routes/users';
-import serversRouter from './routes/servers';
-import channelsRouter from './routes/channels';
+import apiRouter from './routes';
 import { setupWs } from './ws';
 
 dotenv.config();
@@ -31,9 +29,7 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use(usersRouter);
-app.use(serversRouter);
-app.use(channelsRouter);
+app.use('/api', apiRouter);
 
 app.get('*', (req, res) => {
   return res.status(200).json({
