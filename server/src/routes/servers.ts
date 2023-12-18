@@ -12,6 +12,8 @@ router.post(
   authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
+      const { name, imageUrl, type } = req.body;
+
       const userEmail = req.user?.email;
       if (!userEmail) {
         return res.status(400).json({ error: 'User email not found in token' });
@@ -20,7 +22,6 @@ router.post(
         where: { email: userEmail },
         select: { id: true },
       });
-      const { name, imageUrl, type } = req.body;
 
       if (!profile) {
         return res.status(400).json({ error: 'User email not found in token' });
