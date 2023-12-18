@@ -46,20 +46,20 @@ export const ChatMessages = ({
   const chatRef = useRef<ElementRef<'div'>>(null);
   const bottomRef = useRef<ElementRef<'div'>>(null);
 
-  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChatQuery({
-  //   queryKey,
-  //   apiUrl,
-  //   paramKey,
-  //   paramValue,
-  // });
-  // useChatSocket({ queryKey, addKey, updateKey });
-  // useChatScroll({
-  //   chatRef,
-  //   bottomRef,
-  //   loadMore: fetchNextPage,
-  //   shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
-  //   count: data?.pages?.[0]?.items?.length ?? 0,
-  // });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChatQuery({
+    queryKey,
+    apiUrl,
+    paramKey,
+    paramValue,
+  });
+  useChatSocket({ queryKey, addKey, updateKey });
+  useChatScroll({
+    chatRef,
+    bottomRef,
+    loadMore: fetchNextPage,
+    shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
+    count: data?.pages?.[0]?.items?.length ?? 0,
+  });
 
   if (status === 'loading') {
     return (

@@ -1,7 +1,9 @@
 import ChatHeader from '@/components/chat/ChatHeader';
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { members } from '@/lib/fakeData';
+import { conversations, members } from '@/lib/fakeData';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { ChatMessages } from '@/components/chat/ChatMessages';
 
 type Params = {
   roomId: string;
@@ -9,11 +11,6 @@ type Params = {
 };
 
 const ConversationPage = () => {
-  const { memberId: otherMemberId, roomId } = useParams<Params>();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const me = members[0];
-  const otherMember = members[1];
-
   // const profile = await currentProfile();
 
   // if (!profile) {
@@ -44,6 +41,12 @@ const ConversationPage = () => {
 
   // const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne;
 
+  const { memberId: otherMemberId, roomId } = useParams<Params>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const me = members[0];
+  const otherMember = members[1];
+  const conversation = conversations[0];
+
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>
       <ChatHeader
@@ -51,6 +54,28 @@ const ConversationPage = () => {
         name={otherMember.id}
         serverId={roomId!}
         type='conversation'
+      />
+      <div className='flex-1'>Future messages</div>
+      {/* <ChatMessages
+        member={me as any}
+        name={otherMember.id}
+        chatId={conversation.id}
+        type='conversation'
+        apiUrl='/api/direct-messages'
+        paramKey='conversationId'
+        paramValue={conversation.id}
+        socketUrl='/api/socket/direct-messages'
+        socketQuery={{
+          conversationId: conversation.id,
+        }}
+      /> */}
+      <ChatInput
+        name={otherMember.id}
+        type='conversation'
+        apiUrl='/api/socket/direct-messages'
+        query={{
+          conversationId: conversation.id,
+        }}
       />
     </div>
   );

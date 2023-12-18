@@ -24,7 +24,7 @@ type ServerSearchProps = {
   }[];
 };
 
-const ChannelListSearch = ({ data }: ServerSearchProps) => {
+const RoomSearch = ({ data }: ServerSearchProps) => {
   const [open, setOpen] = useState(false);
   // const router = useRouter();
   // const params = useParams();
@@ -49,7 +49,7 @@ const ChannelListSearch = ({ data }: ServerSearchProps) => {
     }
 
     if (type === 'channel') {
-      // return router.push(`/servers/${params?.serverId}/channels/${id}`)
+      // return router.push(`/servers/${params?.serverId}/groups/${id}`)
     }
   };
 
@@ -93,4 +93,4 @@ const ChannelListSearch = ({ data }: ServerSearchProps) => {
   );
 };
 
-export default ChannelListSearch;
+export default RoomSearch;

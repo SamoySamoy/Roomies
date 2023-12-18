@@ -4,7 +4,7 @@ import { LucideIcon, Edit, Hash, Lock, Mic, Trash, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ActionTooltip from '@/components/ActionToolTip';
 import { useModal } from '@/hooks/useModal';
-import { ModalType } from '@/redux/slices/modalSlice';
+import { ModalType } from '@/hooks/useModal';
 import { Channel, ChannelType, MemberRole, Server } from '@/lib/types';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,7 +23,7 @@ const iconMap: Record<ChannelType, LucideIcon> = {
   video: Video,
 };
 
-const ChannelListChannel = ({ channel, server, role }: ServerChannelProps) => {
+const RoomGroup = ({ channel, server, role }: ServerChannelProps) => {
   const { openModal } = useModal();
   const navigate = useNavigate();
   // const params = useParams();
@@ -32,9 +32,9 @@ const ChannelListChannel = ({ channel, server, role }: ServerChannelProps) => {
   const Icon = iconMap[channel.type];
 
   const onClick = () => {
-    navigate('/rooms/1231231/channels/21312301');
-    // navigate('channels/21312301');
-    // router.push(`/servers/${params?.serverId}/channels/${channel.id}`)
+    navigate('/rooms/1231231/groups/21312301');
+    // navigate('groups/21312301');
+    // router.push(`/servers/${params?.serverId}/groups/${channel.id}`)
   };
 
   const onAction = (e: React.MouseEvent, modalType: ModalType) => {
@@ -93,4 +93,4 @@ const ChannelListChannel = ({ channel, server, role }: ServerChannelProps) => {
   );
 };
 
-export default ChannelListChannel;
+export default RoomGroup;

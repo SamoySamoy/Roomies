@@ -21,7 +21,7 @@ const roleIconMap: Record<MemberRole, React.ReactNode> = {
   admin: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
 };
 
-const ChannelListMember = ({ member, server }: ServerMemberProps) => {
+const RoomMember = ({ member, server }: ServerMemberProps) => {
   const navigate = useNavigate();
   // const params = useParams();
   // const router = useRouter();
@@ -29,7 +29,7 @@ const ChannelListMember = ({ member, server }: ServerMemberProps) => {
   const icon = roleIconMap[member.role];
 
   const onClick = () => {
-    // navigate("/rooms/1231231/channels/21312301");
+    // navigate("/rooms/1231231/groups/21312301");
     navigate('conversations/21312301');
     // router.push(`/servers/${params?.serverId}/conversations/${member.id}`)
   };
@@ -66,4 +66,4 @@ const ChannelListMember = ({ member, server }: ServerMemberProps) => {
   );
 };
 
-export default ChannelListMember;
+export default RoomMember;

@@ -4,11 +4,11 @@ import { Separator } from '@/components/ui/separator';
 
 import { Channel, ChannelType, Member, MemberRole } from '@/lib/types';
 import { channels, members, servers } from '@/lib/fakeData';
-import ChannelListHeader from './ChannelListHeader';
-import ChannelListSearch from './ChanelListSearch';
-import ChannelListSection from './ChannelListSection';
-import ChannelListChannel from './ChannelListChannel';
-import ChannelListMember from './ChannelListMember';
+import RoomHeader from './RoomHeader';
+import RoomSearch from './RoomSearch';
+import ChannelListSection from './RoomSection';
+import RoomGroup from './RoomGroup';
+import RoomMember from './RoomMember';
 
 const iconMap: Record<ChannelType, React.ReactNode> = {
   text: <Hash className='mr-2 h-4 w-4' />,
@@ -22,7 +22,7 @@ const roleIconMap: Record<MemberRole, React.ReactNode> = {
   admin: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500' />,
 };
 
-const ChannelListSidebar = () => {
+const RoomSidebar = () => {
   const textChannels = channels.filter(channel => channel.type === 'text');
   const audioChannels = channels.filter(channel => channel.type === 'audio');
   const videoChannels = channels.filter(channel => channel.type === 'video');
@@ -31,10 +31,10 @@ const ChannelListSidebar = () => {
 
   return (
     <div className='flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]'>
-      <ChannelListHeader server={servers[0] as any} role={role} />
+      <RoomHeader server={servers[0] as any} role={role} />
       <ScrollArea className='flex-1 px-3'>
         <div className='mt-2'>
-          <ChannelListSearch
+          <RoomSearch
             data={[
               {
                 label: 'Text Channels',
@@ -88,7 +88,7 @@ const ChannelListSidebar = () => {
             />
             <div className='space-y-[2px]'>
               {textChannels.map(channel => (
-                <ChannelListChannel
+                <RoomGroup
                   key={channel.id}
                   channel={channel as any}
                   role={role}
@@ -109,7 +109,7 @@ const ChannelListSidebar = () => {
             />
             <div className='space-y-[2px]'>
               {audioChannels.map(channel => (
-                <ChannelListChannel
+                <RoomGroup
                   key={channel.id}
                   channel={channel as any}
                   role={role}
@@ -130,7 +130,7 @@ const ChannelListSidebar = () => {
             />
             <div className='space-y-[2px]'>
               {videoChannels.map(channel => (
-                <ChannelListChannel
+                <RoomGroup
                   key={channel.id}
                   channel={channel as any}
                   role={role}
@@ -150,11 +150,7 @@ const ChannelListSidebar = () => {
             />
             <div className='space-y-[2px]'>
               {otherMembers.map(member => (
-                <ChannelListMember
-                  key={member.id}
-                  member={member as any}
-                  server={servers[0] as any}
-                />
+                <RoomMember key={member.id} member={member as any} server={servers[0] as any} />
               ))}
             </div>
           </div>
@@ -164,4 +160,4 @@ const ChannelListSidebar = () => {
   );
 };
 
-export default ChannelListSidebar;
+export default RoomSidebar;

@@ -10,12 +10,12 @@ import QueryProvider from '@/context/QueryProvider';
 import {
   LandingPage,
   ExplorePage,
-  RoomPage,
   ErrorPage,
   ChannelPage,
   ConversationPage,
   LoginPage,
   RegisterPage,
+  DefaultRoomPage,
 } from '@/pages';
 import { BoardLayout, RoomLayout, LandingLayout, AuthLayout } from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
@@ -23,35 +23,30 @@ import { Toaster } from '@/components/ui/toaster';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <BrowserRouter>
-        <QueryProvider>
-          <SocketProvider>
+      <QueryProvider>
+        <SocketProvider>
+          <BrowserRouter>
             <Routes>
-              {/*  */}
               <Route path='/' Component={LandingLayout}>
                 <Route index Component={LandingPage} />
               </Route>
-              {/*  */}
-              {/* <Route Component={BoardLayout} path='/board'> */}
               <Route Component={ExplorePage} path='/explore' />
-              {/*  */}
               <Route path='/rooms/:roomId' Component={RoomLayout}>
-                <Route path='channels/:channelId' Component={ChannelPage} />
+                <Route index Component={DefaultRoomPage} />
+                <Route path='groups/:groupId' Component={ChannelPage} />
                 <Route path='conversations/:memberId' Component={ConversationPage} />
               </Route>
               <Route path='/auth' Component={AuthLayout}>
                 <Route path='login' Component={LoginPage} />
                 <Route path='register' Component={RegisterPage} />
               </Route>
-              {/* </Route> */}
-              {/*  */}
               <Route path='*' Component={ErrorPage} />
             </Routes>
-            <ModalProvider />
-            <Toaster />
-          </SocketProvider>
-        </QueryProvider>
-      </BrowserRouter>
+          </BrowserRouter>
+          <Toaster />
+          <ModalProvider />
+        </SocketProvider>
+      </QueryProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );
