@@ -1,13 +1,16 @@
 import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import MainContent from './components/MainContent';
+import CTA from './components/CTA';
+import Footer from './components/Footer';
 
 type Props = {};
 
 const LandingPage = (props: Props) => {
   return (
     <div>
-      <Link to={'/explore'}>
+      {/* <Link to={'/explore'}>
         <Button>To Explore page</Button>
       </Link>
       <Link to={'/rooms/12345'}>
@@ -18,8 +21,8 @@ const LandingPage = (props: Props) => {
       </Link>
       <Link to={'/auth/register'}>
         <Button>To Register page</Button>
-      </Link>
-      <p className='text-background'>background</p>
+      </Link> */}
+      {/* <p className='text-background'>background</p>
       <p className='text-foreground'>foreground</p>
       <p className='text-card'>card</p>
       <p className='text-card-foreground'>card-foreground</p>
@@ -38,7 +41,10 @@ const LandingPage = (props: Props) => {
       <p className='text-border'>border</p>
       <p className='text-input'>input</p>
       <p className='text-ring'>ring</p>
-      <p className='text-radius'>radius</p>
+      <p className='text-radius'>radius</p> */}
+      <MainContent />
+      <CTA />
+      <Footer />
     </div>
   );
 };
