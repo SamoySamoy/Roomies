@@ -32,14 +32,14 @@ export const register = async (req: Request, res: Response) => {
         },
       });
       if (user) {
-        res.status(200).json(user);
+        return res.status(200).json(user);
       }
     } else {
-      res.status(400).json({ error: 'Email already used' });
+      return res.status(400).json({ error: 'Email already used' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -57,13 +57,13 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      res.status(400).json({ error: 'Email not found' });
+      return res.status(400).json({ error: 'Email not found' });
     } else {
       const storedPassword = String(user.password);
       if (hashedPassword === storedPassword) {
         await addIp(email, ip);
         const token = jwt.sign({ email }, 'roomies', { expiresIn: '1h' });
-        res.status(200).json({
+        return res.status(200).json({
           token: token,
           id: user.id,
           email: user.email,
@@ -74,12 +74,12 @@ export const login = async (req: Request, res: Response) => {
           channels: user.channels,
         });
       } else {
-        res.status(400).json({ error: 'Wrong email or password' });
+        return res.status(400).json({ error: 'Wrong email or password' });
       }
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
