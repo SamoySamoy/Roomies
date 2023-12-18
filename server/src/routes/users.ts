@@ -198,7 +198,7 @@ router.post(
       // Resize the image using sharp and save it to the specified path
       await sharp(imageBuffer).resize(82, 82).toFile(newImageDir);
 
-      console.log('new profile image:', req.body.user, newImageDir);
+      console.log('new profile image:', newImageDir);
 
       await prisma.profile.update({
         where: { id: req.params.id },
