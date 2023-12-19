@@ -6,7 +6,5 @@
   "env": {
     "NODE_ENV": "development"
   },
-  "execMap": {
-    "ts": "node -r ts-node/register"
-  }
+  "exec": "node -r tsconfig-paths/register -r ts-node/register ./src/index.ts"
 }

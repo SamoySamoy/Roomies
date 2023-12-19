@@ -32,7 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route index Component={LandingPage} />
               </Route>
               <Route Component={ExplorePage} path='/explore' />
-              <Route path='/preview' Component={RoomPreviewPage}/>
+              <Route path='/preview' Component={RoomPreviewPage} />
               <Route path='/rooms/:roomId' Component={RoomLayout}>
                 <Route index Component={DefaultRoomPage} />
                 <Route path='groups/:groupId' Component={ChannelPage} />

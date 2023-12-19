@@ -2,8 +2,8 @@ import express, { Request, Response, Router } from 'express';
 import { authToken, AuthenticatedRequest } from '../middlewares/authToken';
 import { db } from '../prisma/db';
 import { MemberRole, ServerType } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 import { Member, Channel } from '@prisma/client';
+import { uuid } from '@/lib/utils';
 
 // Create new server
 export const createServer = async (req: AuthenticatedRequest, res: Response) => {
@@ -30,7 +30,7 @@ export const createServer = async (req: AuthenticatedRequest, res: Response) => 
         name,
         type,
         imageUrl,
-        inviteCode: uuidv4(),
+        inviteCode: uuid(),
         channels: {
           create: [{ name: 'general', profileId: profile.id }],
         },

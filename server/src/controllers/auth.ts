@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, Router } from 'express';
-import { db } from '@/prisma/db';
 import { addIp, getIp } from '@/lib/utils';
+import { db } from '@/prisma/db';
 import multer from 'multer';
+
 import sharp from 'sharp';
 import path from 'path';
 

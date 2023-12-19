@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
 app.use('/api', apiRouter);
 
 app.get('*', (req, res) => {
-  return res.status(200).json({
+  return res.status(404).json({
     message: 'Not found',
   });
 });

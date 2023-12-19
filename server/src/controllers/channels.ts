@@ -1,8 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { authToken, AuthenticatedRequest } from '../middlewares/authToken';
-import { db } from '../prisma/db';
+import { db } from '@/prisma/db';
 import { MemberRole } from '@prisma/client';
-import { ChannelType } from '@prisma/client';
 
 const router: Router = express.Router();
 
@@ -263,5 +262,3 @@ export const deleteChannel = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-export default router;
