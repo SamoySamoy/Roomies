@@ -2,6 +2,8 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import MainContent from './components/MainContent';
+import Ability from './components/Ability';
+import Categories from './components/Categories';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
 
@@ -9,7 +11,7 @@ type Props = {};
 
 const LandingPage = (props: Props) => {
   return (
-    <div>
+    <div className='p-10'>
       {/* <Link to={'/explore'}>
         <Button>To Explore page</Button>
       </Link>
@@ -43,6 +45,8 @@ const LandingPage = (props: Props) => {
       <p className='text-ring'>ring</p>
       <p className='text-radius'>radius</p> */}
       <MainContent />
+      <Ability />
+      <Categories />
       <CTA />
       <Footer />
     </div>
