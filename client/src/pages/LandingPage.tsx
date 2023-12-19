@@ -1,6 +1,6 @@
-import ThemeToggle from '@/components/ThemeToggle';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+// import ThemeToggle from '@/components/ThemeToggle';
+// import { Button } from '@/components/ui/button';
+// import { Link } from 'react-router-dom';
 import MainContent from './components/MainContent';
 import Ability from './components/Ability';
 import Categories from './components/Categories';
