@@ -20,8 +20,9 @@ app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.set('trust proxy', true);
 
-app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+app.use('/api/public', express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
   return res.status(200).json({

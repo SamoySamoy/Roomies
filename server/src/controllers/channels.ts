@@ -1,136 +1,162 @@
-import express, { Request, Response, Router } from 'express';
-import { authToken, AuthenticatedRequest } from '../middlewares/authToken';
+import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { MemberRole } from '@prisma/client';
+import { ChannelType, MemberRole } from '@prisma/client';
+import { AuthenticatedRequest } from '@/lib/types';
+import { isTruthy } from '@/lib/utils';
 
-const router: Router = express.Router();
+type QueryInclude = {
+  messages: string;
+};
 
-// create new channel
-export const createChannel = async (req: AuthenticatedRequest, res: Response) => {
+type QueryFilter = {
+  serverId: string;
+};
+
+export const getChannels = async (
+  req: AuthenticatedRequest<any, any, Partial<QueryInclude & QueryFilter>>,
+  res: Response,
+) => {
   try {
-    const { name, serverId, type } = req.body;
-    const userEmail = req.user?.email;
-    if (!userEmail) {
-      return res.status(400).json({ error: 'User email not found in token' });
-    }
-    const profile = await db.profile.findUnique({
-      where: { email: userEmail },
-      select: { id: true },
-    });
-    if (!serverId) {
-      return res.status(400).json({ error: 'Server Id missing' });
-    }
-
-    if (name === 'general') {
-      return res.status(400).json({ error: 'Name can not be general' });
-    }
-
-    const isExistingChannel = await db.channel.findFirst({
+    const { messages, serverId } = req.query;
+    const channel = await db.channel.findMany({
       where: {
         serverId,
-        name,
       },
+      include: { messages: isTruthy(messages) },
     });
-
-    if (isExistingChannel) {
-      return res
-        .status(400)
-        .json({ error: 'Channel with same name already exists in this server' });
-    }
-    if (!profile) {
-      return res.status(400).json({ error: 'User email not found in token' });
-    } else {
-      const server = await db.server.findUnique({
-        where: {
-          id: serverId,
-          members: {
-            some: {
-              profileId: profile?.id,
-              role: {
-                in: [MemberRole.ADMIN, MemberRole.MODERATOR],
-              },
-            },
-          },
-        },
-      });
-      if (!server) {
-        return res.status(400).json({ error: 'You are not admin or moderator of this server' });
-      }
-      const updateServer = await db.server.update({
-        where: {
-          id: serverId,
-          members: {
-            some: {
-              profileId: profile?.id,
-              role: {
-                in: [MemberRole.ADMIN, MemberRole.MODERATOR],
-              },
-            },
-          },
-        },
-        data: {
-          channels: {
-            create: {
-              profileId: profile.id,
-              name,
-              type,
-            },
-          },
-        },
-      });
-      const createdChannel = await db.channel.findFirst({
-        where: {
-          serverId: server.id,
-          profileId: profile.id,
-          name,
-          type,
-        },
-        include: {
-          messages: true,
-        },
-      });
-      return res.status(200).json(createdChannel);
-    }
+    return res.status(200).json(channel);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
+type ParamsWithChannelId = {
+  channelId: string;
+};
+
 // Get a specific channel by channelId
-export const getChannelById = async (req: Request, res: Response) => {
+export const getChannelById = async (
+  req: AuthenticatedRequest<ParamsWithChannelId, any, Partial<QueryInclude>>,
+  res: Response,
+) => {
   try {
-    const channelId = req.params.id;
+    const channelId = req.params.channelId;
     const { messages } = req.query;
     const channel = await db.channel.findUnique({
       where: { id: channelId },
-      include: { messages: true },
+      include: { messages: isTruthy(messages) },
     });
 
     if (!channel) {
       return res.status(404).json({ error: 'Channel not found' });
     }
-    if (!messages) {
-      return res.status(200).json(channel);
-    } else {
-      return res.status(200).json(channel.messages);
-    }
+    return res.status(200).json(channel);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-export const updateChannel = async (req: AuthenticatedRequest, res: Response) => {
+type BodyCreateChannel = {
+  channelName: string;
+  channelType: ChannelType;
+  serverId: string;
+};
+
+// create new channel
+export const createChannel = async (
+  req: AuthenticatedRequest<any, Partial<BodyCreateChannel>, any>,
+  res: Response,
+) => {
+  try {
+    const { channelName, serverId, channelType = 'TEXT' } = req.body;
+    const profileId = req.user?.profileId!;
+
+    if (!channelName || !serverId) {
+      return res.status(400).json({ message: 'Need channel name, server id' });
+    }
+    if (channelName === 'general') {
+      return res.status(400).json({ message: 'Name can not be general' });
+    }
+
+    const [profile, server] = await Promise.all([
+      await db.profile.findUnique({
+        where: { id: profileId },
+        select: { id: true },
+      }),
+      await db.server.findUnique({
+        where: {
+          id: serverId,
+          members: {
+            some: {
+              profileId,
+              role: {
+                in: [MemberRole.ADMIN, MemberRole.MODERATOR],
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    if (!profile) {
+      return res.status(400).json({ message: 'Profile not found' });
+    }
+    if (!server) {
+      return res.status(400).json({
+        error:
+          'Can not create channel. Server not exist or you are not admin or moderator of this server',
+      });
+    }
+
+    const isExistingChannel = await db.channel.findFirst({
+      where: {
+        serverId: server.id,
+        name: channelName,
+      },
+    });
+    if (isExistingChannel) {
+      return res
+        .status(400)
+        .json({ message: 'Channel with same name already exists in this server' });
+    }
+
+    const updatedServer = await db.server.update({
+      where: {
+        id: server.id,
+      },
+      data: {
+        channels: {
+          create: {
+            name: channelName,
+            type: channelType,
+            profileId: profile.id,
+          },
+        },
+      },
+      include: {
+        channels: true,
+      },
+    });
+    return res.status(200).json(updatedServer);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const updateChannel = async (
+  req: AuthenticatedRequest<ParamsWithChannelId, Partial<BodyCreateChannel>, any>,
+  res: Response,
+) => {
   try {
     const channelId = req.params.channelId;
-    const { name } = req.body;
-    const userEmail = req.user?.email;
-    if (!userEmail) {
-      return res.status(400).json({ error: 'User email not found in token' });
-    }
+    const profileId = req.user?.profileId!;
+    const { channelName, channelType } = req.body;
+
     const profile = await db.profile.findUnique({
-      where: { email: userEmail },
+      where: { id: profileId },
       select: { id: true },
     });
 
@@ -198,18 +224,18 @@ export const updateChannel = async (req: AuthenticatedRequest, res: Response) =>
 };
 
 // Delete a channel
-export const deleteChannel = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteChannel = async (
+  req: AuthenticatedRequest<ParamsWithChannelId, any, any>,
+  res: Response,
+) => {
   try {
-    const userEmail = req.user?.email;
-    if (!userEmail) {
-      return res.status(400).json({ error: 'User email not found in token' });
-    }
+    const channelId = req.params.channelId;
+    const profileId = req.user?.profileId;
+
     const profile = await db.profile.findUnique({
-      where: { email: userEmail },
+      where: { id: profileId },
       select: { id: true },
     });
-    const channelId = req.params.channelId;
-
     const channel = await db.channel.findUnique({
       where: {
         id: channelId,
