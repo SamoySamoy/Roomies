@@ -15,40 +15,57 @@ import {
   ConversationPage,
   LoginPage,
   RegisterPage,
-  DefaultRoomPage,
+  MyRoomsPage,
   RoomPreviewPage,
+  FirstRoomPage,
+  RoomRedirectPage,
 } from '@/pages';
-import { BoardLayout, RoomLayout, LandingLayout, AuthLayout } from '@/layout';
+import {
+  RoomLayout,
+  LandingLayout,
+  NoAuthLayout,
+  ProtectedLayout,
+  SingleRoomLayout,
+  RoomListLayout,
+} from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <QueryProvider>
-        <SocketProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path='/' Component={LandingLayout}>
+  // <React.StrictMode>
+  <ThemeProvider>
+    <QueryProvider>
+      <SocketProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/'>
+              <Route Component={LandingLayout}>
                 <Route index Component={LandingPage} />
               </Route>
-              <Route Component={ExplorePage} path='/explore' />
-              <Route path='/preview' Component={RoomPreviewPage} />
-              <Route path='/rooms/:roomId' Component={RoomLayout}>
-                <Route index Component={DefaultRoomPage} />
-                <Route path='groups/:groupId' Component={ChannelPage} />
-                <Route path='conversations/:memberId' Component={ConversationPage} />
+              <Route path='preview' Component={RoomPreviewPage} />
+              <Route Component={ProtectedLayout}>
+                <Route path='first-room' Component={FirstRoomPage} />
+                <Route path='explore' Component={ExplorePage} />
+                <Route path='my-rooms' Component={MyRoomsPage} />
+                <Route path='rooms' Component={RoomListLayout}>
+                  <Route path=':roomId' Component={SingleRoomLayout}>
+                    <Route index Component={RoomRedirectPage} />
+                    <Route path='groups/:groupId' Component={ChannelPage} />
+                    <Route path='conversations/:memberId' Component={ConversationPage} />
+                  </Route>
+                </Route>
               </Route>
-              <Route path='/auth' Component={AuthLayout}>
+              <Route Component={NoAuthLayout}>
                 <Route path='login' Component={LoginPage} />
                 <Route path='register' Component={RegisterPage} />
               </Route>
-              <Route path='*' Component={ErrorPage} />
-            </Routes>
-          </BrowserRouter>
-          <Toaster />
+            </Route>
+            <Route path='*' Component={ErrorPage} />
+          </Routes>
           <ModalProvider />
-        </SocketProvider>
-      </QueryProvider>
-    </ThemeProvider>
-  </React.StrictMode>,
+        </BrowserRouter>
+        <Toaster />
+      </SocketProvider>
+    </QueryProvider>
+  </ThemeProvider>,
+  // </React.StrictMode>,
 );

@@ -9,6 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
+import { useParams } from 'react-router-dom';
+import { useDeleteChannelMutation } from '@/hooks/mutations';
+import { useToast } from '@/components/ui/use-toast';
 
 const DeleteChannelModal = () => {
   const {
@@ -17,25 +20,30 @@ const DeleteChannelModal = () => {
     closeModal,
     data: { server, channel },
   } = useModal();
-
-  const onDelete = async () => {
-    try {
-      // setIsLoading(true);
-      // const url = qs.stringifyUrl({
-      //   url: `/api/groups/${channel?.id}`,
-      //   query: {
-      //     serverId: server?.id,
-      //   }
-      // })
-      // await axios.delete(url);
-      // onClose();
-      // router.refresh();
-      // router.push(`/servers/${server?.id}`);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      // setIsLoading(false);
-    }
+  const { toast } = useToast();
+  const { channelId } = useParams<{ channelId: string }>();
+  const mutation = useDeleteChannelMutation();
+  const onDelete = () => {
+    mutation.mutate(
+      {
+        channelId: channelId!,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Delete server ok',
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Delete server failed',
+          });
+        },
+        onSettled: () => {
+          mutation.reset();
+        },
+      },
+    );
   };
 
   return (
@@ -51,18 +59,10 @@ const DeleteChannelModal = () => {
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
           <div className='flex items-center justify-between w-full'>
-            <Button
-              // disabled={isLoading}
-              onClick={closeModal}
-              variant='destructive'
-            >
+            <Button disabled={mutation.isPending} onClick={closeModal} variant='destructive'>
               Cancel
             </Button>
-            <Button
-              // disabled={isLoading}
-              variant='primary'
-              onClick={onDelete}
-            >
+            <Button disabled={mutation.isPending} variant='primary' onClick={onDelete}>
               Confirm
             </Button>
           </div>

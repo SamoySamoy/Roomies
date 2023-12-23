@@ -2,7 +2,7 @@ import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-import { Channel, ChannelType, Member, MemberRole } from '@/lib/types';
+import { Channel, ChannelType, MemberRole } from '@/lib/types';
 import { channels, members, servers } from '@/lib/fakeData';
 import RoomHeader from './RoomHeader';
 import RoomSearch from './RoomSearch';
@@ -10,24 +10,28 @@ import ChannelListSection from './RoomSection';
 import RoomGroup from './RoomGroup';
 import RoomMember from './RoomMember';
 
-const iconMap: Record<ChannelType, React.ReactNode> = {
-  text: <Hash className='mr-2 h-4 w-4' />,
-  audio: <Mic className='mr-2 h-4 w-4' />,
-  video: <Video className='mr-2 h-4 w-4' />,
+const channelIcon = {
+  [ChannelType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
+  [ChannelType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
+  [ChannelType.VIDEO]: <Video className='mr-2 h-4 w-4' />,
 };
 
-const roleIconMap: Record<MemberRole, React.ReactNode> = {
-  guest: null,
-  moderator: <ShieldCheck className='h-4 w-4 mr-2 text-indigo-500' />,
-  admin: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500' />,
+const roleIcon = {
+  [MemberRole.GUEST]: null,
+  [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 mr-2 text-indigo-500' />,
+  [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500' />,
 };
 
-const RoomSidebar = () => {
-  const textChannels = channels.filter(channel => channel.type === 'text');
-  const audioChannels = channels.filter(channel => channel.type === 'audio');
-  const videoChannels = channels.filter(channel => channel.type === 'video');
+type Props = {
+  channels: Channel[];
+};
+
+const RoomSidebar = ({ channels }: Props) => {
+  const textChannels = channels.filter(channel => channel.type === ChannelType.TEXT);
+  const audioChannels = channels.filter(channel => channel.type === ChannelType.AUDIO);
+  const videoChannels = channels.filter(channel => channel.type === ChannelType.VIDEO);
   const otherMembers = members.filter(member => member.profileId !== 'profile_1');
-  const role = 'admin';
+  const role = MemberRole.ADMIN;
 
   return (
     <div className='flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]'>
@@ -42,7 +46,7 @@ const RoomSidebar = () => {
                 data: textChannels?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type as ChannelType],
+                  icon: channelIcon[channel.type],
                 })),
               },
               {
@@ -51,7 +55,7 @@ const RoomSidebar = () => {
                 data: audioChannels?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type as ChannelType],
+                  icon: channelIcon[channel.type],
                 })),
               },
               {
@@ -60,7 +64,7 @@ const RoomSidebar = () => {
                 data: videoChannels?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type as ChannelType],
+                  icon: channelIcon[channel.type],
                 })),
               },
               {
@@ -70,7 +74,7 @@ const RoomSidebar = () => {
                   id: member.id,
                   // name: member.profile.name,
                   name: member.profileId,
-                  icon: roleIconMap[member.role as MemberRole],
+                  icon: roleIcon[member.role as MemberRole],
                 })),
               },
             ]}
@@ -81,8 +85,7 @@ const RoomSidebar = () => {
           <div className='mb-2'>
             <ChannelListSection
               sectionType='channels'
-              // channelType={ChannelType.TEXT}
-              channelType='text'
+              channelType={ChannelType.TEXT}
               role={role}
               label='Text Channels'
             />
@@ -102,8 +105,7 @@ const RoomSidebar = () => {
           <div className='mb-2'>
             <ChannelListSection
               sectionType='channels'
-              // channelType={ChannelType.AUDIO}
-              channelType='audio'
+              channelType={ChannelType.AUDIO}
               role={role}
               label='Voice Channels'
             />
@@ -123,8 +125,7 @@ const RoomSidebar = () => {
           <div className='mb-2'>
             <ChannelListSection
               sectionType='channels'
-              // channelType={ChannelType.VIDEO}
-              channelType='video'
+              channelType={ChannelType.VIDEO}
               role={role}
               label='Video Channels'
             />

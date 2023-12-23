@@ -15,7 +15,19 @@ const app = express();
 const httpServer = createServer(app);
 setupWs(httpServer);
 
-app.use(cors());
+app.use(
+  cors({
+    origin(requestOrigin, callback) {
+      if (requestOrigin === undefined || requestOrigin === 'http://localhost:5173') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by Cors'));
+      }
+    },
+    credentials: true,
+    optionsSuccessStatus: 204,
+  }),
+);
 app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

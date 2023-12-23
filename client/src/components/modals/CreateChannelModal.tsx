@@ -1,8 +1,3 @@
-import { useEffect } from 'react';
-
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -27,20 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChannelType, ChannelTypeEnum } from '@/lib/types';
+import { ChannelType } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
-
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(1, {
-      message: 'Channel name is required.',
-    })
-    .refine(name => name !== 'general', {
-      message: "Channel name cannot be 'general'",
-    }),
-  type: z.nativeEnum(ChannelTypeEnum),
-});
+import { CreateChannelSchema, useCreateChannelForm } from '@/hooks/forms';
+import { useCreateChannelMutation } from '@/hooks/mutations';
+import { useParams } from 'react-router-dom';
 
 const CreateChannelModal = () => {
   const {
@@ -49,45 +35,28 @@ const CreateChannelModal = () => {
     closeModal,
     data: { server, channelType },
   } = useModal();
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      // type: channelType || ChannelTypeEnum.TEXT,
-      type: ChannelTypeEnum.TEXT,
-    },
-  });
-
-  // useEffect(() => {
-  //   if (channelType) {
-  //     form.setValue('type', channelType);
-  //   } else {
-  //     form.setValue('type', ChannelType.TEXT);
-  //   }
-  // }, [channelType, form]);
-
-  const isLoading = form.formState.isSubmitting;
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      // const url = qs.stringifyUrl({
-      //   url: '/api/channels',
-      //   query: {
-      //     serverId: params?.serverId,
-      //   },
-      // });
-      // await axios.post(url, values);
-      // form.reset();
-      // router.refresh();
-      // onClose();
-    } catch (error) {
-      console.log(error);
-    }
+  const { serverId } = useParams<{ serverId: string }>();
+  const form = useCreateChannelForm();
+  const mutation = useCreateChannelMutation();
+  const onSubmit = async (values: CreateChannelSchema) => {
+    mutation.mutate(
+      {
+        ...values,
+        serverId: serverId!,
+      },
+      {
+        onSettled: () => {
+          form.reset();
+          mutation.reset();
+        },
+      },
+    );
   };
+  const isLoading = form.formState.isSubmitting || mutation.isPending;
 
   const handleClose = () => {
     form.reset();
+    mutation.reset();
     closeModal();
   };
 
@@ -102,7 +71,7 @@ const CreateChannelModal = () => {
             <div className='space-y-8 px-6'>
               <FormField
                 control={form.control}
-                name='name'
+                name='channelName'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
@@ -122,14 +91,14 @@ const CreateChannelModal = () => {
               />
               <FormField
                 control={form.control}
-                name='type'
+                name='channelType'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Channel Type</FormLabel>
                     <Select
                       disabled={isLoading}
                       onValueChange={field.onChange}
-                      // defaultValue={field.value.toString()}
+                      defaultValue={field.value.toString()}
                     >
                       <FormControl>
                         <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
@@ -137,7 +106,7 @@ const CreateChannelModal = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.keys(ChannelTypeEnum).map(type => (
+                        {Object.keys(ChannelType).map(type => (
                           <SelectItem key={type} value={type} className='capitalize'>
                             {type.toLowerCase()}
                           </SelectItem>

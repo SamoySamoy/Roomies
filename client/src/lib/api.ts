@@ -15,13 +15,6 @@ export const api = axios.create({
   baseURL: SERVER_API_URL,
   withCredentials: true,
 });
-// Intercept the request before it really sent
-api.interceptors.request.use(reqConfig => {
-  if (!reqConfig.headers.getAuthorization()) {
-    reqConfig.headers.setAuthorization('Bearer');
-  }
-  return reqConfig;
-});
 
 type ServerToClientEvents = {
   'chat:broadcast:message': (msg: string) => void;

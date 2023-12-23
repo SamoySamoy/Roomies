@@ -11,6 +11,6 @@ const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', userRouter);
 apiRouter.use('/servers', verifyToken, serverRouter);
-// apiRouter.use('/channels', verifyToken, channelRouter);
+apiRouter.use('/channels', verifyToken, channelRouter);
 
 export default apiRouter;

@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -17,53 +14,66 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import FileUpload from '@/components/FileUpload';
 import { useModal } from '@/hooks/useModal';
-
-const formSchema = z.object({
-  serverName: z.string().trim().min(1, {
-    message: 'Server name is required.',
-  }),
-  imageName: z.string().trim().min(1, {
-    message: 'Server image is required.',
-  }),
-});
-
-type FormSchema = z.infer<typeof formSchema>;
+import { CreateServerSchema, useCreateServerForm } from '@/hooks/forms';
+import { useCreateServerMutation } from '@/hooks/mutations';
+import { ServerType } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const CreateServerModal = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const { isOpen, modalType, closeModal } = useModal();
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      serverName: '',
-      imageName: '',
-    },
-  });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const form = useCreateServerForm();
+  const mutation = useCreateServerMutation();
+  const isLoading = form.formState.isSubmitting || mutation.isPending;
 
   const clearForm = () => {
     setImageFile(null);
     form.reset();
+    mutation.reset();
   };
 
-  const onSubmit = async (values: FormSchema) => {
-    try {
-      console.log(values);
-      console.log(imageFile);
-      const formData = new FormData();
-      formData.append('serverName', values.serverName);
-      formData.append('imageFile', imageFile!);
-
-      clearForm();
-      closeModal();
-    } catch (err) {
-      console.log(err);
-      clearForm();
+  const onSubmit = async (values: CreateServerSchema) => {
+    if (values.serverType === ServerType.PRIVATE && !values.serverPassword) {
+      form.setError('serverPassword', { message: 'Private server require password' });
     }
+    form.clearErrors();
+
+    const formData = new FormData();
+    formData.append('serverName', values.serverName);
+    formData.append('serverType', values.serverType);
+    formData.append('serverPassword', values.serverPassword);
+    formData.append('serverImage', imageFile!);
+    mutation.mutate(formData, {
+      onSuccess: () => {
+        toast({
+          title: 'Create server OK',
+        });
+      },
+      onError: () => {
+        toast({
+          title: 'Create server Failed',
+        });
+      },
+      onSettled: () => {
+        clearForm();
+      },
+    });
   };
 
   return (
@@ -89,7 +99,7 @@ const CreateServerModal = () => {
               <div className='flex items-center justify-center text-center'>
                 <FormField
                   control={form.control}
-                  name='imageName'
+                  name='serverImage'
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -122,6 +132,57 @@ const CreateServerModal = () => {
                         disabled={form.formState.isLoading}
                         className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
                         placeholder='Enter server name'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='serverType'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Server Type</FormLabel>
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
+                          <SelectValue placeholder='Select a server type' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.keys(ServerType).map(type => (
+                          <SelectItem key={type} value={type} className='capitalize'>
+                            {type.toLowerCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='serverPassword'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      Server password
+                    </FormLabel>
+                    <FormDescription>Private server require a password</FormDescription>
+                    <FormControl>
+                      <Input
+                        disabled={form.formState.isLoading}
+                        className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                        placeholder='Password of private server'
                         {...field}
                       />
                     </FormControl>

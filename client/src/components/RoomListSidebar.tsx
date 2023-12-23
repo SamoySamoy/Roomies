@@ -4,13 +4,16 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { useModal } from '@/hooks/useModal';
-import { ServerType } from '@/lib/types';
+import { Server, ServerType } from '@/lib/types';
+import { useParams } from 'react-router-dom';
 
-import { servers } from '@/lib/fakeData';
+type Props = {
+  servers: Server[];
+};
 
-const ServerListSidebar = () => {
+const ServerListSidebar = ({ servers }: Props) => {
   return (
     <div className='flex h-full w-full flex-col items-center space-y-4 bg-[#E3E5E8] py-3 text-primary dark:bg-[#1E1F22]'>
       <CreateServerButton />
@@ -66,22 +69,16 @@ const CreateServerButton = () => {
   );
 };
 
-const ServerTypeIcon = ({ serverType }: { serverType: ServerType }) => {
-  const size = 16;
-  const strokeWidth = 2;
-
-  switch (serverType) {
-    case 'private':
-      return <Lock className='text-red-500' size={size} strokeWidth={strokeWidth} />;
-    case 'public':
-      return <Unlock className='text-emerald-500' size={size} strokeWidth={strokeWidth} />;
-    default:
-      return <EyeOff className='text-slate-500' size={size} strokeWidth={strokeWidth} />;
-  }
+const icon = {
+  [ServerType.PUBLIC]: <Unlock className='text-emerald-500' />,
+  [ServerType.PRIVATE]: <Lock className='text-red-500' />,
+  [ServerType.HIDDEN]: <EyeOff className='text-slate-500' />,
 };
 
-const ServerItem = ({ name, channels, members, type, id, imageUrl }: (typeof servers)[0]) => {
-  const isActive = id === 'server_1';
+const ServerItem = ({ id, name, type, imageUrl }: Server) => {
+  const { roomId } = useParams<{ roomId: string }>();
+  const isActive = roomId === id;
+  console.log(getImageUrl(imageUrl!));
 
   return (
     <ActionTooltip
@@ -93,18 +90,16 @@ const ServerItem = ({ name, channels, members, type, id, imageUrl }: (typeof ser
             <p className='text-sm font-bold text-foreground'>{name}</p>
             <div className='flex gap-2'>
               <div className='flex items-center gap-1'>
-                <span className='text-xs text-muted-foreground'>{channels.length}</span>
+                <span className='text-xs text-muted-foreground'>{1}</span>
                 <PanelTopInactive size={16} className='stroke-muted-foreground' />
               </div>
               <div className='flex items-center gap-1'>
-                <span className='text-xs text-muted-foreground'>{members.length}</span>{' '}
+                <span className='text-xs text-muted-foreground'>{1}</span>{' '}
                 <Users size={16} className='stroke-muted-foreground' />
               </div>
             </div>
           </div>
-          <div>
-            <ServerTypeIcon serverType={type as any} />
-          </div>
+          {icon[type]}
         </div>
       }
     >
@@ -129,7 +124,7 @@ const ServerItem = ({ name, channels, members, type, id, imageUrl }: (typeof ser
             },
           )}
         >
-          <img className='h-full w-full' src={imageUrl} alt='Channel' />
+          <img className='h-full w-full' src={getImageUrl(imageUrl!)} alt='Channel' />
         </div>
       </button>
     </ActionTooltip>

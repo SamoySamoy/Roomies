@@ -15,7 +15,6 @@ type QueryInclude = {
 };
 
 type QueryFilter = {
-  profileId: string;
   status: 'created' | 'joined';
   serverType: ServerType | 'viewable' | 'all';
 };
@@ -26,14 +25,8 @@ export const getServers = async (
   res: Response,
 ) => {
   try {
-    const {
-      profile,
-      members,
-      channels,
-      profileId,
-      status = 'joined',
-      serverType = 'all',
-    } = req.query;
+    const { profile, members, channels, status = 'joined', serverType = 'all' } = req.query;
+    const profileId = req.user?.profileId!;
 
     // Tìm kiếm theo 2 điều kiện độc lập
     // 1. Tìm kiếm theo kiểu server
@@ -47,21 +40,18 @@ export const getServers = async (
 
     // 2. Tìm kiếm theo cá nhân (profileId) hoặc không
     // Nếu có profileId, sẽ có 2 trạng thái tìm kiếm: tìm kiếm những server mà profileId join và tìm kiếm những server mà profileId create
-    let profileIdFilter = {};
-    if (profileId) {
-      profileIdFilter =
-        status === 'joined'
-          ? {
-              members: {
-                some: {
-                  profileId,
-                },
+    const profileIdFilter =
+      status === 'joined'
+        ? {
+            members: {
+              some: {
+                profileId,
               },
-            }
-          : {
-              profileId,
-            };
-    }
+            },
+          }
+        : {
+            profileId,
+          };
 
     const servers = await db.server.findMany({
       where: {

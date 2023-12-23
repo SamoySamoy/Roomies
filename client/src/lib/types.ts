@@ -1,23 +1,19 @@
 // AUTO GENERATED FILE BY @kalissaac/prisma-typegen
 // DO NOT EDIT
 
-export type ServerType = 'public' | 'private' | 'hidden';
-
-export type MemberRole = 'admin' | 'moderator' | 'guest';
-
-export type ChannelType = 'text' | 'audio' | 'video';
-
-export enum ServerTypeEnum {
+export enum ServerType {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
   HIDDEN = 'HIDDEN',
 }
-export enum MemberRoleEnum {
+
+export enum MemberRole {
   ADMIN = 'ADMIN',
   MODERATOR = 'MODERATOR',
   GUEST = 'GUEST',
 }
-export enum ChannelTypeEnum {
+
+export enum ChannelType {
   TEXT = 'TEXT',
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
@@ -40,8 +36,9 @@ export interface Server {
   id: string;
   name: string;
   type: ServerType;
+  password?: string;
   imageUrl?: string;
-  inviteCode?: string;
+  inviteCode: string;
   profileId: string;
   profile: Profile;
   members: Member[];

@@ -1,8 +1,3 @@
-import { useEffect } from 'react';
-
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -27,74 +22,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChannelType, ChannelTypeEnum } from '@/lib/types';
+import { ChannelType } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
-
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(1, {
-      message: 'Channel name is required.',
-    })
-    .refine(name => name !== 'general', {
-      message: "Channel name cannot be 'general'",
-    }),
-  // type: z.nativeEnum(ChannelTypeEnum),
-  type: z.string(),
-});
+import { CreateChannelSchema, useCreateChannelForm } from '@/hooks/forms';
+import { useUpdateChannelMutation } from '@/hooks/mutations';
+import { useParams } from 'react-router-dom';
 
 const EditChannelModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { server, channel },
+    data: { server, channelType },
   } = useModal();
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      // type: channel?.type || ChannelType.TEXT,
-      type: ChannelTypeEnum.TEXT.toString(),
-    },
-  });
-
-  useEffect(() => {
-    if (channel) {
-      form.setValue('name', channel?.name);
-      // form.setValue('type', channel?.type);
-      form.setValue('type', 'AUDIO');
-    }
-  }, [form, channel]);
-
-  const isLoading = form.formState.isSubmitting;
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      // const url = qs.stringifyUrl({
-      //   url: `/api/groups/${channel?.id}`,
-      //   query: {
-      //     serverId: server?.id
-      //   }
-      // });
-      // await axios.patch(url, values);
-
-      // form.reset();
-      // router.refresh();
-      closeModal();
-    } catch (error) {
-      console.log(error);
-    }
+  const { channelId } = useParams<{ channelId: string }>();
+  const form = useCreateChannelForm();
+  const mutation = useUpdateChannelMutation();
+  const onSubmit = async (values: CreateChannelSchema) => {
+    mutation.mutate(
+      {
+        ...values,
+        channelId: channelId!,
+      },
+      {
+        onSettled: () => {
+          form.reset();
+          mutation.reset();
+        },
+      },
+    );
   };
+  const isLoading = form.formState.isSubmitting || mutation.isPending;
 
   const handleClose = () => {
     form.reset();
+    mutation.reset();
     closeModal();
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'editChannel'} onOpenChange={handleClose}>
+    <Dialog open={isOpen && modalType === 'createChannel'} onOpenChange={handleClose}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Edit Channel</DialogTitle>
@@ -104,7 +71,7 @@ const EditChannelModal = () => {
             <div className='space-y-8 px-6'>
               <FormField
                 control={form.control}
-                name='name'
+                name='channelName'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
@@ -124,17 +91,14 @@ const EditChannelModal = () => {
               />
               <FormField
                 control={form.control}
-                name='type'
+                name='channelType'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Edit Type</FormLabel>
+                    <FormLabel>Channel Type</FormLabel>
                     <Select
                       disabled={isLoading}
-                      onValueChange={e => {
-                        console.log(e);
-                        field.onChange(e);
-                      }}
-                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
                     >
                       <FormControl>
                         <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
@@ -142,7 +106,7 @@ const EditChannelModal = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.keys(ChannelTypeEnum).map(type => (
+                        {Object.keys(ChannelType).map(type => (
                           <SelectItem key={type} value={type} className='capitalize'>
                             {type.toLowerCase()}
                           </SelectItem>

@@ -5,5 +5,8 @@ export { default as ChannelPage } from './ChannelPage';
 export { default as ConversationPage } from './ConversationPage';
 export { default as LoginPage } from './LoginPage';
 export { default as RegisterPage } from './RegisterPage';
+export { default as FirstRoomPage } from './FirstRoomPage';
+export { default as MyRoomsPage } from './MyRoomsPage';
+export { default as RoomRedirectPage } from './RoomRedirectPage';
 export { default as ErrorPage } from './ErrorPage';
 export { default as RoomPreviewPage } from './explore/RoomPreview';

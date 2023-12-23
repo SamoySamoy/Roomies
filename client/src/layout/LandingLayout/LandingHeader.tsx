@@ -12,27 +12,36 @@ const LandingHeader = () => {
         </Link>
       </div>
       <nav className='flex gap-4 font-bold'>
-        <Link to={'/'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
+        <Link
+          to={'/'}
+          className='px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline'
+        >
           Home
         </Link>
-        <Link to={'/explore'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
+        <Link
+          to={'/explore'}
+          className='px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline'
+        >
           Explore
         </Link>
-        <Link to={'/rooms/12345'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
+        <Link
+          to={'/rooms/my-rooms'}
+          className='px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline'
+        >
           Room
         </Link>
       </nav>
       <div className='flex gap-4 pr-10'>
         <div className='flex gap-4'>
           <ActionTooltip label='Login to connect with your friends'>
-            <Link to={'/auth/login'}>
+            <Link to={'/login'}>
               <Button variant='outline' className='font-bold'>
                 Sign In
               </Button>
             </Link>
           </ActionTooltip>
           <ActionTooltip label='Create a new account and discover more'>
-            <Link to={'/auth/register'}>
+            <Link to={'/register'}>
               <Button className='bg-green-400'>
                 <span className='font-bold text-background'>Get start</span>
               </Button>

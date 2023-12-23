@@ -151,21 +151,37 @@ export const updateChannel = async (
   res: Response,
 ) => {
   try {
-    const channelId = req.params.channelId;
     const profileId = req.user?.profileId!;
-    const { channelName, channelType } = req.body;
+    const channelId = req.params.channelId;
+    const { channelName } = req.body;
+    let { channelType } = req.body;
 
-    const profile = await db.profile.findUnique({
-      where: { id: profileId },
-      select: { id: true },
-    });
+    if (channelType) {
+      channelType = channelType.toUpperCase() as ChannelType;
+      if (!Object.keys(ChannelType).includes(channelType)) {
+        return res.status(400).json({ message: 'Invalid server type' });
+      }
+    }
 
-    const channel = await db.channel.findUnique({
-      where: {
-        id: channelId,
-      },
-      include: { messages: true },
-    });
+    const [profile, channel] = await Promise.all([
+      db.profile.findUnique({
+        where: { id: profileId },
+        select: { id: true },
+      }),
+      await db.channel.findUnique({
+        where: {
+          id: channelId,
+        },
+        include: { messages: true },
+      }),
+    ]);
+    if (!profile) {
+      return res.status(400).json({ message: 'Profile not found' });
+    }
+    if (!channel) {
+      return res.status(400).json({ message: 'Channel not found' });
+    }
+
     const server = await db.server.findUnique({
       where: {
         id: channel?.serverId,
@@ -182,7 +198,8 @@ export const updateChannel = async (
     if (!server) {
       return res.status(400).json({ error: 'You are not admin or moderator of this server' });
     }
-    const updateServer = await db.server.update({
+
+    const updatedServer = await db.server.update({
       where: {
         id: channel?.serverId,
         members: {
@@ -198,25 +215,20 @@ export const updateChannel = async (
         channels: {
           update: {
             where: {
-              id: channelId,
-              NOT: {
-                name: 'general',
-              },
+              id: channel.id,
             },
             data: {
-              name,
+              name: channelName,
+              type: channelType,
             },
           },
         },
       },
-    });
-    const returnChannel = await db.channel.findUnique({
-      where: {
-        id: channelId,
+      include: {
+        channels: true,
       },
-      include: { messages: true },
     });
-    return res.status(202).json(returnChannel);
+    return res.status(200).json(updatedServer);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -232,16 +244,29 @@ export const deleteChannel = async (
     const channelId = req.params.channelId;
     const profileId = req.user?.profileId;
 
-    const profile = await db.profile.findUnique({
-      where: { id: profileId },
-      select: { id: true },
-    });
-    const channel = await db.channel.findUnique({
-      where: {
-        id: channelId,
-      },
-      include: { messages: true },
-    });
+    const [profile, channel] = await Promise.all([
+      db.profile.findUnique({
+        where: { id: profileId },
+        select: { id: true },
+      }),
+      await db.channel.findUnique({
+        where: {
+          id: channelId,
+        },
+        include: { messages: true },
+      }),
+    ]);
+    if (!profile) {
+      return res.status(400).json({ message: 'Profile not found' });
+    }
+    if (!channel) {
+      return res.status(400).json({ message: 'Channel not found' });
+    }
+
+    if (channel.name === 'general') {
+      return res.status(400).json({ message: 'You can not delete general channel' });
+    }
+
     const server = await db.server.findUnique({
       where: {
         id: channel?.serverId,
@@ -258,7 +283,7 @@ export const deleteChannel = async (
     if (!server) {
       return res.status(400).json({ error: 'You are not admin or moderator of this server' });
     }
-    const updateServer = await db.server.update({
+    const updatedServer = await db.server.update({
       where: {
         id: channel?.serverId,
         members: {
@@ -273,16 +298,13 @@ export const deleteChannel = async (
       data: {
         channels: {
           delete: {
-            id: channelId,
-            name: {
-              not: 'general',
-            },
+            id: channel.id,
           },
         },
       },
     });
 
-    return res.status(202).json({ message: 'Channel deleted successfully' });
+    return res.status(200).json(updatedServer);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

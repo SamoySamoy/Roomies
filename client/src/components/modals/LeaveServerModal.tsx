@@ -9,6 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
+import { useLeaveServerMutation } from '@/hooks/mutations';
+import { useParams } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 
 const LeaveServerModal = () => {
   const {
@@ -17,19 +20,31 @@ const LeaveServerModal = () => {
     closeModal,
     data: { server },
   } = useModal();
+  const { toast } = useToast();
+  const { roomId } = useParams<{ roomId: string }>();
+  const mutation = useLeaveServerMutation();
 
-  const onLeave = async () => {
-    try {
-      // setIsLoading(true);
-      // await axios.patch(`/api/servers/${server?.id}/leave`);
-      // onClose();
-      // router.refresh();
-      // router.push("/");
-    } catch (error) {
-      console.log(error);
-    } finally {
-      // setIsLoading(false);
-    }
+  const onLeave = () => {
+    mutation.mutate(
+      {
+        roomId: roomId!,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Delete server ok',
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Delete server failed',
+          });
+        },
+        onSettled: () => {
+          mutation.reset();
+        },
+      },
+    );
   };
 
   return (

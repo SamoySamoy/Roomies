@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,19 +10,12 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/FileUpload';
-import { useModal } from '@/hooks/useModal';
-import { CreateServerSchema, useCreateServerForm } from '@/hooks/forms';
-import { useUpdateServerMutation } from '@/hooks/mutations';
-import { ServerType } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -30,42 +23,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import FileUpload from '@/components/FileUpload';
+import { useCreateServerMutation } from '@/hooks/mutations';
+import { CreateServerSchema, useCreateServerForm } from '@/hooks/forms';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useParams } from 'react-router-dom';
-import RoomSidebar from '../RoomSidebar';
+import { useNavigate } from 'react-router-dom';
+import { ServerType } from '@/lib/types';
 
-const EditServerModal = () => {
-  const {
-    isOpen,
-    modalType,
-    closeModal,
-    data: { server },
-  } = useModal();
+const FirstRoomPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { roomId } = useParams<{ roomId: string }>();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const form = useCreateServerForm();
-  const mutation = useUpdateServerMutation();
+  const mutation = useCreateServerMutation();
   const isLoading = form.formState.isSubmitting || mutation.isPending;
-
-  const isServerNameChanged = form.getFieldState('serverName').isDirty;
-  const isServerImageChanged = form.getFieldState('serverImage').isDirty;
-  const isServerPasswordChanged = form.getFieldState('serverPassword').isDirty;
-  const isServerTypeChanged = form.getFieldState('serverType').isDirty;
-  const isChanged = [
-    isServerNameChanged,
-    isServerImageChanged,
-    isServerPasswordChanged,
-    isServerTypeChanged,
-  ].some(Boolean);
-
-  useEffect(() => {
-    form.setValue('serverName', server?.name || '');
-    form.setValue('serverImage', server?.imageUrl || '');
-    form.setValue('serverPassword', server?.password || '');
-    form.setValue('serverType', server?.type || ServerType.PUBLIC);
-  }, [server]);
 
   const clearForm = () => {
     setImageFile(null);
@@ -74,57 +47,46 @@ const EditServerModal = () => {
   };
 
   const onSubmit = async (values: CreateServerSchema) => {
-    const formData = new FormData();
-    if (isServerNameChanged) {
-      formData.append('serverName', values.serverName);
+    if (values.serverType === ServerType.PRIVATE && !values.serverPassword) {
+      return form.setError('serverPassword', {
+        message: 'Private server require password',
+        type: 'required',
+      });
     }
-    if (isServerTypeChanged || isServerPasswordChanged) {
-      formData.append('serverType', values.serverName);
-      formData.append('serverPassword', values.serverName);
-    }
-    if (isServerImageChanged) {
-      console.log(imageFile);
-      formData.append('serverImage', imageFile!);
-    }
+    form.clearErrors();
 
-    mutation.mutate(
-      {
-        data: formData,
-        roomId: roomId!,
+    const formData = new FormData();
+    formData.append('serverName', values.serverName);
+    formData.append('serverType', values.serverType);
+    formData.append('serverPassword', values.serverPassword);
+    formData.append('serverImage', imageFile!);
+    mutation.mutate(formData, {
+      onSuccess: () => {
+        toast({
+          title: 'Create server OK',
+        });
+        // navigate('/rooms');
       },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Create server OK',
-          });
-        },
-        onError: () => {
-          toast({
-            title: 'Create server Failed',
-          });
-        },
-        onSettled: () => {
-          clearForm();
-        },
+      onError: () => {
+        toast({
+          title: 'Create server Failed',
+        });
       },
-    );
+      onSettled: () => {
+        clearForm();
+      },
+    });
   };
 
   return (
-    <Dialog
-      open={isOpen && modalType === 'editServer'}
-      onOpenChange={() => {
-        closeModal();
-        clearForm();
-      }}
-    >
+    <Dialog open>
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-center text-2xl font-bold'>
-            Customize your server
+            Create your first room
           </DialogTitle>
           <DialogDescription className='text-justify text-zinc-500'>
-            Give your server a personality with a name and an image. You can always change it later.
+            Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -145,7 +107,6 @@ const EditServerModal = () => {
                           accept={{
                             'image/*': [],
                           }}
-                          preset={server?.imageUrl}
                         />
                       </FormControl>
                       <FormMessage />
@@ -228,7 +189,7 @@ const EditServerModal = () => {
             </div>
             <DialogFooter className='bg-gray-100 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={form.formState.isLoading}>
-                <span className='text-foreground'>Edit</span>
+                <span className='text-foreground'>Create</span>
               </Button>
             </DialogFooter>
           </form>
@@ -238,4 +199,4 @@ const EditServerModal = () => {
   );
 };
 
-export default EditServerModal;
+export default FirstRoomPage;

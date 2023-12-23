@@ -22,11 +22,11 @@ export const register = async (req: RequestWithAuthBody, res: Response) => {
       });
     }
 
-    const user = await db.profile.findUnique({
+    const profile = await db.profile.findUnique({
       where: { email },
     });
 
-    if (user) {
+    if (profile) {
       return res.status(400).json({ message: 'Email already used' });
     }
 

@@ -54,7 +54,7 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
   }
 
   // Has preview
-  if (isImageType(file.type)) {
+  if (isImageType(file?.type || '')) {
     return (
       <div className='relative flex h-20 w-20 items-center justify-center'>
         <img src={preview} className='h-full w-full rounded-full' />
@@ -77,7 +77,7 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
         rel='noopener noreferrer'
         className='ml-2 text-sm text-indigo-500 dark:text-indigo-400 hover:underline'
       >
-        {file.name}
+        {file?.name}
       </a>
       <button
         onClick={clearFile}
