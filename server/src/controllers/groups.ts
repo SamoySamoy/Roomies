@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { ChannelType, MemberRole } from '@prisma/client';
+import { GroupType, MemberRole } from '@prisma/client';
 import { AuthenticatedRequest } from '@/lib/types';
 import { isTruthy } from '@/lib/utils';
 
@@ -9,22 +9,22 @@ type QueryInclude = {
 };
 
 type QueryFilter = {
-  serverId: string;
+  roomId: string;
 };
 
-export const getChannels = async (
+export const getGroups = async (
   req: AuthenticatedRequest<any, any, Partial<QueryInclude & QueryFilter>>,
   res: Response,
 ) => {
   try {
-    const { messages, serverId } = req.query;
-    const channel = await db.channel.findMany({
+    const { messages, roomId } = req.query;
+    const groups = await db.group.findMany({
       where: {
-        serverId,
+        roomId,
       },
       include: { messages: isTruthy(messages) },
     });
-    return res.status(200).json(channel);
+    return res.status(200).json(groups);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -32,26 +32,26 @@ export const getChannels = async (
 };
 
 type ParamsWithChannelId = {
-  channelId: string;
+  groupId: string;
 };
 
-// Get a specific channel by channelId
-export const getChannelById = async (
+// Get a specific group by groupId
+export const getGroupByGroupId = async (
   req: AuthenticatedRequest<ParamsWithChannelId, any, Partial<QueryInclude>>,
   res: Response,
 ) => {
   try {
-    const channelId = req.params.channelId;
+    const groupId = req.params.groupId;
     const { messages } = req.query;
-    const channel = await db.channel.findUnique({
-      where: { id: channelId },
+    const group = await db.group.findUnique({
+      where: { id: groupId },
       include: { messages: isTruthy(messages) },
     });
 
-    if (!channel) {
-      return res.status(404).json({ error: 'Channel not found' });
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
     }
-    return res.status(200).json(channel);
+    return res.status(200).json(group);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -59,35 +59,35 @@ export const getChannelById = async (
 };
 
 type BodyCreateChannel = {
-  channelName: string;
-  channelType: ChannelType;
-  serverId: string;
+  groupName: string;
+  groupType: GroupType;
+  roomId: string;
 };
 
-// create new channel
-export const createChannel = async (
+// create new group
+export const createGroup = async (
   req: AuthenticatedRequest<any, Partial<BodyCreateChannel>, any>,
   res: Response,
 ) => {
   try {
-    const { channelName, serverId, channelType = 'TEXT' } = req.body;
+    const { groupName, roomId, groupType = 'TEXT' } = req.body;
     const profileId = req.user?.profileId!;
 
-    if (!channelName || !serverId) {
-      return res.status(400).json({ message: 'Need channel name, server id' });
+    if (!groupName || !roomId) {
+      return res.status(400).json({ message: 'Need group name, room id' });
     }
-    if (channelName === 'general') {
+    if (groupName === 'general') {
       return res.status(400).json({ message: 'Name can not be general' });
     }
 
-    const [profile, server] = await Promise.all([
+    const [profile, room] = await Promise.all([
       await db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      await db.server.findUnique({
+      await db.room.findUnique({
         where: {
-          id: serverId,
+          id: roomId,
           members: {
             some: {
               profileId,
@@ -103,74 +103,72 @@ export const createChannel = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!server) {
+    if (!room) {
       return res.status(400).json({
-        error:
-          'Can not create channel. Server not exist or you are not admin or moderator of this server',
+        message:
+          'Can not create group. Server not exist or you are not admin or moderator of this room',
       });
     }
 
-    const isExistingChannel = await db.channel.findFirst({
+    const isExistingGroup = await db.group.findFirst({
       where: {
-        serverId: server.id,
-        name: channelName,
+        roomId: room.id,
+        name: groupName,
       },
     });
-    if (isExistingChannel) {
-      return res
-        .status(400)
-        .json({ message: 'Channel with same name already exists in this server' });
+    if (isExistingGroup) {
+      return res.status(400).json({ message: 'Group with same name already exists in this room' });
     }
 
-    const updatedServer = await db.server.update({
+    const updatedRoom = await db.room.update({
       where: {
-        id: server.id,
+        id: room.id,
       },
       data: {
-        channels: {
+        groups: {
           create: {
-            name: channelName,
-            type: channelType,
+            name: groupName,
+            type: groupType,
             profileId: profile.id,
           },
         },
       },
       include: {
-        channels: true,
+        groups: true,
       },
     });
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-export const updateChannel = async (
+export const updateGroup = async (
   req: AuthenticatedRequest<ParamsWithChannelId, Partial<BodyCreateChannel>, any>,
   res: Response,
 ) => {
   try {
     const profileId = req.user?.profileId!;
-    const channelId = req.params.channelId;
-    const { channelName } = req.body;
-    let { channelType } = req.body;
+    const groupId = req.params.groupId;
+    const { groupName } = req.body;
+    let { groupType } = req.body;
 
-    if (channelType) {
-      channelType = channelType.toUpperCase() as ChannelType;
-      if (!Object.keys(ChannelType).includes(channelType)) {
-        return res.status(400).json({ message: 'Invalid server type' });
+    if (groupType) {
+      groupType = groupType.toUpperCase() as GroupType;
+      if (!Object.keys(GroupType).includes(groupType)) {
+        return res.status(400).json({ message: 'Invalid room type' });
       }
     }
 
-    const [profile, channel] = await Promise.all([
+    const [profile, group] = await Promise.all([
       db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      await db.channel.findUnique({
+      await db.group.findUnique({
         where: {
-          id: channelId,
+          id: groupId,
         },
         include: { messages: true },
       }),
@@ -178,13 +176,13 @@ export const updateChannel = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!channel) {
+    if (!group) {
       return res.status(400).json({ message: 'Channel not found' });
     }
 
-    const server = await db.server.findUnique({
+    const room = await db.room.findUnique({
       where: {
-        id: channel?.serverId,
+        id: group?.roomId,
         members: {
           some: {
             profileId: profile?.id,
@@ -195,13 +193,13 @@ export const updateChannel = async (
         },
       },
     });
-    if (!server) {
-      return res.status(400).json({ error: 'You are not admin or moderator of this server' });
+    if (!room) {
+      return res.status(400).json({ message: 'You are not admin or moderator of this room' });
     }
 
-    const updatedServer = await db.server.update({
+    const updatedRoom = await db.room.update({
       where: {
-        id: channel?.serverId,
+        id: group?.roomId,
         members: {
           some: {
             profileId: profile?.id,
@@ -212,46 +210,46 @@ export const updateChannel = async (
         },
       },
       data: {
-        channels: {
+        groups: {
           update: {
             where: {
-              id: channel.id,
+              id: group.id,
             },
             data: {
-              name: channelName,
-              type: channelType,
+              name: groupName,
+              type: groupType,
             },
           },
         },
       },
       include: {
-        channels: true,
+        groups: true,
       },
     });
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Delete a channel
-export const deleteChannel = async (
+// Delete a group
+export const deleteGroup = async (
   req: AuthenticatedRequest<ParamsWithChannelId, any, any>,
   res: Response,
 ) => {
   try {
-    const channelId = req.params.channelId;
+    const groupId = req.params.groupId;
     const profileId = req.user?.profileId;
 
-    const [profile, channel] = await Promise.all([
+    const [profile, group] = await Promise.all([
       db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      await db.channel.findUnique({
+      await db.group.findUnique({
         where: {
-          id: channelId,
+          id: groupId,
         },
         include: { messages: true },
       }),
@@ -259,17 +257,17 @@ export const deleteChannel = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!channel) {
-      return res.status(400).json({ message: 'Channel not found' });
+    if (!group) {
+      return res.status(400).json({ message: 'Group not found' });
     }
 
-    if (channel.name === 'general') {
-      return res.status(400).json({ message: 'You can not delete general channel' });
+    if (group.name === 'general') {
+      return res.status(400).json({ message: 'You can not delete general group' });
     }
 
-    const server = await db.server.findUnique({
+    const room = await db.room.findUnique({
       where: {
-        id: channel?.serverId,
+        id: group?.roomId,
         members: {
           some: {
             profileId: profile?.id,
@@ -280,12 +278,12 @@ export const deleteChannel = async (
         },
       },
     });
-    if (!server) {
-      return res.status(400).json({ error: 'You are not admin or moderator of this server' });
+    if (!room) {
+      return res.status(400).json({ message: 'You are not admin or moderator of this room' });
     }
-    const updatedServer = await db.server.update({
+    const updatedRoom = await db.room.update({
       where: {
-        id: channel?.serverId,
+        id: group?.roomId,
         members: {
           some: {
             profileId: profile?.id,
@@ -296,15 +294,15 @@ export const deleteChannel = async (
         },
       },
       data: {
-        channels: {
+        groups: {
           delete: {
-            id: channel.id,
+            id: group.id,
           },
         },
       },
     });
 
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { MemberRole, Server, ServerType } from '@prisma/client';
+import { MemberRole, Room, RoomType } from '@prisma/client';
 import { isTruthy, uuid } from '@/lib/utils';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
@@ -11,35 +11,35 @@ import { AuthenticatedRequest } from '@/lib/types';
 type QueryInclude = {
   profile: string;
   members: string;
-  channels: string;
+  groups: string;
 };
 
 type QueryFilter = {
   status: 'created' | 'joined';
-  serverType: ServerType | 'viewable' | 'all';
+  roomType: RoomType | 'viewable' | 'all';
 };
 
 // Get all servers
-export const getServers = async (
+export const getRooms = async (
   req: AuthenticatedRequest<any, any, Partial<QueryInclude & QueryFilter>>,
   res: Response,
 ) => {
   try {
-    const { profile, members, channels, status = 'joined', serverType = 'all' } = req.query;
+    const { profile, members, groups, status = 'joined', roomType = 'all' } = req.query;
     const profileId = req.user?.profileId!;
 
     // Tìm kiếm theo 2 điều kiện độc lập
-    // 1. Tìm kiếm theo kiểu server
-    let serverTypeFilterList: ServerType[] = [serverType.toUpperCase() as ServerType];
-    if (serverType === 'viewable') {
-      serverTypeFilterList = [ServerType.PUBLIC, ServerType.PRIVATE];
+    // 1. Tìm kiếm theo kiểu room
+    let serverTypeFilterList: RoomType[] = [roomType.toUpperCase() as RoomType];
+    if (roomType === 'viewable') {
+      serverTypeFilterList = [RoomType.PUBLIC, RoomType.PRIVATE];
     }
-    if (serverType === 'all') {
-      serverTypeFilterList = Object.keys(ServerType) as ServerType[];
+    if (roomType === 'all') {
+      serverTypeFilterList = Object.keys(RoomType) as RoomType[];
     }
 
     // 2. Tìm kiếm theo cá nhân (profileId) hoặc không
-    // Nếu có profileId, sẽ có 2 trạng thái tìm kiếm: tìm kiếm những server mà profileId join và tìm kiếm những server mà profileId create
+    // Nếu có profileId, sẽ có 2 trạng thái tìm kiếm: tìm kiếm những room mà profileId join và tìm kiếm những room mà profileId create
     const profileIdFilter =
       status === 'joined'
         ? {
@@ -53,7 +53,7 @@ export const getServers = async (
             profileId,
           };
 
-    const servers = await db.server.findMany({
+    const rooms = await db.room.findMany({
       where: {
         AND: [
           profileIdFilter,
@@ -67,11 +67,11 @@ export const getServers = async (
       include: {
         profile: isTruthy(profile),
         members: isTruthy(members),
-        channels: isTruthy(channels),
+        groups: isTruthy(groups),
       },
     });
 
-    return res.status(200).json(servers);
+    return res.status(200).json(rooms);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -79,30 +79,30 @@ export const getServers = async (
 };
 
 type ParamsServerId = {
-  serverId: string;
+  roomId: string;
 };
-// Get a server by serverId
-export const getServerByServerId = async (
+// Get a room by roomId
+export const getRoomByRoomId = async (
   req: AuthenticatedRequest<ParamsServerId, any, Partial<QueryInclude>>,
   res: Response,
 ) => {
   try {
-    const serverId = req.params.serverId;
-    const { profile, members, channels } = req.query;
-    const server = await db.server.findUnique({
-      where: { id: serverId },
+    const roomId = req.params.roomId;
+    const { profile, members, groups } = req.query;
+    const room = await db.room.findUnique({
+      where: { id: roomId },
       include: {
         profile: isTruthy(profile),
         members: isTruthy(members),
-        channels: isTruthy(channels),
+        groups: isTruthy(groups),
       },
     });
 
-    if (!server) {
-      return res.status(404).json({ message: 'Server not found' });
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
     }
 
-    return res.status(200).json(server);
+    return res.status(200).json(room);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -110,35 +110,35 @@ export const getServerByServerId = async (
 };
 
 type BodyCreateServer = {
-  serverName: string;
-  serverType: ServerType;
-  serverPassword: string;
+  roomName: string;
+  roomType: RoomType;
+  roomPassword: string;
 };
 
-// Create new server
-export const createServer = async (
+// Create new room
+export const createRoom = async (
   req: AuthenticatedRequest<any, Partial<BodyCreateServer>, any>,
   res: Response,
 ) => {
   try {
-    const { serverName, serverPassword = '' } = req.body;
-    let { serverType = 'PUBLIC' } = req.body;
+    const { roomName, roomPassword = '' } = req.body;
+    let { roomType = 'PUBLIC' } = req.body;
     const profileId = req.user?.profileId!;
 
-    if (!serverName || !profileId) {
-      return res.status(400).json({ message: 'Need server name, type, profile id' });
+    if (!roomName || !profileId) {
+      return res.status(400).json({ message: 'Need room name, type, profile id' });
     }
-    serverType = serverType.toUpperCase() as ServerType;
+    roomType = roomType.toUpperCase() as RoomType;
 
     if (!req.file) {
-      return res.status(400).json({ message: 'Require server image' });
+      return res.status(400).json({ message: 'Require room image' });
     }
 
-    if (!Object.keys(ServerType).includes(serverType)) {
-      return res.status(400).json({ message: 'Invalid server type' });
+    if (!Object.keys(RoomType).includes(roomType)) {
+      return res.status(400).json({ message: 'Invalid room type' });
     }
-    if (serverType === 'PRIVATE' && !serverPassword) {
-      return res.status(400).json({ message: 'Require password for private server' });
+    if (roomType === 'PRIVATE' && !roomPassword) {
+      return res.status(400).json({ message: 'Require password for private room' });
     }
 
     const profile = await db.profile.findUnique({
@@ -150,17 +150,17 @@ export const createServer = async (
     }
 
     const image = req.file;
-    const imageUrl = `/public/servers/${uuid()}.webp`;
+    const imageUrl = `/public/rooms/${uuid()}.webp`;
     await sharp(image.buffer)
       .resize(100, 100)
       .webp()
       .toFile(path.join(__dirname, '..', '..', imageUrl.substring(1)));
-    const hashedPassword = serverType === 'PRIVATE' ? await bcrypt.hash(serverPassword, 10) : '';
+    const hashedPassword = roomType === 'PRIVATE' ? await bcrypt.hash(roomPassword, 10) : '';
 
-    const newServer = await db.server.create({
+    const newRoom = await db.room.create({
       data: {
-        name: serverName,
-        type: serverType,
+        name: roomName,
+        type: roomType,
         password: hashedPassword,
         imageUrl,
         inviteCode: uuid(),
@@ -168,18 +168,18 @@ export const createServer = async (
         members: {
           create: [{ role: MemberRole.ADMIN, profileId: profile.id }],
         },
-        channels: {
+        groups: {
           create: [{ name: 'general', profileId: profile.id }],
         },
       },
       include: {
         profile: true,
         members: true,
-        channels: true,
+        groups: true,
       },
     });
 
-    return res.status(200).json(newServer);
+    return res.status(200).json(newRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -187,26 +187,26 @@ export const createServer = async (
 };
 
 type BodyJoin = {
-  serverPassword: string;
+  roomPassword: string;
 };
 
-// join server by inviteCode
-export const joinServer = async (
+// join room by inviteCode
+export const joinRoom = async (
   req: AuthenticatedRequest<ParamsServerId, Partial<BodyJoin>>,
   res: Response,
 ) => {
   try {
-    const { serverId } = req.params;
-    const { serverPassword } = req.body;
+    const { roomId } = req.params;
+    const { roomPassword } = req.body;
     const profileId = req.user?.profileId!;
 
-    const [profile, server] = await Promise.all([
+    const [profile, room] = await Promise.all([
       db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      db.server.findFirst({
-        where: { id: serverId },
+      db.room.findFirst({
+        where: { id: roomId },
         include: {
           members: true,
         },
@@ -215,23 +215,23 @@ export const joinServer = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!server) {
-      return res.status(400).json({ message: 'Server not found' });
+    if (!room) {
+      return res.status(400).json({ message: 'Room not found' });
     }
-    const isAlreadyJoinServer = server.members.find(mem => mem.profileId === profile.id);
+    const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
-      return res.status(200).json({ message: 'User already join this channel' });
+      return res.status(200).json({ message: 'Profile already join this room' });
     }
 
-    // Có 3 loại server PUBLIC, PRIVATE, HIDDEN
+    // Có 3 loại room PUBLIC, PRIVATE, HIDDEN
     // PUBLIC: invite code || no password
     // PRIVATE: invite code || password
     // HIDDEN: invite code (chỉ có thể join bằng invite code)
     // Invite code đã có route ở dưới
-    const updateServer = async () => {
-      const updatedServer = await db.server.update({
+    const updateRoom = async () => {
+      const updatedRoom = await db.room.update({
         where: {
-          id: server.id,
+          id: room.id,
         },
         data: {
           members: {
@@ -243,27 +243,27 @@ export const joinServer = async (
           },
         },
       });
-      return updatedServer;
+      return updatedRoom;
     };
-    switch (server.type) {
+    switch (room.type) {
       case 'PUBLIC': {
-        return res.status(200).json(await updateServer());
+        return res.status(200).json(await updateRoom());
       }
       case 'PRIVATE': {
-        if (!serverPassword) {
-          return res.status(400).json({ message: 'Require password for private server' });
+        if (!roomPassword) {
+          return res.status(400).json({ message: 'Require password for private room' });
         }
-        const isRightPassword = await bcrypt.compare(serverPassword, server.password!);
+        const isRightPassword = await bcrypt.compare(roomPassword, room.password!);
         if (!isRightPassword) {
-          return res.status(400).json({ message: 'Unauthenticated permission for private server' });
+          return res.status(400).json({ message: 'Unauthenticated permission for private room' });
         }
-        return res.status(200).json(await updateServer());
+        return res.status(200).json(await updateRoom());
       }
       default: {
-        return res.status(400).json({ message: 'Can not join server' });
+        return res.status(400).json({ message: 'Can not join room' });
       }
     }
-    // Can not join hidden server without invite code
+    // Can not join hidden room without invite code
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -272,8 +272,8 @@ export const joinServer = async (
 
 type ParamsInviteCode = { inviteCode: string };
 
-// join server by inviteCode
-export const joinServerByInviteCode = async (
+// join room by inviteCode
+export const joinRoomByInviteCode = async (
   req: AuthenticatedRequest<ParamsInviteCode, any, any>,
   res: Response,
 ) => {
@@ -281,12 +281,12 @@ export const joinServerByInviteCode = async (
     const { inviteCode } = req.params;
     const profileId = req.user?.profileId!;
 
-    const [profile, server] = await Promise.all([
+    const [profile, room] = await Promise.all([
       db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      db.server.findFirst({
+      db.room.findFirst({
         where: {
           inviteCode,
         },
@@ -298,17 +298,17 @@ export const joinServerByInviteCode = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!server) {
-      return res.status(400).json({ message: 'Server not found or Invite code not exist' });
+    if (!room) {
+      return res.status(400).json({ message: 'Room not found or Invite code not exist' });
     }
-    const isAlreadyJoinServer = server.members.find(mem => mem.profileId === profile.id);
+    const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
       return res.sendStatus(204);
     }
 
-    const updatedServer = await db.server.update({
+    const udpatedRoom = await db.room.update({
       where: {
-        id: server.id,
+        id: room.id,
       },
       data: {
         members: {
@@ -320,30 +320,30 @@ export const joinServerByInviteCode = async (
         },
       },
     });
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(udpatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-// Leave server
-export const leaveServer = async (
+// Leave room
+export const leaveRoom = async (
   req: AuthenticatedRequest<ParamsServerId, any, any>,
   res: Response,
 ) => {
   try {
-    const { serverId } = req.params;
+    const { roomId } = req.params;
     const profileId = req.user?.profileId;
 
-    const [profile, server] = await Promise.all([
+    const [profile, room] = await Promise.all([
       db.profile.findUnique({
         where: { id: profileId },
         select: { id: true },
       }),
-      db.server.findFirst({
+      db.room.findFirst({
         where: {
-          id: serverId,
+          id: roomId,
         },
         include: {
           members: true,
@@ -353,16 +353,16 @@ export const leaveServer = async (
     if (!profile) {
       return res.status(400).json({ message: 'Profile not found' });
     }
-    if (!server) {
-      return res.status(400).json({ message: 'Server not exist' });
+    if (!room) {
+      return res.status(400).json({ message: 'Room not exist' });
     }
-    if (server.profileId === profile.id) {
-      return res.status(400).json({ message: 'Can not leave server that created by yourself' });
+    if (room.profileId === profile.id) {
+      return res.status(400).json({ message: 'Can not leave room that created by yourself' });
     }
 
-    const updatedServer = await db.server.update({
+    const updatedRoom = await db.room.update({
       where: {
-        id: server.id,
+        id: room.id,
         profileId: {
           not: profile.id,
         },
@@ -380,113 +380,113 @@ export const leaveServer = async (
         },
       },
     });
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-// Update a server by serverId
-export const updateServer = async (
+// Update a room by roomId
+export const updateRoom = async (
   req: AuthenticatedRequest<ParamsServerId, Partial<BodyCreateServer>, any>,
   res: Response,
 ) => {
   try {
-    const { serverId } = req.params;
-    const { serverName: newServerName, serverPassword: newServerPassword = '' } = req.body;
-    let { serverType: newServerType } = req.body;
+    const { roomId } = req.params;
+    const { roomName: newRoomName, roomPassword: newServerPassword = '' } = req.body;
+    let { roomType: newRoomType } = req.body;
     const profileId = req.user?.profileId!;
 
-    const server = await db.server.findUnique({
+    const room = await db.room.findUnique({
       where: {
-        id: serverId,
+        id: roomId,
       },
     });
-    if (!server) {
-      return res.status(400).json({ message: 'Server not exist' });
+    if (!room) {
+      return res.status(400).json({ message: 'Room not exist' });
     }
-    // Only the server creatator can update server
-    if (server.profileId !== profileId) {
-      return res.status(400).json({ message: 'Only Admin can update server' });
+    // Only the room creatator can update room
+    if (room.profileId !== profileId) {
+      return res.status(400).json({ message: 'Only Admin can update room' });
     }
 
-    const updatedData: Partial<Server> = {};
+    const updatedData: Partial<Room> = {};
 
-    if (newServerName) {
-      updatedData.name = newServerName;
+    if (newRoomName) {
+      updatedData.name = newRoomName;
     }
-    if (newServerType) {
-      newServerType = newServerType.toUpperCase() as ServerType;
-      if (!Object.keys(ServerType).includes(newServerType)) {
-        return res.status(400).json({ message: 'Invalid server type' });
+    if (newRoomType) {
+      newRoomType = newRoomType.toUpperCase() as RoomType;
+      if (!Object.keys(RoomType).includes(newRoomType)) {
+        return res.status(400).json({ message: 'Invalid room type' });
       }
-      if (newServerType === 'PRIVATE' && !newServerPassword) {
-        return res.status(400).json({ message: 'Require password for private server' });
+      if (newRoomType === 'PRIVATE' && !newServerPassword) {
+        return res.status(400).json({ message: 'Require password for private room' });
       }
       const hashedPassword =
-        newServerType === 'PRIVATE' ? await bcrypt.hash(newServerPassword, 10) : '';
+        newRoomType === 'PRIVATE' ? await bcrypt.hash(newServerPassword, 10) : '';
       updatedData.password = hashedPassword;
-      updatedData.type = newServerType;
+      updatedData.type = newRoomType;
     }
 
     if (
       req.files !== undefined &&
       Array.isArray(req.files) &&
-      req.files[0]?.fieldname === 'serverImage'
+      req.files[0]?.fieldname === 'roomImage'
     ) {
       const image = req.files[0];
-      const newImageUrl = `/public/servers/${uuid()}.webp`;
+      const newImageUrl = `/public/rooms/${uuid()}.webp`;
       await sharp(image.buffer)
         .resize(100, 100)
         .webp()
         .toFile(path.join(__dirname, '..', '..', newImageUrl.substring(1)));
-      const oldImageUrl = path.join(__dirname, '..', '..', server.imageUrl!.substring(1));
+      const oldImageUrl = path.join(__dirname, '..', '..', room.imageUrl!.substring(1));
       await fs.unlink(oldImageUrl);
       updatedData.imageUrl = newImageUrl;
     }
 
-    const updatedServer = await db.server.update({
+    const updatedRoom = await db.room.update({
       where: {
-        id: server.id,
+        id: room.id,
       },
       data: updatedData,
     });
 
-    return res.status(200).json(updatedServer);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-// Delete a server by serverId
-export const deleteServer = async (
+// Delete a room by roomId
+export const deleteRoom = async (
   req: AuthenticatedRequest<ParamsServerId, any, any>,
   res: Response,
 ) => {
   try {
-    const serverId = req.params.serverId;
+    const roomId = req.params.roomId;
     const profileId = req.user?.profileId!;
 
-    const server = await db.server.findUnique({
-      where: { id: serverId },
+    const room = await db.room.findUnique({
+      where: { id: roomId },
     });
-    if (!server) {
-      return res.status(400).json({ error: 'Server not found' });
+    if (!room) {
+      return res.status(400).json({ message: 'Room not found' });
     }
-    // Only the server creatator can update server
-    if (server.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only Admin can delete server' });
+    // Only the room creatator can update room
+    if (room.profileId !== profileId) {
+      return res.status(403).json({ message: 'Only Admin can delete room' });
     }
 
-    await db.server.delete({
+    await db.room.delete({
       where: {
-        id: serverId,
+        id: roomId,
       },
     });
 
-    return res.status(200).send({ message: 'Server deleted successfully' });
+    return res.status(200).send({ message: 'Room deleted successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });

@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 
 import apiRouter from './routes';
 import { setupWs } from './ws';
+import { corsOptions } from './lib/config';
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
@@ -15,19 +16,7 @@ const app = express();
 const httpServer = createServer(app);
 setupWs(httpServer);
 
-app.use(
-  cors({
-    origin(requestOrigin, callback) {
-      if (requestOrigin === undefined || requestOrigin === 'http://localhost:5173') {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by Cors'));
-      }
-    },
-    credentials: true,
-    optionsSuccessStatus: 204,
-  }),
-);
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

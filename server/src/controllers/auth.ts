@@ -30,16 +30,16 @@ export const register = async (req: RequestWithAuthBody, res: Response) => {
       return res.status(400).json({ message: 'Email already used' });
     }
 
-    const userIp = getIp(req);
+    const ip = getIp(req);
     const hashedPassword = await bcrypt.hash(String(password), 10);
-    const newUser = await db.profile.create({
+    const newProfile = await db.profile.create({
       data: {
         email,
         password: hashedPassword,
-        ip: userIp,
+        ip,
       },
     });
-    return res.status(200).json(newUser);
+    return res.status(200).json(newProfile);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -78,9 +78,9 @@ export const login = async (req: RequestWithAuthBody, res: Response) => {
         expiresIn: '1h',
       },
     );
-    const userIp = getIp(req);
-    const updatedProfile = await addIp(email, userIp);
-    // TODO: Add Access and request token for user
+    const ip = getIp(req);
+    const updatedProfile = await addIp(email, ip);
+    // TODO: Add Access and request token for profile
     return res.status(200).json({
       accessToken,
       message: `Login successfully!`,

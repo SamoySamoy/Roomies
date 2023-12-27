@@ -1,10 +1,9 @@
-import express, { Request, Response, Router } from 'express';
-import { db } from '../prisma/db';
-import sharp from 'sharp';
+import { Request, Response } from 'express';
+import { db } from '@/prisma/db';
 import { Server, Member, Channel } from '@prisma/client';
+import sharp from 'sharp';
 
-// get user by userId
-export const getUserById = async (req: Request, res: Response) => {
+export const getProfileById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const { all, servers, members, channels } = req.query;
@@ -40,7 +39,7 @@ export const getUserById = async (req: Request, res: Response) => {
         return res.status(200).json(returnData);
       }
     } else {
-      return res.status(400).json({ error: 'User not found' });
+      return res.status(400).json({ message: 'User not found' });
     }
   } catch (error) {
     console.error(error);
@@ -48,11 +47,10 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-// upload user image
-export const uploadUserImage = async (req: Request, res: Response) => {
+export const uploadProfileImage = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
     // Get the buffer of the uploaded image
     const imageBuffer = req.file.buffer;
