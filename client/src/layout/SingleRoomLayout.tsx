@@ -1,7 +1,7 @@
 import LoadingOverlay from '@/components/LoadingOverlay';
 import RoomListSidebar from '@/components/RoomListSidebar';
-import RoomSidebar from '@/components/RoomSidebar';
-import { useChannelsOfServer, useServersJoinedQuery } from '@/hooks/queries';
+import RoomSidebar from '@/components/Sidebar';
+import { useGroupsOfRoomQuery, useRoomsJoinedQuery } from '@/hooks/queries';
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
 
@@ -12,8 +12,8 @@ const SingleRoomLayout = () => {
     data: channels,
     isPending,
     isError,
-  } = useChannelsOfServer({
-    serverId: roomId,
+  } = useGroupsOfRoomQuery({
+    roomId,
   });
 
   if (isPending) {

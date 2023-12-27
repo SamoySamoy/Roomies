@@ -1,24 +1,24 @@
-import CreateServerModal from '@/components/modals/CreateServerModal';
-import InviteModal from '@/components/modals/InviteModal';
-import EditServerModal from '@/components/modals/EditServerModal';
-import MembersModal from '@/components/modals/MembersModal';
-import CreateChannelModal from '@/components/modals/CreateChannelModal';
-import EditChannelModal from '@/components/modals/EditChannelModal';
-import LeaveServerModal from '@/components/modals/LeaveServerModal';
-import DeleteServerModal from '@/components/modals/DeleteServerModal';
-import DeleteChannelModal from '@/components/modals/DeleteChannelModal';
-import MessageFileModal from '@/components/modals/MessageFileModal';
-import DeleteMessageModal from '@/components/modals/DeleteMessageModal';
+import CreateRoomModal from '@/components/Modals/CreateRoomModal';
+import InviteModal from '@/components/Modals/InviteModal';
+import EditRoomModal from '@/components/Modals/EditRoomModal';
+import MembersModal from '@/components/Modals/MembersModal';
+import CreateGroupModal from '@/components/Modals/CreateGroupModal';
+import EditGroupModal from '@/components/Modals/EditGroupModal';
+import LeaveRoomModal from '@/components/Modals/LeaveRoomModal';
+import DeleteRoomModal from '@/components/Modals/DeleteRoomModal';
+import DeleteGroupModal from '@/components/Modals/DeleteGroupModal';
+import MessageFileModal from '@/components/Modals/MessageFileModal';
+import DeleteMessageModal from '@/components/Modals/DeleteMessageModal';
 import { useModal, ModalType } from '@/hooks/useModal';
 
 const modalMap: Record<ModalType, React.FC> = {
-  createServer: CreateServerModal,
-  editServer: EditServerModal,
-  leaveServer: LeaveServerModal,
-  deleteServer: DeleteServerModal,
-  createChannel: CreateChannelModal,
-  editChannel: EditChannelModal,
-  deleteChannel: DeleteChannelModal,
+  createRoom: CreateRoomModal,
+  editRoom: EditRoomModal,
+  leaveRoom: LeaveRoomModal,
+  deleteRoom: DeleteRoomModal,
+  createGroup: CreateGroupModal,
+  editGroup: EditGroupModal,
+  deleteGroup: DeleteGroupModal,
   invite: InviteModal,
   members: MembersModal,
   messageFile: MessageFileModal,

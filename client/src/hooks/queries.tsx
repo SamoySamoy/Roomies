@@ -1,51 +1,51 @@
 import qs from 'query-string';
 import { useQuery } from '@tanstack/react-query';
-import { Server, Channel } from '@/lib/types';
+import { Room, Group } from '@/lib/types';
 import useApi from './useApi';
 
 export const queryKeyFactory = {
-  serversJoined: ['servers', 'joined'],
-  channelsOfServer: (serverId: string) => ['server', serverId, 'channels'],
+  roomsJoined: ['rooms', 'joined'],
+  groupsOfRoom: (roomId: string) => ['room', roomId, 'groups'],
 } as const;
 
-export type ServerQueryFilter = {
+export type RoomQueryFilter = {
   profile: boolean;
   members: boolean;
-  channels: boolean;
+  groups: boolean;
 };
 
-export const useServersJoinedQuery = ({
+export const useRoomsJoinedQuery = ({
   profile = false,
   members = false,
-  channels = false,
-}: Partial<ServerQueryFilter>) => {
+  groups = false,
+}: Partial<RoomQueryFilter>) => {
   const api = useApi();
   const query = useQuery({
-    queryKey: queryKeyFactory.serversJoined,
+    queryKey: queryKeyFactory.roomsJoined,
     queryFn: async () => {
-      let query = '?' + qs.stringify({ profile, members, channels });
-      const res = await api.get<Server[]>(`/servers${query}`);
+      let query = '?' + qs.stringify({ profile, members, groups });
+      const res = await api.get<Room[]>(`/rooms${query}`);
       return res.data;
     },
   });
   return query;
 };
 
-type ChannelQueryFilter = {
+type GroupQueryFilter = {
   messages: boolean;
-  serverId: string;
+  roomId: string;
 };
 
-export const useChannelsOfServer = ({
-  serverId = '',
+export const useGroupsOfRoomQuery = ({
+  roomId = '',
   messages = false,
-}: Partial<ChannelQueryFilter>) => {
+}: Partial<GroupQueryFilter>) => {
   const api = useApi();
   const query = useQuery({
-    queryKey: queryKeyFactory.channelsOfServer(serverId),
+    queryKey: queryKeyFactory.groupsOfRoom(roomId),
     queryFn: async () => {
-      let query = '?' + qs.stringify({ messages, serverId });
-      const res = await api.get<Channel[]>(`/channels${query}`);
+      let query = '?' + qs.stringify({ messages, roomId });
+      const res = await api.get<Group[]>(`/groups${query}`);
       return res.data;
     },
   });

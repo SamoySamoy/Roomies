@@ -1,13 +1,13 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import RoomListSidebar from '@/components/RoomListSidebar';
-import RoomSidebar from '@/components/RoomSidebar';
+import RoomSidebar from '@/components/Sidebar';
 import { useEffect } from 'react';
-import { useServersJoinedQuery } from '@/hooks/queries';
-import { ServerType } from '@/lib/types';
+import { useRoomsJoinedQuery } from '@/hooks/queries';
+import { RoomType } from '@/lib/types';
 
 const RoomLayout = () => {
-  const { data } = useServersJoinedQuery({
-    channels: true,
+  const { data } = useRoomsJoinedQuery({
+    groups: true,
     members: true,
     profile: true,
   });

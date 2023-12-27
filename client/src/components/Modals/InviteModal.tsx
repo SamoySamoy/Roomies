@@ -12,11 +12,11 @@ const InviteModal = () => {
     isOpen,
     modalType,
     closeModal,
-    data: { server },
+    data: { room },
   } = useModal();
 
   const [copied, setCopied] = useState(false);
-  const inviteUrl = `${origin}/invite/${server?.inviteCode || ''}`;
+  const inviteUrl = `${origin}/invite/${room?.inviteCode || ''}`;
 
   const onCopy = () => {
     navigator.clipboard.writeText(inviteUrl);

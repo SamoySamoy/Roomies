@@ -9,52 +9,39 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
-import { useLeaveServerMutation } from '@/hooks/mutations';
-import { useParams } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
 
-const LeaveServerModal = () => {
+const DeleteMessageModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { server },
+    data: { room, group, apiUrl, query },
   } = useModal();
-  const { toast } = useToast();
-  const { roomId } = useParams<{ roomId: string }>();
-  const mutation = useLeaveServerMutation();
 
-  const onLeave = () => {
-    mutation.mutate(
-      {
-        roomId: roomId!,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Delete server ok',
-          });
-        },
-        onError: () => {
-          toast({
-            title: 'Delete server failed',
-          });
-        },
-        onSettled: () => {
-          mutation.reset();
-        },
-      },
-    );
+  const onDelete = async () => {
+    try {
+      // setIsLoading(true);
+      // const url = qs.stringifyUrl({
+      //   url: apiUrl || "",
+      //   query,
+      // });
+      // await axios.delete(url);
+      // onClose();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // setIsLoading(false);
+    }
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'leaveServer'} onOpenChange={closeModal}>
+    <Dialog open={isOpen && modalType === 'deleteMessage'} onOpenChange={closeModal}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
-          <DialogTitle className='text-2xl text-center font-bold'>Leave Server</DialogTitle>
+          <DialogTitle className='text-2xl text-center font-bold'>Delete Message</DialogTitle>
           <DialogDescription className='text-center text-zinc-500'>
-            Are you sure you want to leave{' '}
-            <span className='font-semibold text-indigo-500'>{server?.name}</span>?
+            Are you sure you want to delete this message <br />
+            The message will be permanently deleted.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
@@ -69,7 +56,7 @@ const LeaveServerModal = () => {
             <Button
               // disabled={isLoading}
               variant='primary'
-              onClick={onLeave}
+              onClick={onDelete}
             >
               Confirm
             </Button>
@@ -80,4 +67,4 @@ const LeaveServerModal = () => {
   );
 };
 
-export default LeaveServerModal;
+export default DeleteMessageModal;

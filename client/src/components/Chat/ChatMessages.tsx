@@ -8,6 +8,10 @@ import { i18n } from '@/lib/utils';
 // import { useChatScroll } from '@/hooks/use-chat-scroll';
 
 import ChatWelcome from './ChatWelcome';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { useChatScroll } from '@/hooks/useChatScroll';
+import { useChatQuery } from '@/hooks/useChatQuery';
+import { ChatItem } from './ChatItem';
 // import { ChatItem } from './chat-item';
 
 type MessageWithMemberWithProfile = Message & {

@@ -31,7 +31,6 @@ import {
 import { Toaster } from '@/components/ui/toaster';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  // <React.StrictMode>
   <ThemeProvider>
     <QueryProvider>
       <SocketProvider>
@@ -67,5 +66,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </SocketProvider>
     </QueryProvider>
   </ThemeProvider>,
-  // </React.StrictMode>,
 );

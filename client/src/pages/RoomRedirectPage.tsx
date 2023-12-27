@@ -1,7 +1,7 @@
 import LoadingOverlay from '@/components/LoadingOverlay';
 import RoomListSidebar from '@/components/RoomListSidebar';
-import RoomSidebar from '@/components/RoomSidebar';
-import { useChannelsOfServer, useServersJoinedQuery } from '@/hooks/queries';
+import RoomSidebar from '@/components/Sidebar';
+import { useGroupsOfRoomQuery } from '@/hooks/queries';
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
 
@@ -9,11 +9,11 @@ const RoomRedirectPage = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
   const {
-    data: channels,
+    data: groups,
     isPending,
     isError,
-  } = useChannelsOfServer({
-    serverId: roomId,
+  } = useGroupsOfRoomQuery({
+    roomId,
   });
 
   if (isPending) {
@@ -24,9 +24,9 @@ const RoomRedirectPage = () => {
     return <Navigate to={'/error'} replace />;
   }
 
-  console.log(channels);
+  console.log(groups);
 
-  const initialChannel = channels.find(channel => channel.name === 'general');
+  const initialChannel = groups.find(channel => channel.name === 'general');
 
   return <Navigate to={`/rooms/${roomId}/groups/${initialChannel!.id}`} replace />;
 };

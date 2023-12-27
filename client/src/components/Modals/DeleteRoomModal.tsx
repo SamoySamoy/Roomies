@@ -10,19 +10,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 import { useParams } from 'react-router-dom';
-import { useDeleteServerMutation } from '@/hooks/mutations';
+import { useDeleteRoomMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
 
-const DeleteServerModal = () => {
+const DeleteRoomModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { server },
+    data: { room },
   } = useModal();
   const { toast } = useToast();
   const { roomId } = useParams<{ roomId: string }>();
-  const mutation = useDeleteServerMutation();
+  const mutation = useDeleteRoomMutation();
   const onDelete = () => {
     mutation.mutate(
       {
@@ -31,12 +31,12 @@ const DeleteServerModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Delete server ok',
+            title: 'Delete room ok',
           });
         },
         onError: () => {
           toast({
-            title: 'Delete server failed',
+            title: 'Delete room failed',
           });
         },
         onSettled: () => {
@@ -47,14 +47,14 @@ const DeleteServerModal = () => {
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'deleteServer'} onOpenChange={closeModal}>
+    <Dialog open={isOpen && modalType === 'deleteRoom'} onOpenChange={closeModal}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
-          <DialogTitle className='text-2xl text-center font-bold'>Delete Server</DialogTitle>
+          <DialogTitle className='text-2xl text-center font-bold'>Delete Room</DialogTitle>
           <DialogDescription className='text-center text-zinc-500'>
-            Are you sure you want to delete this server <br />
-            <span className='text-indigo-500 font-semibold'>{server?.name}</span> will be
-            permanently deleted.
+            Are you sure you want to delete this room <br />
+            <span className='text-indigo-500 font-semibold'>{room?.name}</span> will be permanently
+            deleted.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
@@ -72,4 +72,4 @@ const DeleteServerModal = () => {
   );
 };
 
-export default DeleteServerModal;
+export default DeleteRoomModal;

@@ -1,37 +1,31 @@
 import { Plus, Settings } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
-import { ChannelType, MemberRole } from '@/lib/types';
+import { GroupType, MemberRole } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
 
 interface ServerSectionProps {
   label: string;
   role?: MemberRole;
-  sectionType: 'channels' | 'members';
-  channelType?: ChannelType;
-  server?: any;
+  sectionType: 'groups' | 'members';
+  groupType?: GroupType;
+  room?: any;
 }
 
-const ChannelListSection = ({
-  label,
-  role,
-  sectionType,
-  channelType,
-  server,
-}: ServerSectionProps) => {
+const GroupListSection = ({ label, role, sectionType, groupType, room }: ServerSectionProps) => {
   const { openModal } = useModal();
 
   return (
     <div className='flex items-center justify-between py-2'>
       <p className='text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400'>{label}</p>
-      {/* {role !== MemberRole.GUEST && sectionType === 'channels' && ( */}
-      {role !== 'guest' && sectionType === 'channels' && (
-        <ActionTooltip label='Create Channel' side='top'>
+      {/* {role !== MemberRole.GUEST && sectionType === 'groups' && ( */}
+      {role !== MemberRole.GUEST && sectionType === 'groups' && (
+        <ActionTooltip label='Create Group' side='top'>
           <button
             onClick={() =>
               openModal({
-                modalType: 'createChannel',
+                modalType: 'createGroup',
                 data: {
-                  channelType,
+                  groupType,
                 },
               })
             }
@@ -42,14 +36,14 @@ const ChannelListSection = ({
         </ActionTooltip>
       )}
       {/* {role === MemberRole.ADMIN && sectionType === 'members' && ( */}
-      {role === 'admin' && sectionType === 'members' && (
+      {role === MemberRole.ADMIN && sectionType === 'members' && (
         <ActionTooltip label='Manage Members' side='top'>
           <button
             onClick={() =>
               openModal({
                 modalType: 'members',
                 data: {
-                  server,
+                  room,
                 },
               })
             }
@@ -63,4 +57,4 @@ const ChannelListSection = ({
   );
 };
 
-export default ChannelListSection;
+export default GroupListSection;

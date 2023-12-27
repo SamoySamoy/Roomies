@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CreateChannelSchema, JoinServerSchema, LoginSchema } from './forms';
+import { CreateGroupSchema, JoinRoomSchema, LoginSchema } from './forms';
 import { useAuth } from './useAuth';
-import { Channel, Profile, Server } from '@/lib/types';
+import { Profile, Room } from '@/lib/types';
 import useApi from './useApi';
 import { queryKeyFactory } from './queries';
 
@@ -33,152 +33,152 @@ export const useRegisterMutation = () => {
   return mutation;
 };
 
-export const useCreateServerMutation = () => {
+export const useCreateRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const res = await api.post<Server>('/servers', data);
+      const res = await api.post<Room>('/rooms', data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useLeaveServerMutation = () => {
+export const useLeaveRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async ({ roomId }: { roomId: string }) => {
-      const res = await api.post<Server>(`/servers/leave/${roomId}`);
+      const res = await api.post<Room>(`/rooms/leave/${roomId}`);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useJoinServerMutation = () => {
+export const useJoinRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
-    mutationFn: async (data: JoinServerSchema) => {
-      const res = await api.post<Server>(`/servers/join/${data.serverId}`, {
-        serverPassword: data.serverPassword,
+    mutationFn: async (data: JoinRoomSchema) => {
+      const res = await api.post<Room>(`/rooms/join/${data.roomId}`, {
+        roomPassword: data.roomPassword,
       });
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useInviteServerMutation = () => {
+export const useInviteRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async ({ inviteCode }: { inviteCode: string }) => {
-      const res = await api.post<Server>(`/servers/join/invite/${inviteCode}`);
+      const res = await api.post<Room>(`/rooms/join/invite/${inviteCode}`);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useUpdateServerMutation = () => {
+export const useUpdateRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async ({ data, roomId }: { data: FormData; roomId: string }) => {
-      const res = await api.put<Server>(`/servers/${roomId}`, data);
+      const res = await api.put<Room>(`/rooms/${roomId}`, data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useDeleteServerMutation = () => {
+export const useDeleteRoomMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async ({ roomId }: { roomId: string }) => {
-      const res = await api.delete(`/servers/${roomId}`);
+      const res = await api.delete(`/rooms/${roomId}`);
       return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });
   return mutation;
 };
 
-export const useCreateChannelMutation = () => {
+export const useCreateGroupMutation = () => {
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async (
-      data: CreateChannelSchema & {
-        serverId: string;
+      data: CreateGroupSchema & {
+        roomId: string;
       },
     ) => {
-      const res = await api.post<Server>('/channels', data);
+      const res = await api.post<Room>('/groups', data);
       return res.data;
     },
   });
   return mutation;
 };
 
-export const useUpdateChannelMutation = () => {
+export const useUpdateGroupMutation = () => {
   const api = useApi();
   const mutation = useMutation({
     mutationFn: async ({
-      channelId,
+      groupId,
       ...otherData
-    }: CreateChannelSchema & {
-      channelId: string;
+    }: CreateGroupSchema & {
+      groupId: string;
     }) => {
-      const res = await api.put<Server>(`/channels/${channelId}`, otherData);
+      const res = await api.put<Room>(`/groups/${groupId}`, otherData);
       return res.data;
     },
   });
   return mutation;
 };
 
-export const useDeleteChannelMutation = () => {
+export const useDeleteGroupMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
   const mutation = useMutation({
-    mutationFn: async ({ channelId }: { channelId: string }) => {
-      const res = await api.delete(`/channels/${channelId}`);
+    mutationFn: async ({ groupId }: { groupId: string }) => {
+      const res = await api.delete(`/groups/${groupId}`);
       return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.serversJoined,
+        queryKey: queryKeyFactory.roomsJoined,
       });
     },
   });

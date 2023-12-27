@@ -9,34 +9,35 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
+import { useLeaveRoomMutation } from '@/hooks/mutations';
 import { useParams } from 'react-router-dom';
-import { useDeleteChannelMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
 
-const DeleteChannelModal = () => {
+const LeaveRoomModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { server, channel },
+    data: { room },
   } = useModal();
   const { toast } = useToast();
-  const { channelId } = useParams<{ channelId: string }>();
-  const mutation = useDeleteChannelMutation();
-  const onDelete = () => {
+  const { roomId } = useParams<{ roomId: string }>();
+  const mutation = useLeaveRoomMutation();
+
+  const onLeave = () => {
     mutation.mutate(
       {
-        channelId: channelId!,
+        roomId: roomId!,
       },
       {
         onSuccess: () => {
           toast({
-            title: 'Delete server ok',
+            title: 'Delete room ok',
           });
         },
         onError: () => {
           toast({
-            title: 'Delete server failed',
+            title: 'Delete room failed',
           });
         },
         onSettled: () => {
@@ -47,22 +48,29 @@ const DeleteChannelModal = () => {
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'deleteChannel'} onOpenChange={closeModal}>
+    <Dialog open={isOpen && modalType === 'leaveRoom'} onOpenChange={closeModal}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
-          <DialogTitle className='text-2xl text-center font-bold'>Delete Server</DialogTitle>
+          <DialogTitle className='text-2xl text-center font-bold'>Leave Room</DialogTitle>
           <DialogDescription className='text-center text-zinc-500'>
-            Are you sure you want to delete this channel <br />
-            <span className='text-indigo-500 font-semibold'>#{channel?.name}</span> will be
-            permanently deleted.
+            Are you sure you want to leave{' '}
+            <span className='font-semibold text-indigo-500'>{room?.name}</span>?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
           <div className='flex items-center justify-between w-full'>
-            <Button disabled={mutation.isPending} onClick={closeModal} variant='destructive'>
+            <Button
+              // disabled={isLoading}
+              onClick={closeModal}
+              variant='destructive'
+            >
               Cancel
             </Button>
-            <Button disabled={mutation.isPending} variant='primary' onClick={onDelete}>
+            <Button
+              // disabled={isLoading}
+              variant='primary'
+              onClick={onLeave}
+            >
               Confirm
             </Button>
           </div>
@@ -72,4 +80,4 @@ const DeleteChannelModal = () => {
   );
 };
 
-export default DeleteChannelModal;
+export default LeaveRoomModal;

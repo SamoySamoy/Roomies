@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { ChannelType, ServerType } from '@/lib/types';
+import { GroupType, RoomType } from '@/lib/types';
 
 export const loginSchema = z.object({
   email: z.string().min(1).email({
@@ -21,62 +21,62 @@ export const useLoginForm = (init?: LoginSchema) =>
     },
   });
 
-export const createServerSchema = z.object({
-  serverName: z.string().trim().min(1, {
-    message: 'Server name is required.',
+export const createRoomSchema = z.object({
+  roomName: z.string().trim().min(1, {
+    message: 'Group name is required.',
   }),
-  serverImage: z.string().trim().min(1, {
-    message: 'Server image is required.',
+  roomImage: z.string().trim().min(1, {
+    message: 'Group image is required.',
   }),
-  serverType: z.nativeEnum(ServerType),
-  serverPassword: z.string().trim(),
+  roomType: z.nativeEnum(RoomType),
+  roomPassword: z.string().trim(),
 });
-export type CreateServerSchema = z.infer<typeof createServerSchema>;
-export const useCreateServerForm = (init?: CreateServerSchema) =>
-  useForm<CreateServerSchema>({
-    resolver: zodResolver(createServerSchema),
+export type CreateRoomSchema = z.infer<typeof createRoomSchema>;
+export const useCreateRoomForm = (init?: CreateRoomSchema) =>
+  useForm<CreateRoomSchema>({
+    resolver: zodResolver(createRoomSchema),
     defaultValues: {
-      serverName: init?.serverName || '',
-      serverType: init?.serverType || ServerType.PUBLIC,
-      serverPassword: init?.serverPassword || '',
-      serverImage: init?.serverImage || '',
+      roomName: init?.roomName || '',
+      roomType: init?.roomType || RoomType.PUBLIC,
+      roomPassword: init?.roomPassword || '',
+      roomImage: init?.roomImage || '',
     },
   });
 
-export const joinServerSchema = z.object({
-  serverId: z.string().trim().min(1, {
+export const joinRoomSchema = z.object({
+  roomId: z.string().trim().min(1, {
     message: 'Require room id',
   }),
-  serverPassword: z.string().trim(),
+  roomPassword: z.string().trim(),
 });
-export type JoinServerSchema = z.infer<typeof joinServerSchema>;
-export const useJoinServerForm = (init?: JoinServerSchema) =>
-  useForm<JoinServerSchema>({
-    resolver: zodResolver(joinServerSchema),
+export type JoinRoomSchema = z.infer<typeof joinRoomSchema>;
+export const useJoinRoomForm = (init?: JoinRoomSchema) =>
+  useForm<JoinRoomSchema>({
+    resolver: zodResolver(joinRoomSchema),
     defaultValues: {
-      serverId: init?.serverId || '',
-      serverPassword: init?.serverPassword || '',
+      roomId: init?.roomId || '',
+      roomPassword: init?.roomPassword || '',
     },
   });
 
-export const createChannelSchema = z.object({
-  channelName: z
+export const createGroupSchema = z.object({
+  groupName: z
     .string()
     .trim()
     .min(1, {
-      message: 'Channel name is required.',
+      message: 'Group name is required.',
     })
     .refine(name => name !== 'general', {
-      message: "Channel name cannot be 'general'",
+      message: "Group name cannot be 'general'",
     }),
-  channelType: z.nativeEnum(ChannelType),
+  groupType: z.nativeEnum(GroupType),
 });
-export type CreateChannelSchema = z.infer<typeof createChannelSchema>;
-export const useCreateChannelForm = (init?: CreateChannelSchema) =>
-  useForm<CreateChannelSchema>({
-    resolver: zodResolver(createChannelSchema),
+export type CreateGroupSchema = z.infer<typeof createGroupSchema>;
+export const useCreateGroupForm = (init?: CreateGroupSchema) =>
+  useForm<CreateGroupSchema>({
+    resolver: zodResolver(createGroupSchema),
     defaultValues: {
-      channelName: init?.channelName || '',
-      channelType: init?.channelType || ChannelType.TEXT,
+      groupName: init?.groupName || '',
+      groupType: init?.groupType || GroupType.TEXT,
     },
   });

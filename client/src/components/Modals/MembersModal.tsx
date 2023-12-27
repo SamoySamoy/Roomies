@@ -32,13 +32,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import MemberAvatar from '@/components/MemberAvatar';
 import { members } from '@/lib/fakeData';
-import { ChannelTypeEnum, Member, MemberRole, ServerTypeEnum } from '@/lib/types';
+import { MemberRole } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 const roleIconMap: Record<MemberRole, React.ReactNode> = {
-  guest: null,
-  moderator: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
-  admin: <ShieldAlert className='h-4 w-4 text-rose-500' />,
+  [MemberRole.GUEST]: null,
+  [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
+  [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 text-rose-500' />,
 };
 
 const MembersModal = () => {
@@ -46,11 +46,11 @@ const MembersModal = () => {
     isOpen,
     modalType,
     closeModal,
-    data: { server },
+    data: { room },
   } = useModal();
 
-  // console.log(Object.values(ChannelTypeEnum.AUDIO.toString()));
-  // console.log(ChannelTypeEnum.AUDIO.toString());
+  // console.log(Object.values(GroupTypeEnum.AUDIO.toString()));
+  // console.log(GroupTypeEnum.AUDIO.toString());
 
   const onKick = async (memberId: string) => {
     try {
@@ -58,12 +58,12 @@ const MembersModal = () => {
       // const url = qs.stringifyUrl({
       //   url: `/api/members/${memberId}`,
       //   query: {
-      //     serverId: server?.id,
+      //     roomId: room?.id,
       //   },
       // });
       // const response = await axios.delete(url);
       // router.refresh();
-      // onOpen('members', { server: response.data });
+      // onOpen('members', { room: response.data });
     } catch (error) {
       console.log(error);
     } finally {
@@ -77,12 +77,12 @@ const MembersModal = () => {
       // const url = qs.stringifyUrl({
       //   url: `/api/members/${memberId}`,
       //   query: {
-      //     serverId: server?.id,
+      //     roomId: room?.id,
       //   },
       // });
       // const response = await axios.patch(url, { role });
       // router.refresh();
-      // onOpen('members', { server: response.data });
+      // onOpen('members', { room: response.data });
     } catch (error) {
       console.log(error);
     } finally {
@@ -98,7 +98,7 @@ const MembersModal = () => {
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Manage Members</DialogTitle>
           <DialogDescription className='text-center text-zinc-500'>
-            {server?.members?.length} Members
+            {room?.members?.length} Members
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className='mt-8 max-h-[420px] pr-6'>
@@ -116,7 +116,7 @@ const MembersModal = () => {
                 <p className='text-xs text-zinc-500'>{member.profileId}</p>
               </div>
               {/* This modal show for only, the following block is action for not admin account */}
-              {/* {server.profileId !== member.profileId && loadingId !== member.id && ( */}
+              {/* {room.profileId !== member.profileId && loadingId !== member.id && ( */}
               {/* TODO: Tách khối điều kiện này thành 1 Component */}
               {member.profileId && !isLoading && (
                 <div className='ml-auto'>
@@ -132,21 +132,25 @@ const MembersModal = () => {
                         </DropdownMenuSubTrigger>
                         <DropdownMenuPortal>
                           <DropdownMenuSubContent>
-                            <DropdownMenuItem onClick={() => onRoleChange(member.id, 'guest')}>
+                            <DropdownMenuItem
+                              onClick={() => onRoleChange(member.id, MemberRole.GUEST)}
+                            >
                               <Shield className='h-4 w-4 mr-2' />
                               Guest
                               {member.role === 'guest' && <Check className='h-4 w-4 ml-auto' />}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => onRoleChange(member.id, 'moderator')}
+                              onClick={() => onRoleChange(member.id, MemberRole.MODERATOR)}
                               // className={cn({
                               //   'bg-emerald-400/70 focus:bg-emerald-400/90':
-                              //     member.role === 'moderator',
+                              //     member.role === MemberRole.MODERATOR,
                               // })}
                             >
                               <ShieldCheck className='h-4 w-4 mr-2' />
                               Moderator
-                              {member.role === 'moderator' && <Check className='h-4 w-4 ml-auto' />}
+                              {member.role === MemberRole.MODERATOR && (
+                                <Check className='h-4 w-4 ml-auto' />
+                              )}
                             </DropdownMenuItem>
                           </DropdownMenuSubContent>
                         </DropdownMenuPortal>
@@ -161,7 +165,7 @@ const MembersModal = () => {
                 </div>
               )}
               {/* {loadingId === member.id && ( */}
-              {isLoading && <Loader2 className='animate-spin  text-zinc-500 ml-auto w-4 h-4' />}
+              {isLoading && <Loader2 className='animate-spin text-zinc-500 ml-auto w-4 h-4' />}
             </div>
           ))}
         </ScrollArea>

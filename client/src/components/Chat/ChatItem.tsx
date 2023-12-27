@@ -1,5 +1,4 @@
 import * as z from 'zod';
-import axios from 'axios';
 // import qs from "query-string";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,14 +31,11 @@ type ChatItemProps = {
   socketQuery: Record<string, string>;
 };
 
-const roleIconMap: Record<MemberRole, React.ReactNode> = {
-  // GUEST: null,
-  // MODERATOR: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
-  // ADMIN: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
-  guest: null,
-  moderator: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
-  admin: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
-};
+const roleIconMap = {
+  [MemberRole.GUEST]: null,
+  [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
+  [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
+} as const;
 
 const formSchema = z.object({
   content: z.string().min(1),
@@ -114,8 +110,8 @@ export const ChatItem = ({
 
   // const isAdmin = currentMember.role === MemberRole.ADMIN;
   // const isModerator = currentMember.role === MemberRole.MODERATOR;
-  const isAdmin = currentMember.role === 'admin';
-  const isModerator = currentMember.role === 'moderator';
+  const isAdmin = currentMember.role === MemberRole.ADMIN;
+  const isModerator = currentMember.role === MemberRole.MODERATOR;
 
   const isOwner = currentMember.id === member.id;
   const canDeleteMessage = !deleted && (isAdmin || isModerator || isOwner);

@@ -2,34 +2,34 @@ import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-import { Channel, ChannelType, MemberRole } from '@/lib/types';
+import { Group, GroupType, MemberRole } from '@/lib/types';
 import { channels, members, servers } from '@/lib/fakeData';
 import RoomHeader from './RoomHeader';
 import RoomSearch from './RoomSearch';
-import ChannelListSection from './RoomSection';
+import GroupListSection from './RoomSection';
 import RoomGroup from './RoomGroup';
 import RoomMember from './RoomMember';
 
 const channelIcon = {
-  [ChannelType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
-  [ChannelType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
-  [ChannelType.VIDEO]: <Video className='mr-2 h-4 w-4' />,
-};
+  [GroupType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
+  [GroupType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
+  [GroupType.VIDEO]: <Video className='mr-2 h-4 w-4' />,
+} as const;
 
 const roleIcon = {
   [MemberRole.GUEST]: null,
   [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 mr-2 text-indigo-500' />,
   [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500' />,
-};
+} as const;
 
 type Props = {
-  channels: Channel[];
+  channels: Group[];
 };
 
 const RoomSidebar = ({ channels }: Props) => {
-  const textChannels = channels.filter(channel => channel.type === ChannelType.TEXT);
-  const audioChannels = channels.filter(channel => channel.type === ChannelType.AUDIO);
-  const videoChannels = channels.filter(channel => channel.type === ChannelType.VIDEO);
+  const textGroups = channels.filter(channel => channel.type === GroupType.TEXT);
+  const audioGroups = channels.filter(channel => channel.type === GroupType.AUDIO);
+  const videoGroups = channels.filter(channel => channel.type === GroupType.VIDEO);
   const otherMembers = members.filter(member => member.profileId !== 'profile_1');
   const role = MemberRole.ADMIN;
 
@@ -41,27 +41,27 @@ const RoomSidebar = ({ channels }: Props) => {
           <RoomSearch
             data={[
               {
-                label: 'Text Channels',
+                label: 'Text Groups',
                 type: 'channel',
-                data: textChannels?.map(channel => ({
+                data: textGroups?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
                   icon: channelIcon[channel.type],
                 })),
               },
               {
-                label: 'Voice Channels',
+                label: 'Voice Groups',
                 type: 'channel',
-                data: audioChannels?.map(channel => ({
+                data: audioGroups?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
                   icon: channelIcon[channel.type],
                 })),
               },
               {
-                label: 'Video Channels',
+                label: 'Video Groups',
                 type: 'channel',
-                data: videoChannels?.map(channel => ({
+                data: videoGroups?.map(channel => ({
                   id: channel.id,
                   name: channel.name,
                   icon: channelIcon[channel.type],
@@ -81,16 +81,16 @@ const RoomSidebar = ({ channels }: Props) => {
           />
         </div>
         <Separator className='bg-zinc-200 dark:bg-zinc-700 rounded-md my-2' />
-        {!!textChannels?.length && (
+        {!!textGroups?.length && (
           <div className='mb-2'>
-            <ChannelListSection
+            <GroupListSection
               sectionType='channels'
-              channelType={ChannelType.TEXT}
+              channelType={GroupType.TEXT}
               role={role}
-              label='Text Channels'
+              label='Text Groups'
             />
             <div className='space-y-[2px]'>
-              {textChannels.map(channel => (
+              {textGroups.map(channel => (
                 <RoomGroup
                   key={channel.id}
                   channel={channel as any}
@@ -101,16 +101,16 @@ const RoomSidebar = ({ channels }: Props) => {
             </div>
           </div>
         )}
-        {!!audioChannels?.length && (
+        {!!audioGroups?.length && (
           <div className='mb-2'>
-            <ChannelListSection
+            <GroupListSection
               sectionType='channels'
-              channelType={ChannelType.AUDIO}
+              channelType={GroupType.AUDIO}
               role={role}
-              label='Voice Channels'
+              label='Voice Groups'
             />
             <div className='space-y-[2px]'>
-              {audioChannels.map(channel => (
+              {audioGroups.map(channel => (
                 <RoomGroup
                   key={channel.id}
                   channel={channel as any}
@@ -121,16 +121,16 @@ const RoomSidebar = ({ channels }: Props) => {
             </div>
           </div>
         )}
-        {!!videoChannels?.length && (
+        {!!videoGroups?.length && (
           <div className='mb-2'>
-            <ChannelListSection
+            <GroupListSection
               sectionType='channels'
-              channelType={ChannelType.VIDEO}
+              channelType={GroupType.VIDEO}
               role={role}
-              label='Video Channels'
+              label='Video Groups'
             />
             <div className='space-y-[2px]'>
-              {videoChannels.map(channel => (
+              {videoGroups.map(channel => (
                 <RoomGroup
                   key={channel.id}
                   channel={channel as any}
@@ -143,7 +143,7 @@ const RoomSidebar = ({ channels }: Props) => {
         )}
         {!!members?.length && (
           <div className='mb-2'>
-            <ChannelListSection
+            <GroupListSection
               sectionType='members'
               role={role}
               label='Members'

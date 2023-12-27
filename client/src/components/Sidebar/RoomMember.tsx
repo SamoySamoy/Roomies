@@ -1,4 +1,4 @@
-import { Member, MemberRole, Profile, Server } from '@/lib/types';
+import { Member, MemberRole, Profile, Room } from '@/lib/types';
 import { ShieldAlert, ShieldCheck } from 'lucide-react';
 // import { useParams, useRouter } from "next/navigation";
 
@@ -6,22 +6,19 @@ import { cn } from '@/lib/utils';
 import MemberAvatar from '@/components/MemberAvatar';
 import { useNavigate } from 'react-router-dom';
 
-interface ServerMemberProps {
+interface RoomMemberProps {
   // member: Member & { profile: Profile };
   member: Member;
-  server: Server;
+  room: Room;
 }
 
-const roleIconMap: Record<MemberRole, React.ReactNode> = {
-  // [MemberRole.GUEST]: null,
-  // [MemberRole.MODERATOR]: <ShieldCheck className="h-4 w-4 ml-2 text-indigo-500" />,
-  // [MemberRole.ADMIN]: <ShieldAlert className="h-4 w-4 ml-2 text-rose-500" />
-  guest: null,
-  moderator: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
-  admin: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
-};
+const roleIconMap = {
+  [MemberRole.GUEST]: null,
+  [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
+  [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
+} as const;
 
-const RoomMember = ({ member, server }: ServerMemberProps) => {
+const RoomMember = ({ member, room }: RoomMemberProps) => {
   const navigate = useNavigate();
   // const params = useParams();
   // const router = useRouter();
@@ -31,7 +28,7 @@ const RoomMember = ({ member, server }: ServerMemberProps) => {
   const onClick = () => {
     // navigate("/rooms/1231231/groups/21312301");
     navigate('conversations/21312301');
-    // router.push(`/servers/${params?.serverId}/conversations/${member.id}`)
+    // router.push(`/rooms/${params?.roomId}/conversations/${member.id}`)
   };
 
   return (

@@ -1,10 +1,10 @@
 import LoadingOverlay from '@/components/LoadingOverlay';
 import RoomListSidebar from '@/components/RoomListSidebar';
-import { useServersJoinedQuery } from '@/hooks/queries';
+import { useRoomsJoinedQuery } from '@/hooks/queries';
 import { Outlet, Navigate } from 'react-router-dom';
 
 const RoomListLayout = () => {
-  const { data: servers, isPending, isError } = useServersJoinedQuery({});
+  const { data: servers, isPending, isError } = useRoomsJoinedQuery({});
 
   if (isPending) {
     return <LoadingOverlay />;

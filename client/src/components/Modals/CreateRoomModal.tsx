@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import FileUpload from '@/components/FileUpload';
 import { useModal } from '@/hooks/useModal';
-import { CreateServerSchema, useCreateServerForm } from '@/hooks/forms';
-import { useUpdateServerMutation } from '@/hooks/mutations';
-import { ServerType } from '@/lib/types';
+import { CreateRoomSchema, useCreateRoomForm } from '@/hooks/forms';
+import { useCreateRoomMutation } from '@/hooks/mutations';
+import { RoomType } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -31,41 +31,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useParams } from 'react-router-dom';
-import RoomSidebar from '../RoomSidebar';
+import { useNavigate } from 'react-router-dom';
 
-const EditServerModal = () => {
-  const {
-    isOpen,
-    modalType,
-    closeModal,
-    data: { server },
-  } = useModal();
+const CreateRoomModal = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { roomId } = useParams<{ roomId: string }>();
+  const { isOpen, modalType, closeModal } = useModal();
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const form = useCreateServerForm();
-  const mutation = useUpdateServerMutation();
+  const form = useCreateRoomForm();
+  const mutation = useCreateRoomMutation();
   const isLoading = form.formState.isSubmitting || mutation.isPending;
-
-  const isServerNameChanged = form.getFieldState('serverName').isDirty;
-  const isServerImageChanged = form.getFieldState('serverImage').isDirty;
-  const isServerPasswordChanged = form.getFieldState('serverPassword').isDirty;
-  const isServerTypeChanged = form.getFieldState('serverType').isDirty;
-  const isChanged = [
-    isServerNameChanged,
-    isServerImageChanged,
-    isServerPasswordChanged,
-    isServerTypeChanged,
-  ].some(Boolean);
-
-  useEffect(() => {
-    form.setValue('serverName', server?.name || '');
-    form.setValue('serverImage', server?.imageUrl || '');
-    form.setValue('serverPassword', server?.password || '');
-    form.setValue('serverType', server?.type || ServerType.PUBLIC);
-  }, [server]);
 
   const clearForm = () => {
     setImageFile(null);
@@ -73,46 +48,37 @@ const EditServerModal = () => {
     mutation.reset();
   };
 
-  const onSubmit = async (values: CreateServerSchema) => {
-    const formData = new FormData();
-    if (isServerNameChanged) {
-      formData.append('serverName', values.serverName);
+  const onSubmit = async (values: CreateRoomSchema) => {
+    if (values.roomType === RoomType.PRIVATE && !values.roomPassword) {
+      form.setError('roomPassword', { message: 'Private room require password' });
     }
-    if (isServerTypeChanged || isServerPasswordChanged) {
-      formData.append('serverType', values.serverName);
-      formData.append('serverPassword', values.serverName);
-    }
-    if (isServerImageChanged) {
-      console.log(imageFile);
-      formData.append('serverImage', imageFile!);
-    }
+    form.clearErrors();
 
-    mutation.mutate(
-      {
-        data: formData,
-        roomId: roomId!,
+    const formData = new FormData();
+    formData.append('roomName', values.roomName);
+    formData.append('roomType', values.roomType);
+    formData.append('roomPassword', values.roomPassword);
+    formData.append('roomImage', imageFile!);
+    mutation.mutate(formData, {
+      onSuccess: () => {
+        toast({
+          title: 'Create room OK',
+        });
       },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Create server OK',
-          });
-        },
-        onError: () => {
-          toast({
-            title: 'Create server Failed',
-          });
-        },
-        onSettled: () => {
-          clearForm();
-        },
+      onError: () => {
+        toast({
+          title: 'Create room Failed',
+        });
       },
-    );
+      onSettled: () => {
+        clearForm();
+      },
+    });
   };
 
   return (
     <Dialog
-      open={isOpen && modalType === 'editServer'}
+      open={isOpen && modalType === 'createRoom'}
       onOpenChange={() => {
         closeModal();
         clearForm();
@@ -120,11 +86,9 @@ const EditServerModal = () => {
     >
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
-          <DialogTitle className='text-center text-2xl font-bold'>
-            Customize your server
-          </DialogTitle>
+          <DialogTitle className='text-center text-2xl font-bold'>Customize your room</DialogTitle>
           <DialogDescription className='text-justify text-zinc-500'>
-            Give your server a personality with a name and an image. You can always change it later.
+            Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -133,7 +97,7 @@ const EditServerModal = () => {
               <div className='flex items-center justify-center text-center'>
                 <FormField
                   control={form.control}
-                  name='serverImage'
+                  name='roomImage'
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -145,7 +109,6 @@ const EditServerModal = () => {
                           accept={{
                             'image/*': [],
                           }}
-                          preset={server?.imageUrl}
                         />
                       </FormControl>
                       <FormMessage />
@@ -156,17 +119,17 @@ const EditServerModal = () => {
 
               <FormField
                 control={form.control}
-                name='serverName'
+                name='roomName'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
-                      Server name
+                      Room name
                     </FormLabel>
                     <FormControl>
                       <Input
                         disabled={form.formState.isLoading}
                         className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
-                        placeholder='Enter server name'
+                        placeholder='Enter room name'
                         {...field}
                       />
                     </FormControl>
@@ -177,10 +140,10 @@ const EditServerModal = () => {
 
               <FormField
                 control={form.control}
-                name='serverType'
+                name='roomType'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Server Type</FormLabel>
+                    <FormLabel>Room Type</FormLabel>
                     <Select
                       disabled={isLoading}
                       onValueChange={field.onChange}
@@ -188,11 +151,11 @@ const EditServerModal = () => {
                     >
                       <FormControl>
                         <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
-                          <SelectValue placeholder='Select a server type' />
+                          <SelectValue placeholder='Select a room type' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.keys(ServerType).map(type => (
+                        {Object.keys(RoomType).map(type => (
                           <SelectItem key={type} value={type} className='capitalize'>
                             {type.toLowerCase()}
                           </SelectItem>
@@ -206,18 +169,18 @@ const EditServerModal = () => {
 
               <FormField
                 control={form.control}
-                name='serverPassword'
+                name='roomPassword'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
-                      Server password
+                      Room password
                     </FormLabel>
-                    <FormDescription>Private server require a password</FormDescription>
+                    <FormDescription>Private room require a password</FormDescription>
                     <FormControl>
                       <Input
                         disabled={form.formState.isLoading}
                         className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
-                        placeholder='Password of private server'
+                        placeholder='Password of private room'
                         {...field}
                       />
                     </FormControl>
@@ -228,7 +191,7 @@ const EditServerModal = () => {
             </div>
             <DialogFooter className='bg-gray-100 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={form.formState.isLoading}>
-                <span className='text-foreground'>Edit</span>
+                <span className='text-foreground'>Create</span>
               </Button>
             </DialogFooter>
           </form>
@@ -238,4 +201,4 @@ const EditServerModal = () => {
   );
 };
 
-export default EditServerModal;
+export default CreateRoomModal;

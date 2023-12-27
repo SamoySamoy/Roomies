@@ -6,22 +6,22 @@ import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
 import { cn, getImageUrl } from '@/lib/utils';
 import { useModal } from '@/hooks/useModal';
-import { Server, ServerType } from '@/lib/types';
+import { Room, RoomType } from '@/lib/types';
 import { useParams } from 'react-router-dom';
 
 type Props = {
-  servers: Server[];
+  servers: Room[];
 };
 
-const ServerListSidebar = ({ servers }: Props) => {
+const RoomListSidebar = ({ servers }: Props) => {
   return (
     <div className='flex h-full w-full flex-col items-center space-y-4 bg-[#E3E5E8] py-3 text-primary dark:bg-[#1E1F22]'>
-      <CreateServerButton />
+      <CreateRoomButton />
       <Separator className='mx-auto h-[2px] w-10 rounded-md bg-zinc-300 dark:bg-zinc-700' />
       <ScrollArea className='w-full flex-1'>
         {servers.map(server => (
           <div key={server.id} className='mb-4'>
-            <ServerItem {...server} />
+            <RoomItem {...server} />
           </div>
         ))}
       </ScrollArea>
@@ -42,7 +42,7 @@ const ServerListSidebar = ({ servers }: Props) => {
   );
 };
 
-const CreateServerButton = () => {
+const CreateRoomButton = () => {
   const { openModal } = useModal();
 
   return (
@@ -55,7 +55,7 @@ const CreateServerButton = () => {
         <button
           onClick={() =>
             openModal({
-              modalType: 'createServer',
+              modalType: 'createRoom',
             })
           }
           className='group flex items-center'
@@ -70,12 +70,12 @@ const CreateServerButton = () => {
 };
 
 const icon = {
-  [ServerType.PUBLIC]: <Unlock className='text-emerald-500' />,
-  [ServerType.PRIVATE]: <Lock className='text-red-500' />,
-  [ServerType.HIDDEN]: <EyeOff className='text-slate-500' />,
+  [RoomType.PUBLIC]: <Unlock className='text-emerald-500' />,
+  [RoomType.PRIVATE]: <Lock className='text-red-500' />,
+  [RoomType.HIDDEN]: <EyeOff className='text-slate-500' />,
 };
 
-const ServerItem = ({ id, name, type, imageUrl }: Server) => {
+const RoomItem = ({ id, name, type, imageUrl }: Room) => {
   const { roomId } = useParams<{ roomId: string }>();
   const isActive = roomId === id;
   console.log(getImageUrl(imageUrl!));
@@ -131,4 +131,4 @@ const ServerItem = ({ id, name, type, imageUrl }: Server) => {
   );
 };
 
-export default ServerListSidebar;
+export default RoomListSidebar;
