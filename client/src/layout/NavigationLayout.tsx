@@ -1,12 +1,21 @@
 import LoadingOverlay from '@/components/LoadingOverlay';
-import RoomListSidebar from '@/components/RoomListSidebar';
-import { useRoomsJoinedQuery } from '@/hooks/queries';
+import NavigationSidebar from '@/components/Sidebar/NavigationSidebar';
+import { useRoomsQuery } from '@/hooks/queries';
 import { Outlet, Navigate } from 'react-router-dom';
 
-const RoomListLayout = () => {
-  const { data: servers, isPending, isError } = useRoomsJoinedQuery({});
+const NavigationLayout = () => {
+  const {
+    data: rooms,
+    isPending,
+    isFetching,
+    isRefetching,
+    isError,
+  } = useRoomsQuery({
+    roomType: 'all',
+    status: 'joined',
+  });
 
-  if (isPending) {
+  if (isPending || isFetching || isRefetching) {
     return <LoadingOverlay />;
   }
 
@@ -17,7 +26,7 @@ const RoomListLayout = () => {
   return (
     <div className='h-full'>
       <div className='fixed inset-y-0 z-30 hidden h-full w-[72px] flex-col md:flex'>
-        <RoomListSidebar servers={servers} />
+        <NavigationSidebar rooms={rooms} />
       </div>
       <main className='h-full md:pl-[72px]'>
         <Outlet />
@@ -26,4 +35,4 @@ const RoomListLayout = () => {
   );
 };
 
-export default RoomListLayout;
+export default NavigationLayout;

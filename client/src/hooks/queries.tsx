@@ -1,53 +1,66 @@
-import qs from 'query-string';
 import { useQuery } from '@tanstack/react-query';
-import { Room, Group } from '@/lib/types';
+
 import useApi from './useApi';
+import { Group, Room, RoomType } from '@/lib/types';
+import { getQueryString } from '@/lib/utils';
 
 export const queryKeyFactory = {
-  roomsJoined: ['rooms', 'joined'],
-  groupsOfRoom: (roomId: string) => ['room', roomId, 'groups'],
+  rooms: (keys: any[]) => ['rooms', ...keys],
+  room: (roomId: string, keys: any[]) => ['room', roomId, ...keys],
+  group: (groupId: string, keys: any[]) => ['group', groupId, ...keys],
 } as const;
 
-export type RoomQueryFilter = {
+export type RoomQueryInclude = {
   profile: boolean;
   members: boolean;
   groups: boolean;
 };
 
-export const useRoomsJoinedQuery = ({
-  profile = false,
-  members = false,
-  groups = false,
-}: Partial<RoomQueryFilter>) => {
+export type RoomQueryFilter = {
+  status: 'created' | 'joined' | 'all';
+  roomType: RoomType | 'viewable' | 'all';
+};
+
+export const useRoomsQuery = (args?: Partial<RoomQueryInclude & RoomQueryFilter>) => {
+  const { queryString, queryValues } = getQueryString(args);
   const api = useApi();
-  const query = useQuery({
-    queryKey: queryKeyFactory.roomsJoined,
+
+  return useQuery<Room[]>({
+    queryKey: queryKeyFactory.rooms(queryValues),
     queryFn: async () => {
-      let query = '?' + qs.stringify({ profile, members, groups });
-      const res = await api.get<Room[]>(`/rooms${query}`);
+      const res = await api.get<Room[]>(`/rooms${queryString}`);
       return res.data;
     },
   });
-  return query;
 };
 
-type GroupQueryFilter = {
-  messages: boolean;
-  roomId: string;
-};
-
-export const useGroupsOfRoomQuery = ({
-  roomId = '',
-  messages = false,
-}: Partial<GroupQueryFilter>) => {
+export const useRoomQuery = (roomId: string, args?: Partial<RoomQueryInclude>) => {
+  const { queryString, queryValues } = getQueryString(args);
   const api = useApi();
-  const query = useQuery({
-    queryKey: queryKeyFactory.groupsOfRoom(roomId),
+
+  return useQuery<Room>({
+    queryKey: queryKeyFactory.room(roomId, queryValues),
     queryFn: async () => {
-      let query = '?' + qs.stringify({ messages, roomId });
-      const res = await api.get<Group[]>(`/groups${query}`);
+      const res = await api.get<Room>(`/rooms/${roomId}${queryString}`);
       return res.data;
     },
   });
-  return query;
+};
+
+export type GroupQueryInclude = {
+  messages: string;
+  profile: string;
+};
+
+export const useGroupQuery = (groupId: string, args?: Partial<GroupQueryInclude>) => {
+  const { queryString, queryValues } = getQueryString(args);
+  const api = useApi();
+
+  return useQuery<Group>({
+    queryKey: queryKeyFactory.group(groupId, queryValues),
+    queryFn: async () => {
+      const res = await api.get<Group>(`/groups/${groupId}${queryString}`);
+      return res.data;
+    },
+  });
 };

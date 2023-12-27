@@ -1,22 +1,25 @@
 import LoadingOverlay from '@/components/LoadingOverlay';
-import RoomListSidebar from '@/components/RoomListSidebar';
-import RoomSidebar from '@/components/Sidebar';
-import { useGroupsOfRoomQuery, useRoomsJoinedQuery } from '@/hooks/queries';
+import RoomListSidebar from '@/components/Sidebar/NavigationSidebar';
+import RoomSidebar from '@/components/Sidebar/RoomSidebar';
+import { useRoomQuery, useRoomsQuery } from '@/hooks/queries';
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
 
-const SingleRoomLayout = () => {
+const RoomLayout = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
   const {
-    data: channels,
+    data: room,
     isPending,
+    isFetching,
+    isRefetching,
     isError,
-  } = useGroupsOfRoomQuery({
-    roomId,
+  } = useRoomQuery(roomId!, {
+    groups: true,
+    members: true,
   });
 
-  if (isPending) {
+  if (isPending || isFetching || isRefetching) {
     return <LoadingOverlay />;
   }
 
@@ -27,7 +30,7 @@ const SingleRoomLayout = () => {
   return (
     <div className='h-full'>
       <div className='hidden md:flex h-full w-60 z-20 flex-col fixed inset-y-0'>
-        <RoomSidebar channels={channels} />
+        <RoomSidebar room={room} />
       </div>
       <main className='h-full md:pl-60'>
         <Outlet />
@@ -36,4 +39,4 @@ const SingleRoomLayout = () => {
   );
 };
 
-export default SingleRoomLayout;
+export default RoomLayout;

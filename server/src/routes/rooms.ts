@@ -30,7 +30,8 @@ const imageUploader = multer({
 
 roomsRouter.get('/', getRooms);
 roomsRouter.get('/:roomId', getRoomByRoomId);
-roomsRouter.post('/', imageUploader.single('serverImage'), createRoom);
+
+roomsRouter.post('/', imageUploader.single('roomImage'), createRoom);
 roomsRouter.post('/join/:roomId', joinRoom);
 roomsRouter.post('/join/invite/:inviteCode', joinRoomByInviteCode);
 roomsRouter.post('/leave/:roomId', leaveRoom);

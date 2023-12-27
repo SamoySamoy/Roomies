@@ -15,7 +15,7 @@ type QueryInclude = {
 };
 
 type QueryFilter = {
-  status: 'created' | 'joined';
+  status: 'created' | 'joined' | 'all';
   roomType: RoomType | 'viewable' | 'all';
 };
 
@@ -30,43 +30,49 @@ export const getRooms = async (
 
     // Tìm kiếm theo 2 điều kiện độc lập
     // 1. Tìm kiếm theo kiểu room
-    let serverTypeFilterList: RoomType[] = [roomType.toUpperCase() as RoomType];
-    if (roomType === 'viewable') {
-      serverTypeFilterList = [RoomType.PUBLIC, RoomType.PRIVATE];
-    }
-    if (roomType === 'all') {
-      serverTypeFilterList = Object.keys(RoomType) as RoomType[];
-    }
-
+    const roomFilterListMap: Record<typeof roomType, RoomType[]> = {
+      PUBLIC: [RoomType.PUBLIC],
+      PRIVATE: [RoomType.PRIVATE],
+      HIDDEN: [RoomType.HIDDEN],
+      viewable: [RoomType.PUBLIC, RoomType.PRIVATE],
+      all: Object.keys(RoomType) as RoomType[],
+    };
     // 2. Tìm kiếm theo cá nhân (profileId) hoặc không
     // Nếu có profileId, sẽ có 2 trạng thái tìm kiếm: tìm kiếm những room mà profileId join và tìm kiếm những room mà profileId create
-    const profileIdFilter =
-      status === 'joined'
-        ? {
-            members: {
-              some: {
-                profileId,
-              },
-            },
-          }
-        : {
+    const statusFilterMap: Record<typeof status, Record<string, any>> = {
+      joined: {
+        members: {
+          some: {
             profileId,
-          };
+          },
+        },
+      },
+      created: {
+        profileId,
+      },
+      all: {},
+    };
 
     const rooms = await db.room.findMany({
       where: {
         AND: [
-          profileIdFilter,
+          statusFilterMap[status],
           {
             type: {
-              in: serverTypeFilterList,
+              in: roomFilterListMap[roomType],
             },
           },
         ],
       },
       include: {
         profile: isTruthy(profile),
-        members: isTruthy(members),
+        members: isTruthy(members)
+          ? {
+              include: {
+                profile: true,
+              },
+            }
+          : false,
         groups: isTruthy(groups),
       },
     });
@@ -93,7 +99,13 @@ export const getRoomByRoomId = async (
       where: { id: roomId },
       include: {
         profile: isTruthy(profile),
-        members: isTruthy(members),
+        members: isTruthy(members)
+          ? {
+              include: {
+                profile: true,
+              },
+            }
+          : false,
         groups: isTruthy(groups),
       },
     });
@@ -169,7 +181,7 @@ export const createRoom = async (
           create: [{ role: MemberRole.ADMIN, profileId: profile.id }],
         },
         groups: {
-          create: [{ name: 'general', profileId: profile.id }],
+          create: [{ name: 'default', profileId: profile.id }],
         },
       },
       include: {

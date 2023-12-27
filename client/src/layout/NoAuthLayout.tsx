@@ -11,7 +11,7 @@ const NoAuthLayout = () => {
 
   if (auth.accessToken) {
     console.log('Navigate by no auth');
-    return <Navigate to={'/explore'} replace />;
+    return <Navigate to={'/'} replace />;
   }
 
   // useEffect(() => {

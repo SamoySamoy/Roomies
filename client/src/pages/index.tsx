@@ -1,6 +1,5 @@
 export { default as LandingPage } from './LandingPage';
 export { default as ExplorePage } from './explore/ExplorePage';
-export { default as DefaultRoomPage } from './DefaultRoomPage';
 export { default as ChannelPage } from './ChannelPage';
 export { default as ConversationPage } from './ConversationPage';
 export { default as LoginPage } from './LoginPage';

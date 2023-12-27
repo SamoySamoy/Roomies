@@ -13,7 +13,7 @@ import {
 type ServerSearchProps = {
   data: {
     label: string;
-    type: 'channel' | 'member';
+    type: 'group' | 'member';
     data:
       | {
           icon: React.ReactNode;
@@ -41,15 +41,15 @@ const RoomSearch = ({ data }: ServerSearchProps) => {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const onClick = ({ id, type }: { id: string; type: 'channel' | 'member' }) => {
+  const onClick = ({ id, type }: { id: string; type: 'group' | 'member' }) => {
     setOpen(false);
 
     if (type === 'member') {
-      // return router.push(`/servers/${params?.serverId}/conversations/${id}`)
+      // return router.push(`/rooms/${params?.roomId}/conversations/${id}`)
     }
 
-    if (type === 'channel') {
-      // return router.push(`/servers/${params?.serverId}/groups/${id}`)
+    if (type === 'group') {
+      // return router.push(`/rooms/${params?.roomId}/groups/${id}`)
     }
   };
 
@@ -68,7 +68,7 @@ const RoomSearch = ({ data }: ServerSearchProps) => {
         </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder='Search all channels and members' />
+        <CommandInput placeholder='Search all groups and members' />
         <CommandList>
           <CommandEmpty>No Results found</CommandEmpty>
           {data.map(({ label, type, data }) => {

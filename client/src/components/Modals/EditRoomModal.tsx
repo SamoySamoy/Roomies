@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import RoomSidebar from '../Sidebar';
+import RoomSidebar from '../Sidebar/RoomSidebar';
 
 const EditRoomModal = () => {
   const {

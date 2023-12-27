@@ -29,9 +29,6 @@ const LoginPage = () => {
         toast({
           title: 'Login ok',
         });
-        navigate('/explore', {
-          replace: true,
-        });
       },
       onError: () => {
         toast({

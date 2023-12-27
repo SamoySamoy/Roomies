@@ -2,15 +2,15 @@ import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-import { Group, GroupType, MemberRole } from '@/lib/types';
-import { channels, members, servers } from '@/lib/fakeData';
+import { GroupType, MemberRole, Room } from '@/lib/types';
 import RoomHeader from './RoomHeader';
 import RoomSearch from './RoomSearch';
 import GroupListSection from './RoomSection';
 import RoomGroup from './RoomGroup';
 import RoomMember from './RoomMember';
+import { useAuth } from '@/hooks/useAuth';
 
-const channelIcon = {
+const groupIcon = {
   [GroupType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
   [GroupType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
   [GroupType.VIDEO]: <Video className='mr-2 h-4 w-4' />,
@@ -23,54 +23,55 @@ const roleIcon = {
 } as const;
 
 type Props = {
-  channels: Group[];
+  room: Room;
 };
 
-const RoomSidebar = ({ channels }: Props) => {
-  const textGroups = channels.filter(channel => channel.type === GroupType.TEXT);
-  const audioGroups = channels.filter(channel => channel.type === GroupType.AUDIO);
-  const videoGroups = channels.filter(channel => channel.type === GroupType.VIDEO);
-  const otherMembers = members.filter(member => member.profileId !== 'profile_1');
-  const role = MemberRole.ADMIN;
+const RoomSidebar = ({ room }: Props) => {
+  const { auth } = useAuth();
+  const textGroups = room.groups.filter(group => group.type === GroupType.TEXT);
+  const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
+  const videoGroups = room.groups.filter(group => group.type === GroupType.VIDEO);
+  const otherMembers = room.members.filter(member => member.profileId !== auth.profileId!);
+  const role = room.members.find(member => member.profileId === auth.profileId!)!.role;
 
   return (
     <div className='flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]'>
-      <RoomHeader server={servers[0] as any} role={role} />
+      <RoomHeader room={room} role={role} />
       <ScrollArea className='flex-1 px-3'>
         <div className='mt-2'>
           <RoomSearch
             data={[
               {
                 label: 'Text Groups',
-                type: 'channel',
-                data: textGroups?.map(channel => ({
-                  id: channel.id,
-                  name: channel.name,
-                  icon: channelIcon[channel.type],
+                type: 'group',
+                data: textGroups?.map(group => ({
+                  id: group.id,
+                  name: group.name,
+                  icon: groupIcon[group.type],
                 })),
               },
               {
                 label: 'Voice Groups',
-                type: 'channel',
-                data: audioGroups?.map(channel => ({
-                  id: channel.id,
-                  name: channel.name,
-                  icon: channelIcon[channel.type],
+                type: 'group',
+                data: audioGroups?.map(group => ({
+                  id: group.id,
+                  name: group.name,
+                  icon: groupIcon[group.type],
                 })),
               },
               {
                 label: 'Video Groups',
-                type: 'channel',
-                data: videoGroups?.map(channel => ({
-                  id: channel.id,
-                  name: channel.name,
-                  icon: channelIcon[channel.type],
+                type: 'group',
+                data: videoGroups?.map(group => ({
+                  id: group.id,
+                  name: group.name,
+                  icon: groupIcon[group.type],
                 })),
               },
               {
                 label: 'Members',
                 type: 'member',
-                data: members?.map(member => ({
+                data: room.members.map(member => ({
                   id: member.id,
                   // name: member.profile.name,
                   name: member.profileId,
@@ -84,19 +85,14 @@ const RoomSidebar = ({ channels }: Props) => {
         {!!textGroups?.length && (
           <div className='mb-2'>
             <GroupListSection
-              sectionType='channels'
-              channelType={GroupType.TEXT}
+              sectionType='groups'
+              groupType={GroupType.TEXT}
               role={role}
               label='Text Groups'
             />
             <div className='space-y-[2px]'>
-              {textGroups.map(channel => (
-                <RoomGroup
-                  key={channel.id}
-                  channel={channel as any}
-                  role={role}
-                  server={servers[0] as any}
-                />
+              {textGroups.map(group => (
+                <RoomGroup key={group.id} group={group} role={role} room={room} />
               ))}
             </div>
           </div>
@@ -104,19 +100,14 @@ const RoomSidebar = ({ channels }: Props) => {
         {!!audioGroups?.length && (
           <div className='mb-2'>
             <GroupListSection
-              sectionType='channels'
-              channelType={GroupType.AUDIO}
+              sectionType='groups'
+              groupType={GroupType.AUDIO}
               role={role}
               label='Voice Groups'
             />
             <div className='space-y-[2px]'>
-              {audioGroups.map(channel => (
-                <RoomGroup
-                  key={channel.id}
-                  channel={channel as any}
-                  role={role}
-                  server={servers[0] as any}
-                />
+              {audioGroups.map(group => (
+                <RoomGroup key={group.id} group={group} role={role} room={room} />
               ))}
             </div>
           </div>
@@ -124,34 +115,24 @@ const RoomSidebar = ({ channels }: Props) => {
         {!!videoGroups?.length && (
           <div className='mb-2'>
             <GroupListSection
-              sectionType='channels'
-              channelType={GroupType.VIDEO}
+              sectionType='groups'
+              groupType={GroupType.VIDEO}
               role={role}
               label='Video Groups'
             />
             <div className='space-y-[2px]'>
-              {videoGroups.map(channel => (
-                <RoomGroup
-                  key={channel.id}
-                  channel={channel as any}
-                  role={role}
-                  server={servers[0] as any}
-                />
+              {videoGroups.map(group => (
+                <RoomGroup key={group.id} group={group} role={role} room={room} />
               ))}
             </div>
           </div>
         )}
-        {!!members?.length && (
+        {room.members.length && (
           <div className='mb-2'>
-            <GroupListSection
-              sectionType='members'
-              role={role}
-              label='Members'
-              server={servers[0] as any}
-            />
+            <GroupListSection sectionType='members' role={role} label='Members' room={room} />
             <div className='space-y-[2px]'>
               {otherMembers.map(member => (
-                <RoomMember key={member.id} member={member as any} server={servers[0] as any} />
+                <RoomMember key={member.id} member={member} room={room} />
               ))}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { Request } from 'express';
-import { Profile, ServerType } from '@prisma/client';
-import { db } from '../prisma/db';
+import { Profile } from '@prisma/client';
+import { db } from '@/prisma/db';
 import { UUID, randomUUID } from 'node:crypto';
 
 export const getIp = (req: Request) =>

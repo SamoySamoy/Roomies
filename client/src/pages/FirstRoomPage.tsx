@@ -37,7 +37,9 @@ const FirstRoomPage = () => {
   const navigate = useNavigate();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const form = useCreateRoomForm();
-  const mutation = useCreateRoomMutation();
+  const mutation = useCreateRoomMutation({
+    refetch: true,
+  });
   const isLoading = form.formState.isSubmitting || mutation.isPending;
 
   const clearForm = () => {
@@ -65,7 +67,7 @@ const FirstRoomPage = () => {
         toast({
           title: 'Create room OK',
         });
-        // navigate('/rooms');
+        navigate('/my-rooms');
       },
       onError: () => {
         toast({

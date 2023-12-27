@@ -14,7 +14,7 @@ function generateRandomDate() {
 }
 
 // Generate 10 instances for each type
-export const servers = Array.from({ length: 20 }, (_, index) => ({
+export const rooms = Array.from({ length: 20 }, (_, index) => ({
   id: `server_${index + 1}`,
   name: `Server ${index + 1}`,
   type: index % 3 === 0 ? 'hidden' : index % 2 === 0 ? 'private' : 'public',
@@ -53,7 +53,7 @@ export const members = Array.from({ length: 10 }, (_, index) => ({
   updatedAt: generateRandomDate(),
 }));
 
-export const channels = Array.from({ length: 10 }, (_, index) => ({
+export const groups = Array.from({ length: 10 }, (_, index) => ({
   id: `channel_${index + 1}`,
   name: `Channel ${index + 1}`,
   type: index % 3 === 0 ? 'video' : index % 2 === 0 ? 'audio' : 'text',

@@ -35,7 +35,6 @@ import { useNavigate } from 'react-router-dom';
 
 const CreateRoomModal = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { isOpen, modalType, closeModal } = useModal();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const form = useCreateRoomForm();
@@ -64,6 +63,7 @@ const CreateRoomModal = () => {
         toast({
           title: 'Create room OK',
         });
+        closeModal();
       },
       onError: () => {
         toast({

@@ -38,7 +38,7 @@ const ChannelPage = () => {
         apiUrl='/api/socket/messages'
         query={{
           groupId: group.id,
-          roomId: group.roomId,
+          roomId: rooms[0].id,
         }}
       />
     </div>

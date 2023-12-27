@@ -1,3 +1,4 @@
+import qs from 'query-string';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { SERVER_API_URL } from './api';
@@ -16,3 +17,16 @@ export const i18n = new Intl.DateTimeFormat('en-US', {
 });
 
 export const getImageUrl = (relUrl: string) => `${SERVER_API_URL}${relUrl}`;
+
+export const getQueryString = (obj: Record<string, any> | undefined | null) => {
+  const queryFilter = obj || {};
+  const queryKeys = Array.from(Object.keys(queryFilter));
+  const queryValues = Array.from(Object.values(queryFilter));
+  const queryString = obj ? '?' + qs.stringify(queryFilter) : '';
+  return {
+    queryFilter,
+    queryKeys,
+    queryValues,
+    queryString,
+  };
+};

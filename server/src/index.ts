@@ -17,11 +17,14 @@ const httpServer = createServer(app);
 setupWs(httpServer);
 
 app.use(cors(corsOptions));
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.set('trust proxy', true);
 
 app.use('/api/public', express.static(path.join(__dirname, '..', 'public')));
 

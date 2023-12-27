@@ -25,7 +25,7 @@ const LandingHeader = () => {
           Explore
         </Link>
         <Link
-          to={'/rooms/my-rooms'}
+          to={'/my-rooms'}
           className='px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline'
         >
           Room

@@ -66,8 +66,8 @@ export const createGroupSchema = z.object({
     .min(1, {
       message: 'Group name is required.',
     })
-    .refine(name => name !== 'general', {
-      message: "Group name cannot be 'general'",
+    .refine(name => name !== 'default', {
+      message: "Group name cannot be 'default'",
     }),
   groupType: z.nativeEnum(GroupType),
 });

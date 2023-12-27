@@ -6,6 +6,7 @@ import { isTruthy } from '@/lib/utils';
 
 type QueryInclude = {
   messages: string;
+  profile: string;
 };
 
 type QueryFilter = {
@@ -17,35 +18,35 @@ export const getGroups = async (
   res: Response,
 ) => {
   try {
-    const { messages, roomId } = req.query;
+    const { messages, profile, roomId } = req.query;
     const groups = await db.group.findMany({
       where: {
         roomId,
       },
-      include: { messages: isTruthy(messages) },
+      include: { messages: isTruthy(messages), profile: isTruthy(profile) },
     });
     return res.status(200).json(groups);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal server Error' });
   }
 };
 
-type ParamsWithChannelId = {
+type ParamsWithGroupId = {
   groupId: string;
 };
 
 // Get a specific group by groupId
 export const getGroupByGroupId = async (
-  req: AuthenticatedRequest<ParamsWithChannelId, any, Partial<QueryInclude>>,
+  req: AuthenticatedRequest<ParamsWithGroupId, any, Partial<QueryInclude>>,
   res: Response,
 ) => {
   try {
     const groupId = req.params.groupId;
-    const { messages } = req.query;
+    const { messages, profile } = req.query;
     const group = await db.group.findUnique({
       where: { id: groupId },
-      include: { messages: isTruthy(messages) },
+      include: { messages: isTruthy(messages), profile: isTruthy(profile) },
     });
 
     if (!group) {
@@ -54,11 +55,11 @@ export const getGroupByGroupId = async (
     return res.status(200).json(group);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal server Error' });
   }
 };
 
-type BodyCreateChannel = {
+type BodyCreateGroup = {
   groupName: string;
   groupType: GroupType;
   roomId: string;
@@ -66,7 +67,7 @@ type BodyCreateChannel = {
 
 // create new group
 export const createGroup = async (
-  req: AuthenticatedRequest<any, Partial<BodyCreateChannel>, any>,
+  req: AuthenticatedRequest<any, Partial<BodyCreateGroup>, any>,
   res: Response,
 ) => {
   try {
@@ -76,7 +77,7 @@ export const createGroup = async (
     if (!groupName || !roomId) {
       return res.status(400).json({ message: 'Need group name, room id' });
     }
-    if (groupName === 'general') {
+    if (groupName === 'default') {
       return res.status(400).json({ message: 'Name can not be general' });
     }
 
@@ -106,7 +107,7 @@ export const createGroup = async (
     if (!room) {
       return res.status(400).json({
         message:
-          'Can not create group. Server not exist or you are not admin or moderator of this room',
+          'Can not create group. Room not exist or you are not admin or moderator of this room',
       });
     }
 
@@ -140,12 +141,12 @@ export const createGroup = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal server Error' });
   }
 };
 
 export const updateGroup = async (
-  req: AuthenticatedRequest<ParamsWithChannelId, Partial<BodyCreateChannel>, any>,
+  req: AuthenticatedRequest<ParamsWithGroupId, Partial<BodyCreateGroup>, any>,
   res: Response,
 ) => {
   try {
@@ -177,7 +178,7 @@ export const updateGroup = async (
       return res.status(400).json({ message: 'Profile not found' });
     }
     if (!group) {
-      return res.status(400).json({ message: 'Channel not found' });
+      return res.status(400).json({ message: 'Group not found' });
     }
 
     const room = await db.room.findUnique({
@@ -235,7 +236,7 @@ export const updateGroup = async (
 
 // Delete a group
 export const deleteGroup = async (
-  req: AuthenticatedRequest<ParamsWithChannelId, any, any>,
+  req: AuthenticatedRequest<ParamsWithGroupId, any, any>,
   res: Response,
 ) => {
   try {
@@ -261,7 +262,7 @@ export const deleteGroup = async (
       return res.status(400).json({ message: 'Group not found' });
     }
 
-    if (group.name === 'general') {
+    if (group.name === 'default') {
       return res.status(400).json({ message: 'You can not delete general group' });
     }
 
