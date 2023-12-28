@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import apiRouter from './routes';
 import { setupWs } from './ws';
 import { corsOptions } from './lib/config';
+import { logger } from './middlewares/logger';
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
@@ -22,6 +23,7 @@ app.use(
     crossOriginResourcePolicy: false,
   }),
 );
+app.use(logger());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());

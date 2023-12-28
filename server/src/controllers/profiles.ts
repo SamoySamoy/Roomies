@@ -56,7 +56,7 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
     const imageBuffer = req.file.buffer;
 
     // Resize the image using sharp and let multer handle the storage
-    await sharp(imageBuffer).resize(82, 82).toFile(req.file.path);
+    await sharp(imageBuffer).resize(100, 100).toFile(req.file.path);
 
     await db.profile.update({
       where: { id: req.params.id },

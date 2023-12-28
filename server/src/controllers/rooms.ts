@@ -11,6 +11,7 @@ import { AuthenticatedRequest } from '@/lib/types';
 type QueryInclude = {
   profile: string;
   members: string;
+  profilesOfMembers: string;
   groups: string;
 };
 
@@ -25,7 +26,14 @@ export const getRooms = async (
   res: Response,
 ) => {
   try {
-    const { profile, members, groups, status = 'joined', roomType = 'all' } = req.query;
+    const {
+      profile,
+      members,
+      profilesOfMembers,
+      groups,
+      status = 'joined',
+      roomType = 'all',
+    } = req.query;
     const profileId = req.user?.profileId!;
 
     // Tìm kiếm theo 2 điều kiện độc lập
@@ -69,11 +77,23 @@ export const getRooms = async (
         members: isTruthy(members)
           ? {
               include: {
-                profile: true,
+                profile: isTruthy(profilesOfMembers),
+              },
+              orderBy: {
+                createdAt: 'desc',
               },
             }
           : false,
-        groups: isTruthy(groups),
+        groups: isTruthy(groups)
+          ? {
+              orderBy: {
+                createdAt: 'asc',
+              },
+            }
+          : false,
+      },
+      orderBy: {
+        createdAt: 'asc',
       },
     });
 
@@ -84,17 +104,17 @@ export const getRooms = async (
   }
 };
 
-type ParamsServerId = {
+type ParamsRoomId = {
   roomId: string;
 };
 // Get a room by roomId
 export const getRoomByRoomId = async (
-  req: AuthenticatedRequest<ParamsServerId, any, Partial<QueryInclude>>,
+  req: AuthenticatedRequest<ParamsRoomId, any, Partial<QueryInclude>>,
   res: Response,
 ) => {
   try {
     const roomId = req.params.roomId;
-    const { profile, members, groups } = req.query;
+    const { profile, members, profilesOfMembers, groups } = req.query;
     const room = await db.room.findUnique({
       where: { id: roomId },
       include: {
@@ -102,11 +122,20 @@ export const getRoomByRoomId = async (
         members: isTruthy(members)
           ? {
               include: {
-                profile: true,
+                profile: isTruthy(profilesOfMembers),
+              },
+              orderBy: {
+                createdAt: 'desc',
               },
             }
           : false,
-        groups: isTruthy(groups),
+        groups: isTruthy(groups)
+          ? {
+              orderBy: {
+                createdAt: 'asc',
+              },
+            }
+          : false,
       },
     });
 
@@ -164,7 +193,7 @@ export const createRoom = async (
     const image = req.file;
     const imageUrl = `/public/rooms/${uuid()}.webp`;
     await sharp(image.buffer)
-      .resize(100, 100)
+      .resize(300, 300)
       .webp()
       .toFile(path.join(__dirname, '..', '..', imageUrl.substring(1)));
     const hashedPassword = roomType === 'PRIVATE' ? await bcrypt.hash(roomPassword, 10) : '';
@@ -204,7 +233,7 @@ type BodyJoin = {
 
 // join room by inviteCode
 export const joinRoom = async (
-  req: AuthenticatedRequest<ParamsServerId, Partial<BodyJoin>>,
+  req: AuthenticatedRequest<ParamsRoomId, Partial<BodyJoin>>,
   res: Response,
 ) => {
   try {
@@ -341,7 +370,7 @@ export const joinRoomByInviteCode = async (
 
 // Leave room
 export const leaveRoom = async (
-  req: AuthenticatedRequest<ParamsServerId, any, any>,
+  req: AuthenticatedRequest<ParamsRoomId, any, any>,
   res: Response,
 ) => {
   try {
@@ -401,7 +430,7 @@ export const leaveRoom = async (
 
 // Update a room by roomId
 export const updateRoom = async (
-  req: AuthenticatedRequest<ParamsServerId, Partial<BodyCreateServer>, any>,
+  req: AuthenticatedRequest<ParamsRoomId, Partial<BodyCreateServer>, any>,
   res: Response,
 ) => {
   try {
@@ -450,7 +479,7 @@ export const updateRoom = async (
       const image = req.files[0];
       const newImageUrl = `/public/rooms/${uuid()}.webp`;
       await sharp(image.buffer)
-        .resize(100, 100)
+        .resize(300, 300)
         .webp()
         .toFile(path.join(__dirname, '..', '..', newImageUrl.substring(1)));
       const oldImageUrl = path.join(__dirname, '..', '..', room.imageUrl!.substring(1));
@@ -474,7 +503,7 @@ export const updateRoom = async (
 
 // Delete a room by roomId
 export const deleteRoom = async (
-  req: AuthenticatedRequest<ParamsServerId, any, any>,
+  req: AuthenticatedRequest<ParamsRoomId, any, any>,
   res: Response,
 ) => {
   try {

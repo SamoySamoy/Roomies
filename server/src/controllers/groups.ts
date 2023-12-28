@@ -19,6 +19,10 @@ export const getGroups = async (
 ) => {
   try {
     const { messages, profile, roomId } = req.query;
+    if (!roomId) {
+      return res.status(404).json({ message: 'Require room id' });
+    }
+
     const groups = await db.group.findMany({
       where: {
         roomId,
