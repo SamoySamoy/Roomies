@@ -1,45 +1,59 @@
-import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import ActionTooltip from '@/components/ActionToolTip';
 import { Link } from 'react-router-dom';
 
 const LandingHeader = () => {
   return (
-    <div className='flex h-16 w-full items-center justify-between border-b border-solid border-gray-400/20 bg-background px-2 py-1 dark:border-gray-400/50'>
-      <div className='text-4xl font-bold text-foreground'>
+    <div className='flex w-full items-center justify-between border-b border-solid border-white bg-background px-10 py-5 shadow-[0_0_2rem_-0.5rem_#fff8] bg-black'>
+      <div className='text-3xl font-bold text-foreground'>
         <Link to={'/'}>
           <p className='text-green-400 pl-10'>ROOMIES</p>
         </Link>
       </div>
-      <nav className='flex gap-4 font-bold'>
-        <Link to={'/'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
-          Home
-        </Link>
-        <Link to={'/explore'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
-          Explore
-        </Link>
-        <Link to={'/rooms/12345'} className="px-2 transition duration-300 ease-in-out transform hover:scale-110 hover:underline">
-          Room
-        </Link>
-      </nav>
-      <div className='flex gap-4 pr-10'>
-        <div className='flex gap-4'>
-          <ActionTooltip label='Login to connect with your friends'>
-            <Link to={'/auth/login'}>
-              <Button variant='outline' className='font-bold'>
-                Sign In
-              </Button>
-            </Link>
-          </ActionTooltip>
-          <ActionTooltip label='Create a new account and discover more'>
-            <Link to={'/auth/register'}>
-              <Button className='bg-green-400'>
-                <span className='font-bold text-background'>Get start</span>
-              </Button>
-            </Link>
-          </ActionTooltip>
-        </div>
-        <ThemeToggle />
+      <div className='flex gap-2 pr-10'>
+        <ActionTooltip label='Homepage'>
+          <Link to={'/'} className="transition duration-300 ease-in-out transform hover:scale-110 hover:underline rounded-full">
+            <Button variant='outline' className='border-2 font-bold rounded-full border-white hover:border-green-400 bg-zinc-900 hover:bg-zinc-900 w-24'>
+              Home
+            </Button>
+          </Link>
+        </ActionTooltip>
+
+        <ActionTooltip label='Explore a variety of communities '>
+          <Link to={'/explore'} className="transition duration-300 ease-in-out transform hover:scale-110 hover:underline rounded-full">
+            <Button variant='outline' className='border-2 font-bold rounded-full border-white hover:border-green-400 bg-zinc-900 hover:bg-zinc-900 w-24'>
+              Explore
+            </Button>
+          </Link>
+        </ActionTooltip>
+
+        <ActionTooltip label='Room'>
+          <Link to={'/rooms/12345'} className="transition duration-300 ease-in-out transform hover:scale-110 hover:underline rounded-full">
+            <Button variant='outline' className='border-2 font-bold rounded-full border-white hover:border-green-400 bg-zinc-900 hover:bg-zinc-900 w-24'>
+              Room
+            </Button>
+          </Link>
+        </ActionTooltip>
+
+        <div className='h-10 border-l border-gray-400'></div>
+        
+        <ActionTooltip label='Login to connect with your friends'>
+          <Link to={'/auth/login'} className="transition duration-300 ease-in-out transform hover:scale-110 hover:underline rounded-full">
+            <Button variant='outline' className='border-2 font-bold rounded-full border-white hover:border-green-400 bg-zinc-900 hover:bg-zinc-900 w-24'>
+              Sign In
+            </Button>
+          </Link>
+        </ActionTooltip>
+
+        <ActionTooltip label='Create a new account and discover more'>
+          <Link to={'/auth/register'} className="rounded-full transition duration-300 ease-in-out transform hover:scale-110 hover:underline dark:hover:shadow-[0_0_2rem_-0.5rem_#fff]">
+            <Button className='bg-green-400 rounded-full w-24'>
+              <span className='font-bold text-background'>
+                Get start
+              </span>
+            </Button>
+          </Link>
+        </ActionTooltip>
       </div>
     </div>
   );

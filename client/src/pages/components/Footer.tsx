@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
-import {FaFacebookF,FaDribbble,FaLinkedinIn,FaInstagram,FaBehance, FaTelegram, FaReddit} from 'react-icons/fa'
+import {FaFacebookF, FaLinkedinIn, FaInstagram, FaReddit, FaGithub} from 'react-icons/fa'
 
 const Footer = () => {
   return (
-    <div className='w-full py-24'>
-        <div className='md:max-w-[1480px] m-auto grid md:grid-cols-5 max-[780px]:grid-cols-2  gap-8 max-w-[600px]  px-4 md:px-0'>
+    <div className='w-full py-20 px-20'>
+        <div className='md:max-w-[1480px] m-auto grid md:grid-cols-5 max-[780px]:grid-cols-2 gap-8 max-w-[600px] py-10 md:px-0 border-y-2'>
             <div className='col-span-2'>
                 <div className='text-4xl font-bold text-foreground'>
                     <Link to={'/'}>
@@ -17,7 +17,7 @@ const Footer = () => {
                 <div className='flex gap-4 py-4'>
                         <div className='p-4 bg-green-400 rounded-xl'><FaFacebookF size={25} style={{color:'#fff'}} /></div>
                         <div className='p-4 bg-green-400 rounded-xl'><FaInstagram size={25} style={{color:'#fff'}} /></div>
-                        <div className='p-4 bg-green-400 rounded-xl'><FaTelegram size={25} style={{color:'#fff'}} /></div>
+                        <div className='p-4 bg-green-400 rounded-xl'><FaGithub size={25} style={{color:'#fff'}} /></div>
                         <div className='p-4 bg-green-400 rounded-xl'><FaLinkedinIn size={25} style={{color:'#fff'}} /></div>
                         <div className='p-4 bg-green-400 rounded-xl'><FaReddit size={25} style={{color:'#fff'}} /></div>
                 </div>
@@ -27,33 +27,30 @@ const Footer = () => {
                 <ul className='py-6'>
                     <li className='py-2'>Home</li>
                     <li className='py-2'>About</li>
-                    <li className='py-2'>Course</li>
                     <li className='py-2'>Blog</li>
+                    <li className='py-2'>Status</li>
                     <li className='py-2'>Contact</li>
                 </ul>
             </div>
             <div>
-                <h3 className='text-2xl font-bold'>Category</h3>
+                <h3 className='text-2xl font-bold'>Resources</h3>
                 <ul className='py-6'>
-                    <li className='py-2'>Design</li>
-                    <li className='py-2'>Development</li>
-                    <li className='py-2'>Marketing</li>
-                    <li className='py-2'>Business</li>
-                    <li className='py-2'>Lifestyle</li>
-                    <li className='py-2'>Photography</li>
-                    <li className='py-2'>Music</li>
+                    <li className='py-2'>Support</li>
+                    <li className='py-2'>Safety</li>
+                    <li className='py-2'>Feedback</li>
+                    <li className='py-2'>Community</li>
+                    <li className='py-2'>Developers</li>
                 </ul>
             </div>
-            <div className='max-[780px]:col-span-2'>
-                <h3 className='text-2xl font-bold'>Subscribe</h3>
-                <h3 className='py-2'>Praesent nulla massa, hendrerit <br></br> vestibulum gravida in, feugiat auctor felis.</h3>
-                <form className='py-4'>
-                    <input 
-                        className='p-4 w-full rounded text-black' 
-                        placeholder='Email here' 
-                    />
-                    <button className='max-[780px]:w-full my-4 px-5 py-3 rounded-md bg-green-400 text-white font-medium'>Subscribe Now</button>
-                </form>
+            <div>
+                <h3 className='text-2xl font-bold'>Policies</h3>
+                <ul className='py-6'>
+                    <li className='py-2'>Terms</li>
+                    <li className='py-2'>Privacy</li>
+                    <li className='py-2'>Cookies Settings</li>
+                    <li className='py-2'>Guidelines</li>
+                    <li className='py-2'>Licenses</li>
+                </ul>
             </div>
         </div>
     </div>

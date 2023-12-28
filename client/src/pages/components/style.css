@@ -1,0 +1,31 @@
+@keyframes gradient-rotate {
+    0% {
+      background-position: 100% 0%;
+    }
+  
+    to {
+      background-position: 0% 0%;
+    }
+}
+  
+.hero-join-button {
+    background: linear-gradient(120deg, rgba(49, 120, 196, 0.7), rgba(49, 120, 196, 0.3), #3178c6, rgba(49, 120, 196, 0.5));
+    background-size: 200% 200%;
+    animation: gradient-rotate 5s linear infinite reverse;
+}
+
+.border-bright1 {
+    box-shadow: 0 0 10px 5px rgba(165, 25, 25, 0.5);
+}
+
+.border-bright2 {
+    box-shadow: 0 0 10px 5px rgba(45, 193, 107, 0.5);
+}
+
+.border-bright3 {
+    box-shadow: 0 0 10px 5px rgba(79, 40, 164, 0.5);
+}
+
+.border-bright4 {
+    box-shadow: 0 0 10px 5px rgba(178, 31, 127, 0.5);
+}

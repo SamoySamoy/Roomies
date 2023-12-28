@@ -1,31 +1,44 @@
-import heroImg from '@/assets/heroImg.png';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import Typed from 'react-typed';
 
 const MainContent = () => {
-  return (
-    <div className='w-full'>
-        <div className='md:max-w-[1480px] m-auto grid md:grid-cols-2 max-w-[600px]  px-4 md:px-0'>
-            <div className='flex flex-col justify-start gap-4 pl-10 pr-10'>
-                <p className='py-2 text-2xl text-green-400 font-medium'>
-                    Let's start your story{' '}
-                    <span className='inline-block text-3xl transform rotate-12'>🚀</span>
+
+    return (
+        <div className='max-w-[800px] w-full mx-auto text-center flex flex-col justify-center py-10'>
+            <h1 className='text-green-400 md:text-7xl sm:text-6xl text-4xl font-bold md:py-6'>
+                Welcome to Roomies
+            </h1>
+
+            <div className='flex flex-col items-center'>
+                <p className='md:text-5xl sm:text-4xl text-xl py-4'>
+                Connect with your Friends
                 </p>
-                <h3 className='md:leading-[72px] py-2 md:text-5xl text-5xl font-semibold'>Connect with <span className='text-green-400'>Friends</span> around <span  className='text-green-400'>the world</span>
-                </h3>
-                <p className='py-2 text-lg text-gray-600'>Anywhere and Anytime</p>
-                <div className=''>
-                    <Link to={'/auth/register'}>
-                        <Button className='bg-green-400 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
-                            <span className='font-bold text-background '>Start now</span>
-                        </Button>
-                    </Link>
+                <div className='border-2 rounded-full border-gray-500 hover:border-green-400 bg-zinc-900 hover:bg-zinc-900 px-4 py-2 shadow-[0_0_2rem_-0.5rem_#fff8]'>
+                <Typed
+                    className='md:text-5xl sm:text-4xl text-xl md:pl-4 pl-2'
+                    strings={['Gaming', 'Coding', 'Chit-chat']}
+                    typeSpeed={100}
+                    backSpeed={100}
+                    loop
+                />
                 </div>
             </div>
-            <img  src={heroImg} className="order-first transform translate-y-4 hover:translate-y-0 transition-transform duration-300" />
-        </div>
-    </div>
-  )
-}
 
-export default MainContent
+            <p className='md:text-2xl text-xl font-bold text-gray-500 py-10'>
+                Start your journey now{' '}
+                <span className='inline-block text-3xl transform rotate-12'>🚀</span>
+            </p>
+
+            <div className=''>
+                <Link to={'/auth/register'}>
+                <Button className='w-[200px] rounded-full py-3 bg-green-400 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
+                    <span className='font-bold text-background'>Get Started</span>
+                </Button>
+                </Link>
+            </div>
+        </div>
+    );
+};
+
+export default MainContent;
