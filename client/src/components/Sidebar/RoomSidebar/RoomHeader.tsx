@@ -82,6 +82,9 @@ function RoomHeader({ role, room }: GroupListHeaderProps) {
             onClick={() =>
               openModal({
                 modalType: 'createGroup',
+                data: {
+                  room,
+                },
               })
             }
             className='px-3 py-2 text-sm cursor-pointer'

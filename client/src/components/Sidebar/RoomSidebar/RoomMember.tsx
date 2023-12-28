@@ -23,7 +23,7 @@ const RoomMember = ({ member, room }: RoomMemberProps) => {
   const icon = roleIconMap[member.role];
 
   const onNavigate = () => {
-    navigate(`rooms/${room.id}/conversations/${member.id}`);
+    navigate(`/rooms/${room.id}/conversations/${member.id}`);
   };
 
   return (
@@ -37,8 +37,10 @@ const RoomMember = ({ member, room }: RoomMemberProps) => {
       )}
     >
       <MemberAvatar
-        src={member.profileId}
-        fallback={<p className='text-foregroud'>UN</p>}
+        src={member.profile.imageUrl}
+        fallback={
+          <p className='text-foreground'>{member.profile.email.split('@')[0].slice(0, 2)}</p>
+        }
         className='h-8 w-8 md:h-8 md:w-8'
       />
       <p

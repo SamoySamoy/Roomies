@@ -9,6 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type ServerSearchProps = {
   data: {
@@ -26,8 +27,8 @@ type ServerSearchProps = {
 
 const RoomSearch = ({ data }: ServerSearchProps) => {
   const [open, setOpen] = useState(false);
-  // const router = useRouter();
-  // const params = useParams();
+  const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -45,11 +46,11 @@ const RoomSearch = ({ data }: ServerSearchProps) => {
     setOpen(false);
 
     if (type === 'member') {
-      // return router.push(`/rooms/${params?.roomId}/conversations/${id}`)
+      return navigate(`/rooms/${roomId}/conversations/${id}`);
     }
 
     if (type === 'group') {
-      // return router.push(`/rooms/${params?.roomId}/groups/${id}`)
+      return navigate(`/rooms/${roomId}/groups/${id}`);
     }
   };
 

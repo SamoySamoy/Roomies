@@ -10,6 +10,8 @@ import DeleteGroupModal from '@/components/Modals/DeleteGroupModal';
 import MessageFileModal from '@/components/Modals/MessageFileModal';
 import DeleteMessageModal from '@/components/Modals/DeleteMessageModal';
 import { useModal, ModalType } from '@/hooks/useModal';
+import JoinPrivateRoomModal from '@/components/Modals/JoinPrivateRoomModal';
+import JoinPublicRoomModal from '@/components/Modals/JoinPublicRoomModal';
 
 const modalMap: Record<ModalType, React.FC> = {
   createRoom: CreateRoomModal,
@@ -23,6 +25,8 @@ const modalMap: Record<ModalType, React.FC> = {
   members: MembersModal,
   messageFile: MessageFileModal,
   deleteMessage: DeleteMessageModal,
+  joinPrivateRoom: JoinPrivateRoomModal,
+  joinPublicRoom: JoinPublicRoomModal,
 };
 
 export default function ModalProvider() {

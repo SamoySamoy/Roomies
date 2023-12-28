@@ -1,8 +1,8 @@
-import { Lock, Unlock, EyeOff } from 'lucide-react';
+import { Lock, Unlock, EyeOff, Users, PanelTopInactive } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
 import { cn, getImageUrl } from '@/lib/utils';
 import { Room, RoomType } from '@/lib/types';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const icon = {
   [RoomType.PUBLIC]: <Unlock className='text-emerald-500' />,
@@ -10,7 +10,7 @@ const icon = {
   [RoomType.HIDDEN]: <EyeOff className='text-slate-500' />,
 } as const;
 
-const NavigationItem = ({ id, name, type, imageUrl }: Room) => {
+const ExploreItem = ({ id, name, type, imageUrl }: Room) => {
   const { roomId } = useParams<{ roomId: string }>();
   const isActive = roomId === id;
 
@@ -64,4 +64,4 @@ const NavigationItem = ({ id, name, type, imageUrl }: Room) => {
   );
 };
 
-export default NavigationItem;
+export default ExploreItem;

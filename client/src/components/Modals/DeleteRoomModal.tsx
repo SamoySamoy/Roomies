@@ -9,9 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
-import { useParams } from 'react-router-dom';
 import { useDeleteRoomMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const DeleteRoomModal = () => {
   const {
@@ -21,18 +21,20 @@ const DeleteRoomModal = () => {
     data: { room },
   } = useModal();
   const { toast } = useToast();
-  const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
   const mutation = useDeleteRoomMutation();
   const onDelete = () => {
     mutation.mutate(
       {
-        roomId: roomId!,
+        roomId: room?.id!,
       },
       {
         onSuccess: () => {
           toast({
             title: 'Delete room ok',
           });
+          closeModal();
+          navigate('/my-rooms');
         },
         onError: () => {
           toast({

@@ -24,7 +24,7 @@ const QueryProvider = ({ children }: React.PropsWithChildren) => {
     <QueryClientProvider client={queryClient}>
       {children}
       {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={false} buttonPosition='bottom-left' position='left' />
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition='bottom-right' position='right' />
       )}
     </QueryClientProvider>
   );

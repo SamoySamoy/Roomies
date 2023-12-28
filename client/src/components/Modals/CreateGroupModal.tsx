@@ -26,25 +26,39 @@ import { GroupType } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
 import { CreateGroupSchema, useCreateGroupForm } from '@/hooks/forms';
 import { useCreateGroupMutation } from '@/hooks/mutations';
-import { useParams } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 
 const CreateGroupModal = () => {
+  const { toast } = useToast();
   const {
     isOpen,
     modalType,
     closeModal,
     data: { room, groupType },
   } = useModal();
-  const { roomId } = useParams<{ roomId: string }>();
-  const form = useCreateGroupForm();
+  const form = useCreateGroupForm({
+    groupName: '',
+    groupType: groupType || GroupType.TEXT,
+  });
   const mutation = useCreateGroupMutation();
   const onSubmit = async (values: CreateGroupSchema) => {
     mutation.mutate(
       {
         ...values,
-        roomId: roomId!,
+        roomId: room?.id!,
       },
       {
+        onSuccess: () => {
+          toast({
+            title: 'Create group OK',
+          });
+          closeModal();
+        },
+        onError: () => {
+          toast({
+            title: 'Create group Failed',
+          });
+        },
         onSettled: () => {
           form.reset();
           mutation.reset();
@@ -119,7 +133,7 @@ const CreateGroupModal = () => {
               />
             </div>
             <DialogFooter className='bg-gray-100 px-6 py-4'>
-              <Button variant='primary' disabled={isLoading}>
+              <Button type='submit' variant='primary' disabled={isLoading}>
                 Create
               </Button>
             </DialogFooter>

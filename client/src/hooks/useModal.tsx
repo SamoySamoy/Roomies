@@ -13,12 +13,14 @@ export type ModalType =
   | 'invite'
   | 'members'
   | 'messageFile'
-  | 'deleteMessage';
+  | 'deleteMessage'
+  | 'joinPublicRoom'
+  | 'joinPrivateRoom';
 
 export type ModalData = {
   room?: Room;
-  groupType?: GroupType;
   group?: Group;
+  groupType?: GroupType;
   apiUrl?: string;
   query?: Record<string, any>;
 };

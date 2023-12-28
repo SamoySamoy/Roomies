@@ -1,6 +1,6 @@
 import { Plus, Settings } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
-import { GroupType, MemberRole } from '@/lib/types';
+import { GroupType, MemberRole, Room } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
 
 interface ServerSectionProps {
@@ -8,7 +8,7 @@ interface ServerSectionProps {
   role?: MemberRole;
   sectionType: 'groups' | 'members';
   groupType?: GroupType;
-  room?: any;
+  room?: Room;
 }
 
 const GroupListSection = ({ label, role, sectionType, groupType, room }: ServerSectionProps) => {
@@ -25,6 +25,7 @@ const GroupListSection = ({ label, role, sectionType, groupType, room }: ServerS
                 modalType: 'createGroup',
                 data: {
                   groupType,
+                  room,
                 },
               })
             }

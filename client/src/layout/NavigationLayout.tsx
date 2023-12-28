@@ -1,4 +1,4 @@
-import LoadingOverlay from '@/components/LoadingOverlay';
+import { LoadingPage } from '@/components/Loading';
 import NavigationSidebar from '@/components/Sidebar/NavigationSidebar';
 import { useRoomsQuery } from '@/hooks/queries';
 import { Outlet, Navigate } from 'react-router-dom';
@@ -10,17 +10,26 @@ const NavigationLayout = () => {
     isFetching,
     isRefetching,
     isError,
-  } = useRoomsQuery({
-    roomType: 'all',
-    status: 'joined',
-  });
+  } = useRoomsQuery(
+    {
+      roomType: 'all',
+      status: 'joined',
+    },
+    {
+      refetchOnMount: true,
+    },
+  );
 
   if (isPending || isFetching || isRefetching) {
-    return <LoadingOverlay />;
+    return <LoadingPage />;
   }
 
-  if (isError) {
-    return <Navigate to={'/error'} replace />;
+  if (isError || !rooms) {
+    return <Navigate to={'/error-page'} />;
+  }
+
+  if (rooms.length === 0) {
+    return <Navigate to={'/first-room'} replace />;
   }
 
   return (

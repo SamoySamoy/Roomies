@@ -12,7 +12,6 @@ import {
   LoginPage,
   RegisterPage,
   MyRoomsPage,
-  RoomPreviewPage,
   FirstRoomPage,
   RoomRedirectPage,
 } from '@/pages';
@@ -22,6 +21,7 @@ import {
   ProtectedLayout,
   NavigationLayout,
   RoomLayout,
+  ExploreLayout,
 } from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -35,10 +35,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route Component={LandingLayout}>
                 <Route index Component={LandingPage} />
               </Route>
-              <Route path='preview' Component={RoomPreviewPage} />
-
               <Route Component={ProtectedLayout}>
-                <Route path='explore' Component={ExplorePage} />
+                <Route path='explore' Component={ExploreLayout}>
+                  <Route index Component={ExplorePage} />
+                </Route>
                 <Route path='my-rooms' Component={MyRoomsPage} />
                 <Route path='first-room' Component={FirstRoomPage} />
                 <Route path='rooms' Component={NavigationLayout}>
@@ -55,6 +55,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path='register' Component={RegisterPage} />
               </Route>
             </Route>
+            <Route path='/error-page' Component={ErrorPage} />
             <Route path='*' Component={ErrorPage} />
           </Routes>
           <ModalProvider />

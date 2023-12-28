@@ -26,27 +26,41 @@ import { GroupType } from '@/lib/types';
 import { useModal } from '@/hooks/useModal';
 import { CreateGroupSchema, useCreateGroupForm } from '@/hooks/forms';
 import { useUpdateGroupMutation } from '@/hooks/mutations';
-import { useParams } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 
 const EditGroupModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { room, groupType },
+    data: { room, group },
   } = useModal();
-  const { groupId } = useParams<{ groupId: string }>();
-  const form = useCreateGroupForm();
+  const { toast } = useToast();
+  const form = useCreateGroupForm({
+    groupName: group?.name!,
+    groupType: group?.type!,
+  });
   const mutation = useUpdateGroupMutation();
   const onSubmit = async (values: CreateGroupSchema) => {
     mutation.mutate(
       {
         ...values,
-        groupId: groupId!,
+        groupId: group?.id!,
+        roomId: room?.id!,
       },
       {
+        onSuccess: () => {
+          toast({
+            title: 'Edit group ok',
+          });
+          handleClose();
+        },
+        onError: () => {
+          toast({
+            title: 'Edit group failed',
+          });
+        },
         onSettled: () => {
-          form.reset();
           mutation.reset();
         },
       },
@@ -61,7 +75,7 @@ const EditGroupModal = () => {
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'createGroup'} onOpenChange={handleClose}>
+    <Dialog open={isOpen && modalType === 'editGroup'} onOpenChange={handleClose}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Edit Group</DialogTitle>
@@ -120,7 +134,7 @@ const EditGroupModal = () => {
             </div>
             <DialogFooter className='bg-gray-100 px-6 py-4'>
               <Button variant='primary' disabled={isLoading}>
-                Create
+                Save
               </Button>
             </DialogFooter>
           </form>

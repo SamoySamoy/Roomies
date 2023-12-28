@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreateGroupSchema, JoinRoomSchema, LoginSchema } from './forms';
 import { useAuth } from './useAuth';
-import { Profile, Room } from '@/lib/types';
+import { MemberRole, Profile, Room } from '@/lib/types';
 import useApi from './useApi';
 import { queryKeyFactory } from './queries';
+import { getQueryString } from '@/lib/utils';
+import { AxiosError } from 'axios';
 
 export const useLoginMutation = () => {
   const { setAuth } = useAuth();
@@ -45,6 +47,7 @@ export const useCreateRoomMutation = (args?: { refetch: boolean }) => {
           queryKey: queryKeyFactory.rooms([]),
         });
       }
+      console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -143,7 +146,37 @@ export const useCreateGroupMutation = () => {
         roomId: string;
       },
     ) => {
+      console.log(data);
       const res = await api.post<Room>('/groups', data);
+      return res.data;
+    },
+    onSuccess: (_, { roomId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.room(roomId, []),
+      });
+    },
+    onError(err) {
+      if (err instanceof AxiosError) {
+        console.log(err);
+      }
+    },
+  });
+};
+
+export const useUpdateGroupMutation = () => {
+  const queryClient = useQueryClient();
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      roomId,
+      ...otherData
+    }: CreateGroupSchema & {
+      groupId: string;
+      roomId: string;
+    }) => {
+      const res = await api.put<Room>(`/groups/${groupId}`, otherData);
       return res.data;
     },
     onSuccess: (_, { roomId }) => {
@@ -154,37 +187,70 @@ export const useCreateGroupMutation = () => {
   });
 };
 
-export const useUpdateGroupMutation = () => {
-  const api = useApi();
-  return useMutation({
-    mutationFn: async ({
-      groupId,
-      ...otherData
-    }: CreateGroupSchema & {
-      groupId: string;
-    }) => {
-      const res = await api.put<Room>(`/groups/${groupId}`, otherData);
-      return res.data;
-    },
-    // onSuccess: (_, { roomId }) => {
-    //   queryClient.invalidateQueries({
-    //     queryKey: queryKeyFactory.room(roomId, []),
-    //   });
-    // },
-  });
-};
-
 export const useDeleteGroupMutation = () => {
   const queryClient = useQueryClient();
   const api = useApi();
+
   return useMutation({
-    mutationFn: async ({ groupId }: { groupId: string }) => {
+    mutationFn: async ({ groupId }: { groupId: string; roomId: string }) => {
       const res = await api.delete(`/groups/${groupId}`);
       return res;
     },
-    onSuccess: () => {
+    onSuccess: (_, { roomId }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeyFactory.rooms([]),
+        queryKey: queryKeyFactory.room(roomId, []),
+      });
+    },
+  });
+};
+
+export const useChangeRoleMemberMutation = () => {
+  const queryClient = useQueryClient();
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async ({
+      roomId,
+      memberId,
+      role,
+    }: {
+      roomId: string;
+      memberId: string;
+      role: MemberRole;
+    }) => {
+      const { queryString } = getQueryString({ roomId });
+      const res = await api.put(`/members/${memberId}${queryString}`, {
+        role,
+      });
+      return res;
+    },
+    onSuccess: (_, { roomId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.room(roomId, []),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.members(roomId, []),
+      });
+    },
+  });
+};
+
+export const useKickMemberMutation = () => {
+  const queryClient = useQueryClient();
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async ({ roomId, memberId }: { roomId: string; memberId: string }) => {
+      const { queryString } = getQueryString({ roomId });
+      const res = await api.delete(`/members/${memberId}${queryString}`);
+      return res.data;
+    },
+    onSuccess: (_, { roomId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.room(roomId, []),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.members(roomId, []),
       });
     },
   });

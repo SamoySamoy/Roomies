@@ -1,10 +1,6 @@
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
-import RoomListSidebar from '@/components/Sidebar/NavigationSidebar';
-import RoomSidebar from '@/components/Sidebar/RoomSidebar';
-import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useRoomsQuery } from '@/hooks/queries';
-import { RoomType } from '@/lib/types';
-import LoadingOverlay from '@/components/LoadingOverlay';
+import { LoadingPage } from '@/components/Loading';
 
 const MyRoomsPage = () => {
   const {
@@ -19,16 +15,11 @@ const MyRoomsPage = () => {
   });
 
   if (isPending || isFetching || isRefetching) {
-    console.log('Loading');
-  }
-  console.log(rooms);
-
-  if (isPending || isFetching || isRefetching) {
-    return <LoadingOverlay />;
+    return <LoadingPage />;
   }
 
-  if (isError) {
-    return <Navigate to={'/error'} />;
+  if (isError || !rooms) {
+    return <Navigate to={'/error-page'} />;
   }
 
   if (rooms.length === 0) {

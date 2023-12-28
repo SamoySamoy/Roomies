@@ -8,34 +8,37 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
-import { useDeleteGroupMutation } from '@/hooks/mutations';
+import { useJoinRoomMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
-const DeleteGroupModal = () => {
+const JoinPublicRoomModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { group, room },
+    data: { room },
   } = useModal();
   const { toast } = useToast();
-  const mutation = useDeleteGroupMutation();
+  const navigate = useNavigate();
+  const mutation = useJoinRoomMutation();
   const onDelete = () => {
     mutation.mutate(
       {
-        groupId: group?.id!,
         roomId: room?.id!,
+        roomPassword: '',
       },
       {
-        onSuccess: () => {
+        onSuccess: (_, { roomId }) => {
           toast({
-            title: 'Delete group ok',
+            title: 'Join public room ok',
           });
           closeModal();
+          navigate(`/rooms/${roomId}`);
         },
         onError: () => {
           toast({
-            title: 'Delete group failed',
+            title: 'Join public room failed',
           });
         },
         onSettled: () => {
@@ -46,14 +49,13 @@ const DeleteGroupModal = () => {
   };
 
   return (
-    <Dialog open={isOpen && modalType === 'deleteGroup'} onOpenChange={closeModal}>
+    <Dialog open={isOpen && modalType === 'joinPublicRoom'} onOpenChange={closeModal}>
       <DialogContent className='bg-white text-black p-0 overflow-hidden'>
         <DialogHeader className='pt-8 px-6'>
-          <DialogTitle className='text-2xl text-center font-bold'>Delete Group</DialogTitle>
+          <DialogTitle className='text-2xl text-center font-bold'>Join Room</DialogTitle>
           <DialogDescription className='text-center text-zinc-500'>
-            Are you sure you want to delete this group <br />
-            <span className='text-indigo-500 font-semibold'>#{group?.name}</span> will be
-            permanently deleted.
+            Are you sure you want to join public room{' '}
+            <span className='text-indigo-500 font-semibold'>{room?.name}</span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
@@ -71,4 +73,4 @@ const DeleteGroupModal = () => {
   );
 };
 
-export default DeleteGroupModal;
+export default JoinPublicRoomModal;

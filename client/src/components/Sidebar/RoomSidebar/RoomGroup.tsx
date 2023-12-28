@@ -4,7 +4,7 @@ import ActionTooltip from '@/components/ActionToolTip';
 import { useModal } from '@/hooks/useModal';
 import { ModalType } from '@/hooks/useModal';
 import { Group, GroupType, MemberRole, Room } from '@/lib/types';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 interface RoomGroupProps {
   group: Group;
@@ -35,15 +35,15 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
   };
 
   return (
-    <Link to={`/rooms/${room.id}/groups/${group.id}`}>
-      <button
-        className={cn(
-          'group px-2 py-2 rounded-md flex items-center gap-x-2 w-full hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50 transition mb-1',
-          {
-            'bg-zinc-700/20 dark:bg-zinc-700': groupId === group.id,
-          },
-        )}
-      >
+    <button
+      className={cn(
+        'group px-2 py-2 rounded-md flex items-center gap-x-2 w-full hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50 transition mb-1',
+        {
+          'bg-zinc-700/20 dark:bg-zinc-700': groupId === group.id,
+        },
+      )}
+    >
+      <Link to={`/rooms/${room.id}/groups/${group.id}`} className='flex gap-x-2'>
         <Icon className='flex-shrink-0 w-5 h-5 text-zinc-500 dark:text-zinc-400' />
         <p
           className={cn(
@@ -53,29 +53,30 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
             },
           )}
         >
-          {group.name}
+          {group.name.length >= 12 ? group.name.slice(0, 12) + '...' : group.name}
         </p>
-        {group.name !== 'default' && role !== MemberRole.GUEST && (
-          <div className='ml-auto flex items-center gap-x-2'>
-            <ActionTooltip label='Edit'>
-              <Edit
-                onClick={e => onAction(e, 'editGroup')}
-                className='hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'
-              />
-            </ActionTooltip>
-            <ActionTooltip label='Delete'>
-              <Trash
-                onClick={e => onAction(e, 'deleteGroup')}
-                className='hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'
-              />
-            </ActionTooltip>
-          </div>
-        )}
-        {group.name === 'default' && (
-          <Lock className='ml-auto w-4 h-4 text-zinc-500 dark:text-zinc-400' />
-        )}
-      </button>
-    </Link>
+      </Link>
+
+      {group.name !== 'default' && role !== MemberRole.GUEST && (
+        <div className='ml-auto flex items-center gap-x-2'>
+          <ActionTooltip label='Edit'>
+            <Edit
+              onClick={e => onAction(e, 'editGroup')}
+              className='hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-indigo-400 dark:text-zinc-400 dark:hover:text-indigo-500 transition'
+            />
+          </ActionTooltip>
+          <ActionTooltip label='Delete'>
+            <Trash
+              onClick={e => onAction(e, 'deleteGroup')}
+              className='hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-700 transition'
+            />
+          </ActionTooltip>
+        </div>
+      )}
+      {group.name === 'default' && (
+        <Lock className='ml-auto w-4 h-4 text-zinc-500 dark:text-zinc-400' />
+      )}
+    </button>
   );
 };
 

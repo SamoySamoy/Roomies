@@ -23,10 +23,10 @@ export const useLoginForm = (init?: LoginSchema) =>
 
 export const createRoomSchema = z.object({
   roomName: z.string().trim().min(1, {
-    message: 'Group name is required.',
+    message: 'Room name is required.',
   }),
   roomImage: z.string().trim().min(1, {
-    message: 'Group image is required.',
+    message: 'Room image is required.',
   }),
   roomType: z.nativeEnum(RoomType),
   roomPassword: z.string().trim(),
@@ -47,7 +47,9 @@ export const joinRoomSchema = z.object({
   roomId: z.string().trim().min(1, {
     message: 'Require room id',
   }),
-  roomPassword: z.string().trim(),
+  roomPassword: z.string().trim().min(1, {
+    message: 'Require password for private room',
+  }),
 });
 export type JoinRoomSchema = z.infer<typeof joinRoomSchema>;
 export const useJoinRoomForm = (init?: JoinRoomSchema) =>

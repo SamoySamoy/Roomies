@@ -43,7 +43,7 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
         {({ getRootProps, getInputProps, isDragActive }) => (
           <div {...getRootProps()} className='flex w-full items-center justify-center'>
             <input {...getInputProps()} />
-            <div className='flex h-20 w-20 flex-col items-center justify-center rounded-full border border-solid border-background'>
+            <div className='flex h-20 w-20 flex-col items-center justify-center rounded-full border border-solid border-slate-950'>
               <Plus size={24} strokeWidth={1} absoluteStrokeWidth />
               {isDragActive && <p className='text-xs font-bold text-background'>Drop here</p>}
             </div>

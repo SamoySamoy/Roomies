@@ -9,6 +9,7 @@ import GroupListSection from './RoomSection';
 import RoomGroup from './RoomGroup';
 import RoomMember from './RoomMember';
 import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 
 const groupIcon = {
   [GroupType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
@@ -32,7 +33,11 @@ const RoomSidebar = ({ room }: Props) => {
   const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
   const videoGroups = room.groups.filter(group => group.type === GroupType.VIDEO);
   const otherMembers = room.members.filter(member => member.profileId !== auth.profileId!);
-  const role = room.members.find(member => member.profileId === auth.profileId!)!.role;
+  const role = room.members.find(member => member.profileId === auth.profileId!)?.role;
+
+  if (!role) {
+    return <Navigate to={'/'} />;
+  }
 
   return (
     <div className='flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]'>
@@ -71,11 +76,10 @@ const RoomSidebar = ({ room }: Props) => {
               {
                 label: 'Members',
                 type: 'member',
-                data: room.members.map(member => ({
+                data: otherMembers.map(member => ({
                   id: member.id,
-                  // name: member.profile.name,
-                  name: member.profileId,
-                  icon: roleIcon[member.role as MemberRole],
+                  name: member.profile.email,
+                  icon: roleIcon[member.role],
                 })),
               },
             ]}
@@ -89,6 +93,7 @@ const RoomSidebar = ({ room }: Props) => {
               groupType={GroupType.TEXT}
               role={role}
               label='Text Groups'
+              room={room}
             />
             <div className='space-y-[2px]'>
               {textGroups.map(group => (
@@ -104,6 +109,7 @@ const RoomSidebar = ({ room }: Props) => {
               groupType={GroupType.AUDIO}
               role={role}
               label='Voice Groups'
+              room={room}
             />
             <div className='space-y-[2px]'>
               {audioGroups.map(group => (
@@ -119,6 +125,7 @@ const RoomSidebar = ({ room }: Props) => {
               groupType={GroupType.VIDEO}
               role={role}
               label='Video Groups'
+              room={room}
             />
             <div className='space-y-[2px]'>
               {videoGroups.map(group => (
@@ -129,7 +136,7 @@ const RoomSidebar = ({ room }: Props) => {
         )}
         {room.members.length && (
           <div className='mb-2'>
-            <GroupListSection sectionType='members' role={role} label='Members' room={room} />
+            <GroupListSection sectionType='members' role={role} label='Other Members' room={room} />
             <div className='space-y-[2px]'>
               {otherMembers.map(member => (
                 <RoomMember key={member.id} member={member} room={room} />

@@ -1,12 +1,8 @@
-import LoadingOverlay from '@/components/LoadingOverlay';
-import RoomListSidebar from '@/components/Sidebar/NavigationSidebar';
-import RoomSidebar from '@/components/Sidebar/RoomSidebar';
+import { LoadingPage } from '@/components/Loading';
 import { useRoomQuery } from '@/hooks/queries';
-import React, { useEffect } from 'react';
-import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 
 const RoomRedirectPage = () => {
-  const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
   const {
     data: room,
@@ -17,14 +13,15 @@ const RoomRedirectPage = () => {
   } = useRoomQuery(roomId!, {
     groups: true,
     members: true,
+    profilesOfMembers: true,
   });
 
   if (isPending || isFetching || isRefetching) {
-    return <LoadingOverlay />;
+    return <LoadingPage />;
   }
 
-  if (isError) {
-    return <Navigate to={'/error'} replace />;
+  if (isError || !room) {
+    return <Navigate to={'/error-page'} replace />;
   }
 
   const initialGroup = room.groups.find(group => group.name === 'default');
