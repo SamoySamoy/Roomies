@@ -1,23 +1,19 @@
 // AUTO GENERATED FILE BY @kalissaac/prisma-typegen
 // DO NOT EDIT
 
-export type ServerType = 'public' | 'private' | 'hidden';
-
-export type MemberRole = 'admin' | 'moderator' | 'guest';
-
-export type ChannelType = 'text' | 'audio' | 'video';
-
-export enum ServerTypeEnum {
+export enum RoomType {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
   HIDDEN = 'HIDDEN',
 }
-export enum MemberRoleEnum {
+
+export enum MemberRole {
   ADMIN = 'ADMIN',
   MODERATOR = 'MODERATOR',
   GUEST = 'GUEST',
 }
-export enum ChannelTypeEnum {
+
+export enum GroupType {
   TEXT = 'TEXT',
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
@@ -29,23 +25,24 @@ export interface Profile {
   password: string;
   ip?: string;
   imageUrl?: string;
-  servers: Server[];
+  rooms: Room[];
+  groups: Group[];
   members: Member[];
-  channels: Channel[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface Server {
+export interface Room {
   id: string;
   name: string;
-  type: ServerType;
+  type: RoomType;
+  password?: string;
   imageUrl?: string;
-  inviteCode?: string;
+  inviteCode: string;
   profileId: string;
   profile: Profile;
+  groups: Group[];
   members: Member[];
-  channels: Channel[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,8 +52,8 @@ export interface Member {
   role: MemberRole;
   profileId: string;
   profile: Profile;
-  serverId: string;
-  server: Server;
+  roomId: string;
+  room: Room;
   messages: Message[];
   directMessages: DirectMessage[];
   conversationsInitiated: Conversation[];
@@ -65,14 +62,14 @@ export interface Member {
   updatedAt: Date;
 }
 
-export interface Channel {
+export interface Group {
   id: string;
   name: string;
-  type: ChannelType;
+  type: GroupType;
   profileId: string;
   profile: Profile;
-  serverId: string;
-  server: Server;
+  roomId: string;
+  room: Room;
   messages: Message[];
   createdAt: Date;
   updatedAt: Date;
@@ -84,8 +81,8 @@ export interface Message {
   fileUrl?: string;
   memberId: string;
   member: Member;
-  channelId: string;
-  channel: Channel;
+  groupId: string;
+  group: Group;
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -1,15 +1,18 @@
 import { Router } from 'express';
 
 import authRouter from './auth';
-import userRouter from './users';
-import serverRouter from './servers';
-import channelRouter from './channels';
+import profilesRouter from './profiles';
+import roomsRouter from './rooms';
+import groupsRouter from './groups';
+import verifyToken from '@/middlewares/verifyToken';
+import membersRouter from './members';
 
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
-apiRouter.use('/users', userRouter);
-apiRouter.use('/servers', serverRouter);
-apiRouter.use('/channels', channelRouter);
+// apiRouter.use('/profiles', profilesRouter);
+apiRouter.use('/rooms', verifyToken, roomsRouter);
+apiRouter.use('/groups', verifyToken, groupsRouter);
+apiRouter.use('/members', verifyToken, membersRouter);
 
 export default apiRouter;

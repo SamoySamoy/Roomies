@@ -1,9 +1,9 @@
-import ChatHeader from '@/components/chat/ChatHeader';
+import ChatHeader from '@/components/Chat/ChatHeader';
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { conversations, members } from '@/lib/fakeData';
-import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatMessages } from '@/components/chat/ChatMessages';
+import { ChatInput } from '@/components/Chat/ChatInput';
+import { ChatMessages } from '@/components/Chat/ChatMessages';
 
 type Params = {
   roomId: string;

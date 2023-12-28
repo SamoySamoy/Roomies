@@ -8,46 +8,45 @@ datasource db {
   relationMode = "prisma"
 }
 
-
 model Profile {
-  id       String @id @default(uuid())
-  email  String @unique
-  password String @db.Text
-  ip String? @db.Text
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String  @db.Text
+  ip       String? @db.Text
   imageUrl String? @db.Text
 
-
-  servers  Server[]
-  members  Member[]
-  channels Channel[]
+  rooms   Room[]
+  groups  Group[]
+  members Member[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum ServerType {
+enum RoomType {
   PUBLIC
   PRIVATE
   HIDDEN
 }
 
-model Server {
-  id         String @id @default(uuid())
+model Room {
+  id         String   @id @default(uuid())
   name       String
-  type       ServerType @default(PUBLIC)  
-  imageUrl   String? @db.Text
-  inviteCode String? @unique
+  type       RoomType @default(PUBLIC)
+  password   String?  @db.Text
+  imageUrl   String?  @db.Text
+  inviteCode String   @unique
 
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  members  Member[]
-  channels Channel[]
+  groups  Group[]
+  members Member[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([profileId])
+  @@index([profileId, inviteCode])
 }
 
 enum MemberRole {
@@ -63,8 +62,8 @@ model Member {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  serverId String
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   messages       Message[]
   directMessages DirectMessage[]
@@ -76,25 +75,25 @@ model Member {
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
-  @@index([serverId])
+  @@index([roomId])
 }
 
-enum ChannelType {
+enum GroupType {
   TEXT
   AUDIO
   VIDEO
 }
 
-model Channel {
-  id   String      @id @default(uuid())
+model Group {
+  id   String    @id @default(uuid())
   name String
-  type ChannelType @default(TEXT)
+  type GroupType @default(TEXT)
 
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  serverId String
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   messages Message[]
 
@@ -102,7 +101,7 @@ model Channel {
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
-  @@index([serverId])
+  @@index([roomId])
 }
 
 model Message {
@@ -114,15 +113,15 @@ model Message {
   memberId String
   member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  channelId String
-  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   deleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([channelId])
+  @@index([groupId])
   @@index([memberId])
 }
 

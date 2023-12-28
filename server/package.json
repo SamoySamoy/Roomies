@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "db:reset": "prisma migrate reset --schema=./src/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=./src/prisma/schema.prisma",
+    "db:client": "prisma generate --schema=./src/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=./src/prisma/schema.prisma",
+    "db:types": "npx @kalissaac/prisma-typegen ./types.ts ./src/prisma/schema.prisma"
   },
   "keywords": [],
   "author": "",

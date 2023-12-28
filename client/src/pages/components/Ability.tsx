@@ -70,7 +70,7 @@ const Achievement = () => {
             <img  src={img} className="m-auto md:order-last order-first transform translate-y-4 hover:translate-y-0 transition-transform duration-300 mt-36" />
         </div>   
     </div>
-  )
-}
+  );
+};
 
-export default Achievement
+export default Achievement;

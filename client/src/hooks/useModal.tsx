@@ -1,24 +1,26 @@
 import { create } from 'zustand';
-import { Channel, Server } from '@/lib/types';
-import { ChannelType } from '@/lib/types';
+import { Group, Room } from '@/lib/types';
+import { GroupType } from '@/lib/types';
 
 export type ModalType =
-  | 'createServer'
-  | 'editServer'
-  | 'leaveServer'
-  | 'deleteServer'
-  | 'createChannel'
-  | 'editChannel'
-  | 'deleteChannel'
+  | 'createRoom'
+  | 'editRoom'
+  | 'leaveRoom'
+  | 'deleteRoom'
+  | 'createGroup'
+  | 'editGroup'
+  | 'deleteGroup'
   | 'invite'
   | 'members'
   | 'messageFile'
-  | 'deleteMessage';
+  | 'deleteMessage'
+  | 'joinPublicRoom'
+  | 'joinPrivateRoom';
 
 export type ModalData = {
-  server?: Server;
-  channelType?: ChannelType;
-  channel?: Channel;
+  room?: Room;
+  group?: Group;
+  groupType?: GroupType;
   apiUrl?: string;
   query?: Record<string, any>;
 };
