@@ -15,7 +15,7 @@ const ScrollToTopButton = () => {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth' // Hiệu ứng cuộn mượt mà
+      behavior: 'smooth', // Hiệu ứng cuộn mượt mà
     });
   };
 
@@ -24,7 +24,9 @@ const ScrollToTopButton = () => {
 
   return (
     <button
-      className={`fixed bottom-10 right-10 bg-green-400 text-white px-4 py-3 rounded-full transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed bottom-10 right-10 bg-emerald-400 text-white px-4 py-3 rounded-full transition-opacity duration-300 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
       onClick={scrollToTop}
     >
       ↑

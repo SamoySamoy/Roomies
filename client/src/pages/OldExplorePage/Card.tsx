@@ -16,7 +16,7 @@ const Card = ({ online, members, description, title, profile, bg }: any) => {
         <p className=' text-gray-400 font-medium text-[15px] pt-1'>{description}</p>
         {/* Active members */}
         <p className=' text-gray-400 font-medium text-[13.5px] pt-3 pb-4 '>
-          <span className='text-green-400 text-lg'>● </span>
+          <span className='text-emerald-400 text-lg'>● </span>
           {online}
           <span className='text-lg'>&emsp; ● </span>
           {members}

@@ -28,33 +28,37 @@ const LandingPage = () => {
     <div className='relative bg-gray-950'>
       <MainContent />
 
-      <div className={`${isTop ? 'fixed top-0 w-full z-50' : ''} transition-all duration-300 ease-in-out bg-black shadow-lg`}>
+      <div
+        className={`${
+          isTop ? 'fixed top-0 w-full z-50' : ''
+        } transition-all duration-300 ease-in-out bg-black shadow-lg`}
+      >
         <nav className='flex justify-evenly items-center py-4'>
           <ScrollLink
             to='ability'
             smooth={true}
-            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-green-400 rounded-full cursor-pointer`}
+            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-emerald-400 rounded-full cursor-pointer`}
           >
             Features
           </ScrollLink>
           <ScrollLink
             to='categories'
             smooth={true}
-            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-green-400 rounded-full cursor-pointer`}
+            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-emerald-400 rounded-full cursor-pointer`}
           >
             Explore The Topic
           </ScrollLink>
           <ScrollLink
             to='server'
             smooth={true}
-            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-green-400 rounded-full cursor-pointer`}
+            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-emerald-400 rounded-full cursor-pointer`}
           >
             Server Info
           </ScrollLink>
           <ScrollLink
             to='footer'
             smooth={true}
-            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-green-400 rounded-full cursor-pointer`}
+            className={`text-white transition duration-300 ease-in-out transform hover:scale-110 hover:underline hover:text-emerald-400 rounded-full cursor-pointer`}
           >
             About Us
           </ScrollLink>
@@ -78,7 +82,6 @@ const LandingPage = () => {
       </Element>
 
       <ScrollToTopButton />
-      
     </div>
   );
 };

@@ -2,6 +2,7 @@
 // import { v4 as uuid } from 'uuid';
 // import { PlainExpressMiddleware } from '@/types/function';
 
+import { getFormatedDate } from '@/lib/utils';
 import { NextFunction, Request, Response } from 'express';
 
 // import fs from 'fs';
@@ -25,6 +26,6 @@ import { NextFunction, Request, Response } from 'express';
 
 export const logger = () => (req: Request, res: Response, next: NextFunction) => {
   // saveLog(`${req.method}\t${req.headers.origin}\t${req.url}`, 'req-logs.txt');
-  console.log(`${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.path} ${getFormatedDate()}`);
   next();
 };
