@@ -171,7 +171,7 @@ export const editMessage = async (
       },
     });
 
-    return res.status(200).send({ message: 'Room deleted successfully' });
+    return res.status(200).json(editMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
