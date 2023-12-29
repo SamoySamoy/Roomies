@@ -66,7 +66,7 @@ export const RoomCard = ({ room }: RoomCardProps) => {
   };
 
   return (
-    <Card className='bg-[#E3E5E8] text-primary dark:bg-[#1E1F22] relative rounded-b-[0.8rem]'>
+    <Card className='bg-[#E3E5E8] text-primary dark:bg-[#1E1F22] relative rounded-b-[0.8rem] drop-shadow-md'>
       <div className='relative'>
         <img
           src={getImageUrl(room.imageUrl!)}
@@ -106,7 +106,7 @@ export const RoomCard = ({ room }: RoomCardProps) => {
             {members.length}
           </div>
           <Badge variant={room.type === RoomType.PUBLIC ? 'public' : 'private'}>
-            {room.type.toLowerCase()}
+            {room.type.toUpperCase()}
           </Badge>
         </div>
         <div className='flex gap-3'>

@@ -1,4 +1,4 @@
-import { SocketApi, getSocketApi } from '@/lib/api';
+import { SocketApi, getSocket } from '@/lib/socket';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type SocketContextType = {
@@ -16,19 +16,21 @@ const SocketProvider = ({ children }: React.PropsWithChildren) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // const socketApi = getSocketApi();
-    // socketApi.on('connect', () => {
-    //   setIsConnected(true);
-    // });
-    // socketApi.on('disconnect', () => {
-    //   setIsConnected(false);
-    // });
-    // socketApi?.on('chat:broadcast:message', msg => console.log(msg));
-    // setSocket(socketApi);
-    // return () => {
-    //   socketApi.removeAllListeners();
-    //   socketApi.disconnect();
-    // };
+    const _socket = getSocket();
+
+    _socket.on('connect', () => {
+      setIsConnected(true);
+    });
+    _socket.on('disconnect', () => {
+      setIsConnected(false);
+    });
+
+    setSocket(_socket);
+
+    return () => {
+      _socket.removeAllListeners();
+      _socket.disconnect();
+    };
   }, []);
 
   return (

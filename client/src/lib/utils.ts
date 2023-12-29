@@ -1,7 +1,7 @@
 import qs from 'query-string';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { SERVER_API_URL } from './api';
+import { SERVER_API_URL } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

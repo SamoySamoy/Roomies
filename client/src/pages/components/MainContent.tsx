@@ -35,7 +35,7 @@ const MainContent = () => {
       </p>
 
       <div className=''>
-        <Link to={'/auth/register'}>
+        <Link to={'/register'}>
           <Button className='w-[200px] rounded-full py-3 bg-emerald-400 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
             <span className='font-bold text-background'>Get Started</span>
           </Button>

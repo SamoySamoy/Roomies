@@ -1,10 +1,13 @@
+import { useEffect } from 'react';
 import { LoadingPage } from '@/components/Loading';
 import RoomSidebar from '@/components/Sidebar/RoomSidebar';
 import { useRoomQuery } from '@/hooks/queries';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
+import { useCurrentRoom } from '@/hooks/useCurrentRoom';
 
 const RoomLayout = () => {
   const { roomId } = useParams<{ roomId: string }>();
+  const { setCurrentRoom } = useCurrentRoom();
   const {
     data: room,
     isPending,
@@ -17,11 +20,13 @@ const RoomLayout = () => {
     profilesOfMembers: true,
   });
 
+  useEffect(() => {
+    setCurrentRoom(room);
+  }, [room]);
+
   if (isPending || isFetching || isRefetching) {
     return <LoadingPage />;
   }
-
-  console.log(room);
 
   if (isError || !room) {
     return <Navigate to={'/error-page'} replace />;

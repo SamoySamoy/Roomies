@@ -41,7 +41,7 @@ const LandingHeader = () => {
 
         <ActionTooltip label='Room'>
           <Link
-            to={'/rooms/12345'}
+            to={'/my-rooms'}
             className='transition duration-300 ease-in-out transform hover:scale-110 hover:underline rounded-full'
           >
             <Button

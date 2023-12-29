@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import NavigationSidebar from './Sidebar/NavigationSidebar';
 import RoomSidebar from './Sidebar/RoomSidebar';
 
-const MobileToggle = ({ roomId }: { roomId: string }) => {
+const MobileToggle = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>

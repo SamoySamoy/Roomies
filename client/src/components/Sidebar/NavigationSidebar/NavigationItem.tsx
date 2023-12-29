@@ -5,9 +5,9 @@ import { Room, RoomType } from '@/lib/types';
 import { Link, useParams } from 'react-router-dom';
 
 const icon = {
-  [RoomType.PUBLIC]: <Unlock className='text-emerald-500' />,
-  [RoomType.PRIVATE]: <Lock className='text-red-500' />,
-  [RoomType.HIDDEN]: <EyeOff className='text-slate-500' />,
+  [RoomType.PUBLIC]: <Unlock className='text-emerald-500 w-5 h-5' />,
+  [RoomType.PRIVATE]: <Lock className='text-red-500 w-5 h-5' />,
+  [RoomType.HIDDEN]: <EyeOff className='text-slate-500 w-5 h-5' />,
 } as const;
 
 const NavigationItem = ({ id, name, type, imageUrl }: Room) => {
@@ -19,9 +19,9 @@ const NavigationItem = ({ id, name, type, imageUrl }: Room) => {
       side='right'
       align='center'
       label={
-        <div className='flex items-start gap-2'>
+        <div className='flex items-center gap-2'>
           <div className='flex flex-1 flex-col gap-4'>
-            <p className='text-sm font-bold text-foreground'>{name}</p>
+            <p className='text-sm text-foreground'>{name}</p>
             {/* <div className='flex gap-2'>
               <div className='flex items-center gap-1'>
                 <span className='text-xs text-muted-foreground'>{1}</span>
