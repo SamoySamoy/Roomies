@@ -29,7 +29,7 @@ export const register = async (req: RequestWithAuthBody, res: Response) => {
     if (profile) {
       return res.status(400).json({ message: 'Email already used' });
     }
-
+    
     const ip = getIp(req);
     const hashedPassword = await bcrypt.hash(String(password), 10);
     const newProfile = await db.profile.create({
