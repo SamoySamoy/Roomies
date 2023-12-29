@@ -1,4 +1,5 @@
 import img from '@/assets/img1.svg';
+import { cn } from '@/lib/utils';
 import { MessageCircleIcon, Mic, Users, Video } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import { Element } from 'react-scroll';
@@ -9,7 +10,13 @@ const Ability = () => {
   });
 
   return (
-    <Element name='ability' className={`${inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'} transform transition ease-in-out duration-1000 `}>
+    <Element
+      name='ability'
+      className={cn(
+        'transform transition ease-in-out duration-1000',
+        inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40',
+      )}
+    >
       <div ref={ref}>
         <div className='w-full py-20 px-20'>
           <div className='md:max-w-[1480px] m-auto grid md:grid-cols-2 max-w-[600px] md:px-0'>
@@ -70,7 +77,6 @@ const Ability = () => {
         </div>
       </div>
     </Element>
-    
   );
 };
 

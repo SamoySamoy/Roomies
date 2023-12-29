@@ -54,5 +54,3 @@ export const sendPasswordResetEmail = (email: string, token: string) => {
     }
   });
 };
-
-

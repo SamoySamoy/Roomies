@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaLinkedinIn, FaInstagram, FaReddit, FaGithub } from 'react-icons/fa';
+import { Facebook, Linkedin, Instagram, Twitch, Github } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -16,19 +16,19 @@ const Footer = () => {
           <h3 className='py-1'>Email: example@mail.com</h3>
           <div className='flex gap-4 py-4'>
             <div className='p-4 bg-emerald-400 rounded-xl'>
-              <FaFacebookF size={25} style={{ color: '#fff' }} />
+              <Facebook className='w-6 h-6 text-white stroke-white' />
             </div>
             <div className='p-4 bg-emerald-400 rounded-xl'>
-              <FaInstagram size={25} style={{ color: '#fff' }} />
+              <Linkedin className='w-6 h-6 text-white stroke-white' />
             </div>
             <div className='p-4 bg-emerald-400 rounded-xl'>
-              <FaGithub size={25} style={{ color: '#fff' }} />
+              <Instagram className='w-6 h-6 text-white stroke-white' />
             </div>
             <div className='p-4 bg-emerald-400 rounded-xl'>
-              <FaLinkedinIn size={25} style={{ color: '#fff' }} />
+              <Twitch className='w-6 h-6 text-white stroke-white' />
             </div>
             <div className='p-4 bg-emerald-400 rounded-xl'>
-              <FaReddit size={25} style={{ color: '#fff' }} />
+              <Github className='w-6 h-6 text-white stroke-white' />
             </div>
           </div>
         </div>

@@ -144,11 +144,11 @@ export const forgotPassword = async (req: RequestWithAuthBody, res: Response) =>
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { newPassword } = req.body;
-    const token = req.params.token
+    const token = req.params.token;
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized - Missing token' });
     }
-    const decodedToken = jwt.verify(token, process.env.RESET_PASSWORD_TOKEN_SECRET as string) as {
+    const decodedToken = jwt.verify(token, process.env.RESET_TOKEN_SECRET as string) as {
       profileId: string;
     };
     const profileId = decodedToken.profileId;

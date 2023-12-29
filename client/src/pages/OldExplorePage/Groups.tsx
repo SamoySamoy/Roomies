@@ -4,8 +4,6 @@ import img2 from '../photos/img2.png';
 import img3 from '../photos/img3.png';
 import img4 from '../photos/img4.png';
 import dc from '../photos/dc.png';
-// import { FiPlus } from "react-icons/fi";
-// import { AiFillCompass } from "react-icons/ai";
 import { CompassIcon, PlusIcon } from 'lucide-react';
 import { Outlet, Link } from 'react-router-dom';
 const groups = [img1, img2, img3, img4, img1];

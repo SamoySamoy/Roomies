@@ -4,13 +4,13 @@ import { Link } from 'react-router-dom';
 
 const LandingHeader = () => {
   return (
-    <div className='flex w-full items-center justify-between border-b border-solid border-white bg-background px-10 py-5 shadow-[0_0_2rem_-0.5rem_#fff8] bg-black'>
+    <div className='flex w-full items-center justify-between border-b border-solid border-slate-400/30 bg-background px-10 py-5 shadow-[0_0_2rem_-0.5rem_#fff8] bg-black'>
       <div className='text-3xl font-bold text-foreground'>
         <Link to={'/'}>
           <p className='text-emerald-400 pl-10'>ROOMIES</p>
         </Link>
       </div>
-      <div className='flex gap-2 pr-10'>
+      <div className='flex items-center gap-4 pr-10'>
         <ActionTooltip label='Homepage'>
           <Link
             to={'/'}
@@ -53,7 +53,7 @@ const LandingHeader = () => {
           </Link>
         </ActionTooltip>
 
-        <div className='h-10 border-l border-gray-400'></div>
+        <div className='h-8 border-l border-gray-400/30'></div>
 
         <ActionTooltip label='Login to connect with your friends'>
           <Link
