@@ -77,7 +77,7 @@ export const createMessage = async (
         message: 'Group not exist',
       });
     }
-    const curMember = db.member.findFirstOrThrow({
+    const curMember = await db.member.findFirstOrThrow({
       where: {
         profileId: profileId,
         roomId: group?.roomId,
@@ -91,7 +91,7 @@ export const createMessage = async (
     }
 
     const newMessage = db.message.create({
-      data: { content: content, memberId: (await curMember).id, groupId: groupId, deleted: false },
+      data: { content: content, memberId: curMember.id, groupId: groupId, deleted: false },
     });
     return res.status(200).json(newMessage);
   } catch (error) {

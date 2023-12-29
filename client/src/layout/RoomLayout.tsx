@@ -3,11 +3,11 @@ import { LoadingPage } from '@/components/Loading';
 import RoomSidebar from '@/components/Sidebar/RoomSidebar';
 import { useRoomQuery } from '@/hooks/queries';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
-import { useCurrentRoom } from '@/hooks/useCurrentRoom';
+import { useCurrent } from '@/hooks/useCurrent';
 
 const RoomLayout = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const { setCurrentRoom } = useCurrentRoom();
+  const { setCurrentRoom } = useCurrent();
   const {
     data: room,
     isPending,

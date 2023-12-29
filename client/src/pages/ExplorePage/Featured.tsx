@@ -1,6 +1,6 @@
 import { GroupType, Room, RoomType } from '@/lib/types';
 import MemberAvatar from '@/components/MemberAvatar';
-import { cn, getImageUrl } from '@/lib/utils';
+import { cn, getFileUrl } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { User, Hash, Mic, Video, Unlock, Lock } from 'lucide-react';
@@ -68,13 +68,10 @@ export const RoomCard = ({ room }: RoomCardProps) => {
   return (
     <Card className='bg-[#E3E5E8] text-primary dark:bg-[#1E1F22] relative rounded-b-[0.8rem] drop-shadow-md'>
       <div className='relative'>
-        <img
-          src={getImageUrl(room.imageUrl!)}
-          className='rounded-md object-cover w-full h-[250px]'
-        />
+        <img src={getFileUrl(room.imageUrl)} className='rounded-md object-cover w-full h-[250px]' />
         <div className='absolute -bottom-4 left-4'>
           <MemberAvatar
-            src={getImageUrl(room.profile.imageUrl!)}
+            src={getFileUrl(room.profile.imageUrl)}
             fallback={
               <p className='text-foreground'>{room.profile.email.split('@')[0].slice(0, 2)}</p>
             }

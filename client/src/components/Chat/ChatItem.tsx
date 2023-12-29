@@ -1,34 +1,22 @@
-import * as z from 'zod';
-// import qs from "query-string";
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Member, MemberRole, Profile } from '@/lib/types';
+import { Member, MemberRole, Message } from '@/lib/types';
 import { Edit, FileIcon, ShieldAlert, ShieldCheck, Trash } from 'lucide-react';
-// import Image from "next/image";
 import { useEffect, useState } from 'react';
-// import { useRouter, useParams } from "next/navigation";
 
 import MemberAvatar from '@/components/MemberAvatar';
 import ActionTooltip from '@/components/ActionToolTip';
-import { cn } from '@/lib/utils';
+import { cn, dt, getFileUrl } from '@/lib/utils';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
+import { ChatSchema, useChatForm } from '@/hooks/forms';
+import { useNavigate, useParams } from 'react-router-dom';
+import { GroupOrigin, socket } from '@/lib/socket';
 
 type ChatItemProps = {
-  id: string;
-  content: string;
-  member: Member & {
-    profile: Profile;
-  };
-  timestamp: string;
-  fileUrl: string | null;
-  deleted: boolean;
+  message: Message;
   currentMember: Member;
-  isUpdated: boolean;
-  socketUrl: string;
-  socketQuery: Record<string, string>;
+  origin: GroupOrigin;
 };
 
 const roleIconMap = {
@@ -37,32 +25,37 @@ const roleIconMap = {
   [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
 } as const;
 
-const formSchema = z.object({
-  content: z.string().min(1),
-});
-
-export const ChatItem = ({
-  id,
-  content,
-  member,
-  timestamp,
-  fileUrl,
-  deleted,
-  currentMember,
-  isUpdated,
-  socketUrl,
-  socketQuery,
-}: ChatItemProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
   const { openModal } = useModal();
-  // const params = useParams();
-  // const router = useRouter();
+  const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
+  const form = useChatForm({
+    content: message.content,
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const fileUrl = false;
+  const fileType = message.fileUrl?.split('.').pop();
+  const isAdmin = currentMember.role === MemberRole.ADMIN;
+  const isModerator = currentMember.role === MemberRole.MODERATOR;
+  const isMessageOwner = currentMember.id === message.memberId;
+  const canDeleteMessage = !message.deleted && (isAdmin || isModerator || isMessageOwner);
+  const canEditMessage = !message.deleted && !fileUrl && isMessageOwner;
+  const isPDF = fileType === 'pdf' && fileUrl;
+  const isImage = !isPDF && fileUrl;
+  const isUpdated = message.createdAt !== message.updatedAt;
 
   const onMemberClick = () => {
-    if (member.id === currentMember.id) {
-      return;
+    if (currentMember.id !== message.memberId) {
     }
-    // router.push(`/servers/${params?.serverId}/conversations/${member.id}`);
+    navigate(`/rooms/${roomId}/conversations/${message.memberId}`);
+  };
+
+  const onEdit = async (values: ChatSchema) => {
+    socket.emit('client:group:message:update', origin, {
+      content: values.content,
+      messageId: message.id,
+    });
   };
 
   useEffect(() => {
@@ -71,59 +64,18 @@ export const ChatItem = ({
         setIsEditing(false);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
 
-    return () => window.removeEventListener('keyDown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keyDown', handleKeyDown);
+    };
   }, []);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      content: content,
-    },
-  });
-
-  const isLoading = form.formState.isSubmitting;
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // try {
-    //   const url = qs.stringifyUrl({
-    //     url: `${socketUrl}/${id}`,
-    //     query: socketQuery,
-    //   });
-    //   await axios.patch(url, values);
-    //   form.reset();
-    //   setIsEditing(false);
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  };
-
-  useEffect(() => {
-    form.reset({
-      content: content,
-    });
-  }, [content]);
-
-  const fileType = fileUrl?.split('.').pop();
-
-  // const isAdmin = currentMember.role === MemberRole.ADMIN;
-  // const isModerator = currentMember.role === MemberRole.MODERATOR;
-  const isAdmin = currentMember.role === MemberRole.ADMIN;
-  const isModerator = currentMember.role === MemberRole.MODERATOR;
-
-  const isOwner = currentMember.id === member.id;
-  const canDeleteMessage = !deleted && (isAdmin || isModerator || isOwner);
-  const canEditMessage = !deleted && isOwner && !fileUrl;
-  const isPDF = fileType === 'pdf' && fileUrl;
-  const isImage = !isPDF && fileUrl;
 
   return (
     <div className='relative group flex items-center hover:bg-black/5 p-4 transition w-full'>
       <div className='group flex gap-x-2 items-start w-full'>
         <div onClick={onMemberClick} className='cursor-pointer hover:drop-shadow-md transition'>
-          <MemberAvatar src={member.profile.imageUrl} fallback='UN' />
+          <MemberAvatar src={getFileUrl(message.member.profile.imageUrl)} fallback='UN' />
         </div>
         <div className='flex flex-col w-full'>
           <div className='flex items-center gap-x-2'>
@@ -132,11 +84,15 @@ export const ChatItem = ({
                 onClick={onMemberClick}
                 className='font-semibold text-sm hover:underline cursor-pointer'
               >
-                {member.profileId}
+                {message.member.profile.email}
               </p>
-              <ActionTooltip label={member.role}>{roleIconMap[member.role]}</ActionTooltip>
+              <ActionTooltip label={message.member.role}>
+                {roleIconMap[message.member.role]}
+              </ActionTooltip>
             </div>
-            <span className='text-xs text-zinc-500 dark:text-zinc-400'>{timestamp}</span>
+            <span className='text-xs text-zinc-500 dark:text-zinc-400'>
+              {dt.format(new Date(message.createdAt as any))}
+            </span>
           </div>
           {isImage && (
             <a
@@ -145,7 +101,7 @@ export const ChatItem = ({
               rel='noopener noreferrer'
               className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-48 w-48'
             >
-              <img src={fileUrl} alt={content} className='object-cover' />
+              <img src={fileUrl} alt={message.content} className='object-cover' />
             </a>
           )}
           {isPDF && (
@@ -163,13 +119,12 @@ export const ChatItem = ({
           )}
           {!fileUrl && !isEditing && (
             <p
-              className={cn(
-                'text-sm text-zinc-600 dark:text-zinc-300',
-                deleted && 'italic text-zinc-500 dark:text-zinc-400 text-xs mt-1',
-              )}
+              className={cn('text-sm text-zinc-600 dark:text-zinc-300', {
+                'italic text-zinc-500 dark:text-zinc-400 text-xs mt-1': message.deleted,
+              })}
             >
-              {content}
-              {isUpdated && !deleted && (
+              {message.content}
+              {isUpdated && !message.deleted && (
                 <span className='text-[10px] mx-2 text-zinc-500 dark:text-zinc-400'>(edited)</span>
               )}
             </p>
@@ -178,7 +133,7 @@ export const ChatItem = ({
             <Form {...form}>
               <form
                 className='flex items-center w-full gap-x-2 pt-2'
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(onEdit)}
               >
                 <FormField
                   control={form.control}
@@ -188,7 +143,7 @@ export const ChatItem = ({
                       <FormControl>
                         <div className='relative w-full'>
                           <Input
-                            disabled={isLoading}
+                            disabled={form.formState.isSubmitting}
                             className='p-2 bg-zinc-200/90 dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-200'
                             placeholder='Edited message'
                             {...field}
@@ -198,7 +153,7 @@ export const ChatItem = ({
                     </FormItem>
                   )}
                 />
-                <Button disabled={isLoading} size='sm' variant='primary'>
+                <Button disabled={form.formState.isSubmitting} size='sm' variant='primary'>
                   Save
                 </Button>
               </form>
@@ -225,8 +180,8 @@ export const ChatItem = ({
                 openModal({
                   modalType: 'deleteMessage',
                   data: {
-                    apiUrl: `${socketUrl}/${id}`,
-                    query: socketQuery,
+                    // apiUrl: `${socketUrl}/${id}`,
+                    // query: socketQuery,
                   },
                 })
               }
@@ -238,3 +193,5 @@ export const ChatItem = ({
     </div>
   );
 };
+
+export default ChatItem;

@@ -1,6 +1,3 @@
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
 
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
@@ -8,50 +5,31 @@ import { Input } from '@/components/ui/input';
 import { useModal } from '@/hooks/useModal';
 import EmojiPicker from '@/components/EmojiPicker';
 import { GroupOrigin, socket } from '@/lib/socket';
-import { useAuth } from '@/hooks/useAuth';
-import { useParams } from 'react-router-dom';
+import { ChatSchema, useChatForm } from '@/hooks/forms';
+import { Member } from '@/lib/types';
 
 interface ChatInputProps {
-  apiUrl: string;
-  query: Record<string, any>;
   name: string;
-  type: 'conversation' | 'group';
+  type: 'group' | 'conversation';
+  origin: GroupOrigin;
+  currentMember: Member;
 }
 
-const formSchema = z.object({
-  content: z.string().min(1),
-});
-
-type FormSchema = z.infer<typeof formSchema>;
-
-type Params = {
-  roomId: string;
-  groupId: string;
-};
-
-export const ChatInput = ({ apiUrl, query, name, type }: ChatInputProps) => {
-  const { auth } = useAuth();
-  const { groupId, roomId } = useParams<Params>();
-  const org: GroupOrigin = {
-    groupId: groupId!,
-    roomId: roomId!,
-    profileId: auth.profileId!,
-  };
+const ChatInput = ({ name, type, origin, currentMember }: ChatInputProps) => {
   const { openModal } = useModal();
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      content: '',
-    },
-  });
+  const form = useChatForm();
 
-  const onMessage = (values: FormSchema) => {
-    socket.emit('client:group:message', values.content, org);
+  const onMessage = (values: ChatSchema) => {
+    socket.emit('client:group:message:post', origin, {
+      content: values.content,
+    });
     form.reset();
   };
 
   const onTyping = () => {
-    socket.emit('client:group:typing', org);
+    socket.emit('client:group:typing', origin, {
+      email: currentMember.profile.email,
+    });
   };
 
   return (
@@ -97,3 +75,5 @@ export const ChatInput = ({ apiUrl, query, name, type }: ChatInputProps) => {
     </Form>
   );
 };
+
+export default ChatInput;

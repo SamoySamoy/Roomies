@@ -1,84 +1,72 @@
+import { useRef, useState } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
 import ChatHeader from '@/components/Chat/ChatHeader';
-import React from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { conversations, members } from '@/lib/fakeData';
-import { ChatInput } from '@/components/Chat/ChatInput';
-import { ChatMessages } from '@/components/Chat/ChatMessages';
+import ChatInput from '@/components/Chat/ChatInput';
+import ChatMessages from '@/components/Chat/ChatMessages';
+import { useEffect } from 'react';
+import { GroupOrigin, socket } from '@/lib/socket';
+import { useAuth } from '@/hooks/useAuth';
+import { useGroupQuery } from '@/hooks/queries';
+import { useCurrent } from '@/hooks/useCurrent';
+import { LoadingPage } from '@/components/Loading';
+import { Message } from '@/lib/types';
 
-type Params = {
-  roomId: string;
-  memberId: string;
-};
+const ChannelPage = () => {
+  const { auth } = useAuth();
+  const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
+  const {
+    data: group,
+    isPending,
+    isError,
+  } = useGroupQuery(groupId!, {
+    // messages: true,
+    profile: true,
+  });
 
-const ConversationPage = () => {
-  // const profile = await currentProfile();
+  const origin: GroupOrigin = {
+    groupId: groupId!,
+    roomId: roomId!,
+    profileId: auth.profileId!,
+  };
 
-  // if (!profile) {
-  //   return redirectToSignIn();
-  // }
-
-  // const currentMember = await db.member.findFirst({
-  //   where: {
-  //     serverId: params.serverId,
-  //     profileId: profile.id,
-  //   },
-  //   include: {
-  //     profile: true,
-  //   },
-  // });
-
-  // if (!currentMember) {
-  //   return redirect("/");
-  // }
-
-  // const conversation = await getOrCreateConversation(currentMember.id, params.memberId);
-
-  // if (!conversation) {
-  //   return redirect(`/servers/${params.serverId}`);
-  // }
-
-  // const { memberOne, memberTwo } = conversation;
-
-  // const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne;
-
-  const { memberId: otherMemberId, roomId } = useParams<Params>();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const me = members[0];
-  const otherMember = members[1];
-  const conversation = conversations[0];
+  if (isPending) {
+    return <LoadingPage />;
+  }
+  if (isError) {
+    return <Navigate to={'/error-page'} replace />;
+  }
 
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>
-      <ChatHeader
-        imageUrl={otherMember.profileId}
-        name={otherMember.id}
-        serverId={roomId!}
-        type='conversation'
-      />
-      <div className='flex-1'>Future messages</div>
+      <ChatHeader name={group.name} type='group' />
+      {/* <div className='flex-1'>
+        {messages.map((m, i) => (
+          <p key={i}>{m.content}</p>
+        ))}
+        {typing && <p>{typing}</p>}
+        {join && <p>{join}</p>}
+        {leave && <p>{leave}</p>}
+      </div> */}
+      <ChatMessages origin={origin} />
       {/* <ChatMessages
+        group={group}
+        room={currentRoom!}
         member={me as any}
-        name={otherMember.id}
-        chatId={conversation.id}
-        type='conversation'
-        apiUrl='/api/direct-messages'
-        paramKey='conversationId'
-        paramValue={conversation.id}
-        socketUrl='/api/socket/direct-messages'
+        name={group.name}
+        chatId={group.id}
+        type='group'
+        apiUrl='/api/messages'
+        socketUrl='/api/socket/messages'
         socketQuery={{
-          conversationId: conversation.id,
+          groupId: group.id,
+          roomId: group.roomId,
         }}
+        paramKey='groupId'
+        paramValue={group.id}
       /> */}
-      <ChatInput
-        name={otherMember.id}
-        type='conversation'
-        apiUrl='/api/socket/direct-messages'
-        query={{
-          conversationId: conversation.id,
-        }}
-      />
+      <ChatInput name={group.name} type='group' origin={origin} />
     </div>
   );
 };
 
-export default ConversationPage;
+export default ChannelPage;

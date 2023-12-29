@@ -82,3 +82,15 @@ export const useCreateGroupForm = (init?: CreateGroupSchema) =>
       groupType: init?.groupType || GroupType.TEXT,
     },
   });
+
+export const chatSchema = z.object({
+  content: z.string().min(1),
+});
+export type ChatSchema = z.infer<typeof chatSchema>;
+export const useChatForm = (init?: ChatSchema) =>
+  useForm<ChatSchema>({
+    resolver: zodResolver(chatSchema),
+    defaultValues: {
+      content: init?.content || '',
+    },
+  });

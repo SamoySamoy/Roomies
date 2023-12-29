@@ -1,6 +1,6 @@
 import { Lock, Unlock, EyeOff } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
-import { cn, getImageUrl } from '@/lib/utils';
+import { cn, getFileUrl } from '@/lib/utils';
 import { Room, RoomType } from '@/lib/types';
 import { Link, useParams } from 'react-router-dom';
 
@@ -56,7 +56,7 @@ const NavigationItem = ({ id, name, type, imageUrl }: Room) => {
               },
             )}
           >
-            <img className='h-full w-full' src={getImageUrl(imageUrl!)} alt='Channel' />
+            <img className='h-full w-full' src={getFileUrl(imageUrl)} alt='Channel' />
           </div>
         </button>
       </Link>

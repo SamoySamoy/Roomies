@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const i18n = new Intl.DateTimeFormat('en-US', {
+export const dt = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   hour: 'numeric',
   month: 'short',
@@ -16,7 +16,10 @@ export const i18n = new Intl.DateTimeFormat('en-US', {
   hour12: false,
 });
 
-export const getImageUrl = (relUrl: string) => `${SERVER_API_URL}${relUrl}`;
+export const getFileUrl = (relUrl: string | undefined | null) => {
+  if (!relUrl) return '';
+  return `${SERVER_API_URL}${relUrl}`;
+};
 
 export const getQueryString = (obj: Record<string, any> | undefined | null) => {
   const queryFilter = obj || {};
