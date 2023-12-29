@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { BsHeartFill } from 'react-icons/bs';
+import { HeartIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const CTA = () => {
   return (
@@ -12,7 +12,7 @@ const CTA = () => {
         <Button className='bg-emerald-400 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
           <div className='flex flex-row items-center justify-center gap-2'>
             <span className='font-bold text-background'>Join now</span>
-            <BsHeartFill className='text-red-400' />
+            <HeartIcon className='text-red-400' />
           </div>
         </Button>
       </Link>

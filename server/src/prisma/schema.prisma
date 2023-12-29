@@ -159,3 +159,9 @@ model DirectMessage {
   @@index([memberId])
   @@index([conversationId])
 }
+
+model ResetToken {
+  id      String  @id @default(uuid())
+  profileId String
+  token String  @db.Text
+}

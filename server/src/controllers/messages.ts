@@ -1,8 +1,6 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { GroupType, MemberRole, RoomType } from '@prisma/client';
 import { AuthenticatedRequest } from '@/lib/types';
-import { isTruthy } from '@/lib/utils';
 
 type BodyCreateMessage = {
   groupId: string;
@@ -119,9 +117,9 @@ export const deleteMessage = async (
     const member = await db.member.findUnique({
       where: { id: message.memberId },
     });
-    // Only author can delete his message
+
     if (member?.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only author can delete message' });
+      return res.status(403).json({ message: 'Only the author can delete his message' });
     }
 
     await db.message.delete({
@@ -157,9 +155,8 @@ export const editMessage = async (
     const member = await db.member.findUnique({
       where: { id: message.memberId },
     });
-    // Only author can edit his message
     if (member?.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only author can edit message' });
+      return res.status(403).json({ message: 'Only the author can edit his message' });
     }
 
     const editedMessage = await db.message.update({
@@ -171,7 +168,7 @@ export const editMessage = async (
       },
     });
 
-    return res.status(200).json(editMessage);
+    return res.status(200).json(editedMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });

@@ -4,14 +4,14 @@ import { TypeAnimation } from 'react-type-animation';
 
 const MainContent = () => {
   return (
-    <div className='max-w-[800px] w-full mx-auto text-center flex flex-col justify-center py-10'>
+    <div className='max-w-[800px] w-full mx-auto text-center flex flex-col justify-center py-10 mb-10'>
       <h1 className='text-emerald-400 md:text-7xl sm:text-6xl text-4xl font-bold md:py-6'>
         Welcome to Roomies
       </h1>
 
       <div className='flex flex-col items-center'>
         <p className='md:text-5xl sm:text-4xl text-xl py-4'>Connect with your Friends</p>
-        <div className='border-2 rounded-full border-gray-500 hover:border-emerald-400 bg-zinc-900 hover:bg-zinc-900 px-4 py-2 shadow-[0_0_2rem_-0.5rem_#fff8]'>
+        <div className='border-2 rounded-full border-gray-500 hover:border-emerald-400 bg-zinc-900 hover:bg-zinc-900 px-4 py-2  '>
           <TypeAnimation
             sequence={['Gaming', 'Coding', 'Chit-chat', 'Conversation']}
             speed={{
