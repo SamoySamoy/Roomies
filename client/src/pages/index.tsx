@@ -8,3 +8,4 @@ export { default as FirstRoomPage } from './FirstRoomPage';
 export { default as MyRoomsPage } from './MyRoomsPage';
 export { default as RoomRedirectPage } from './RoomRedirectPage';
 export { default as ErrorPage } from './ErrorPage';
+export { default as AudioPage } from './AudioPage';

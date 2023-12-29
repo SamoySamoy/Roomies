@@ -14,6 +14,8 @@ import {
   MyRoomsPage,
   FirstRoomPage,
   RoomRedirectPage,
+  AudioPage
+
 } from '@/pages';
 import {
   LandingLayout,
@@ -44,6 +46,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Route path=':roomId' Component={RoomLayout}>
                   <Route index Component={RoomRedirectPage} />
                   <Route path='groups/:groupId' Component={ChannelPage} />
+                  <Route path='audios/:audioId' Component={AudioPage} />
                   <Route path='conversations/:memberId' Component={ConversationPage} />
                 </Route>
               </Route>
