@@ -6,6 +6,7 @@ import roomsRouter from './rooms';
 import groupsRouter from './groups';
 import verifyToken from '@/middlewares/verifyToken';
 import membersRouter from './members';
+import messagesRouter from './messages';
 
 const apiRouter = Router();
 
@@ -14,5 +15,6 @@ apiRouter.use('/auth', authRouter);
 apiRouter.use('/rooms', verifyToken, roomsRouter);
 apiRouter.use('/groups', verifyToken, groupsRouter);
 apiRouter.use('/members', verifyToken, membersRouter);
+apiRouter.use('/messages', verifyToken, messagesRouter);
 
 export default apiRouter;
