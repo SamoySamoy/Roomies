@@ -14,18 +14,24 @@
     animation: gradient-rotate 5s linear infinite reverse;
 }
 
-.border-bright1 {
-    box-shadow: 0 0 10px 5px rgba(165, 25, 25, 0.5);
+.ability-section,
+.categories-section,
+.server-section,
+.cta-section {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
 }
 
-.border-bright2 {
-    box-shadow: 0 0 10px 5px rgba(45, 193, 107, 0.5);
+.ability-section.visible,
+.categories-section.visible,
+.server-section.visible,
+.cta-section.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.border-bright3 {
-    box-shadow: 0 0 10px 5px rgba(79, 40, 164, 0.5);
-}
 
-.border-bright4 {
-    box-shadow: 0 0 10px 5px rgba(178, 31, 127, 0.5);
+.test {
+    visibility: visible;
 }
