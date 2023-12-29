@@ -25,3 +25,8 @@ const TRUTHY = [1, true, '1', 'true'];
 export const isTruthy = (value: any) => TRUTHY.includes(value);
 
 export const convertMbToBytes = (mb: number) => mb * Math.pow(1024, 2);
+
+export const getFormatedDate = () => {
+  const now = new Date();
+  return `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+};

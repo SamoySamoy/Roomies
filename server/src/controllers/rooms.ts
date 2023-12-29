@@ -5,7 +5,8 @@ import { isTruthy, uuid } from '@/lib/utils';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import path from 'path';
-import fs from 'fs/promises';
+import fsPromises from 'fs/promises';
+import fs from 'fs';
 import { AuthenticatedRequest } from '@/lib/types';
 
 type QueryInclude = {
@@ -191,11 +192,17 @@ export const createRoom = async (
     }
 
     const image = req.file;
-    const imageUrl = `/public/rooms/${uuid()}.webp`;
+    const folderPath = '/public/rooms';
+    const imageName = `${uuid()}.webp`;
+    const relImagePath = path.join(folderPath, imageName);
+    const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
+    if (!fs.existsSync(absImageFolderPath)) {
+      await fsPromises.mkdir(absImageFolderPath);
+    }
     await sharp(image.buffer)
       .resize(300, 300)
       .webp()
-      .toFile(path.join(__dirname, '..', '..', imageUrl.substring(1)));
+      .toFile(path.join(absImageFolderPath, imageName));
     const hashedPassword = roomType === 'PRIVATE' ? await bcrypt.hash(roomPassword, 10) : '';
 
     const newRoom = await db.room.create({
@@ -203,7 +210,7 @@ export const createRoom = async (
         name: roomName,
         type: roomType,
         password: hashedPassword,
-        imageUrl,
+        imageUrl: relImagePath,
         inviteCode: uuid(),
         profileId: profile.id,
         members: {
@@ -483,7 +490,7 @@ export const updateRoom = async (
         .webp()
         .toFile(path.join(__dirname, '..', '..', newImageUrl.substring(1)));
       const oldImageUrl = path.join(__dirname, '..', '..', room.imageUrl!.substring(1));
-      await fs.unlink(oldImageUrl);
+      await fsPromises.unlink(oldImageUrl);
       updatedData.imageUrl = newImageUrl;
     }
 
