@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { addIp, getIp } from '@/lib/utils';
+import { addIp, getIp, sendPasswordResetEmail } from '@/lib/utils';
 import { db } from '@/prisma/db';
 import { AccessTokenPayload, AuthenticatedRequest } from '@/lib/types';
 
@@ -29,7 +29,7 @@ export const register = async (req: RequestWithAuthBody, res: Response) => {
     if (profile) {
       return res.status(400).json({ message: 'Email already used' });
     }
-    
+
     const ip = getIp(req);
     const hashedPassword = await bcrypt.hash(String(password), 10);
     const newProfile = await db.profile.create({
@@ -100,4 +100,87 @@ export const logout = async (req: AuthenticatedRequest, res: Response) => {
     data: { ip: '' },
   });
   return res.status(200).json(updatedProfile);
+};
+
+export const forgotPassword = async (req: RequestWithAuthBody, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(404).json({ message: 'Email missing' });
+    }
+    const profile = await db.profile.findUnique({
+      where: { email },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    const resetToken = jwt.sign(
+      {
+        profileId: profile.id,
+      } satisfies AccessTokenPayload,
+      process.env.RESET_TOKEN_SECRET as string,
+      {
+        expiresIn: '20m',
+      },
+    );
+
+    await db.resetToken.create({
+      data: {
+        profileId: profile.id,
+        token: resetToken,
+      },
+    });
+
+    sendPasswordResetEmail(profile.email, resetToken);
+    return res.status(200).json({ message: 'Password reset email sent' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { newPassword } = req.body;
+    const token = req.params.token
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized - Missing token' });
+    }
+    const decodedToken = jwt.verify(token, process.env.RESET_PASSWORD_TOKEN_SECRET as string) as {
+      profileId: string;
+    };
+    const profileId = decodedToken.profileId;
+
+    const storedToken = await db.resetToken.findFirst({
+      where: {
+        profileId,
+        token,
+      },
+    });
+
+    if (!storedToken) {
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.profile.update({
+      where: { id: profileId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    await db.resetToken.delete({
+      where: {
+        id: storedToken.id,
+      },
+    });
+
+    return res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
