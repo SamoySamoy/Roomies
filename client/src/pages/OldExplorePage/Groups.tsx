@@ -27,7 +27,7 @@ const Groups = () => {
 
         {/* Compass */}
         <div className='bg-[#36393f] w-3/4 p-2 rounded-[1.3rem] hover:rounded-2xl cursor-pointer'>
-          <CompassIcon className='w-full h-auto rounded-full  text-green-700' />
+          <CompassIcon className='w-full h-auto rounded-full  text-emerald-700' />
         </div>
         {/* Groups */}
         <div className='space-y-4 p-0 w-3/4'>
@@ -40,7 +40,7 @@ const Groups = () => {
 
         {/* Plus */}
         <div className='bg-[#36393f] p-4 rounded-full hover:rounded-2xl w-3/4'>
-          <PlusIcon className='w-full h-auto rounded-full text-green-700 cursor-pointer' />
+          <PlusIcon className='w-full h-auto rounded-full text-emerald-700 cursor-pointer' />
         </div>
       </div>
     </div>
