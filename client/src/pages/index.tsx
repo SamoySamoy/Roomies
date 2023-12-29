@@ -7,3 +7,4 @@ export { default as LoginPage } from './LoginPage';
 export { default as RegisterPage } from './RegisterPage';
 export { default as ErrorPage } from './ErrorPage';
 export { default as RoomPreviewPage } from './explore/RoomPreview';
+export { default as AudioPage } from './AudioPage';

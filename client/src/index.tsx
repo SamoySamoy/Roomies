@@ -17,6 +17,8 @@ import {
   RegisterPage,
   DefaultRoomPage,
   RoomPreviewPage,
+  AudioPage
+
 } from '@/pages';
 import { BoardLayout, RoomLayout, LandingLayout, AuthLayout } from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
@@ -36,6 +38,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path='/rooms/:roomId' Component={RoomLayout}>
                 <Route index Component={DefaultRoomPage} />
                 <Route path='groups/:groupId' Component={ChannelPage} />
+                <Route path='audios/:audioId' Component={AudioPage} />
                 <Route path='conversations/:memberId' Component={ConversationPage} />
               </Route>
               <Route path='/auth' Component={AuthLayout}>

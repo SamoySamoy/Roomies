@@ -7,6 +7,7 @@ import { useModal } from '@/hooks/useModal';
 import { ModalType } from '@/hooks/useModal';
 import { Channel, ChannelType, MemberRole, Server } from '@/lib/types';
 import { useNavigate } from 'react-router-dom';
+import { Peer } from 'peerjs'
 
 interface ServerChannelProps {
   channel: Channel;
@@ -32,7 +33,11 @@ const RoomGroup = ({ channel, server, role }: ServerChannelProps) => {
   const Icon = iconMap[channel.type];
 
   const onClick = () => {
-    navigate('/rooms/1231231/groups/21312301');
+    if (channel.type === 'audio') {
+      console.log('join audio room' + channel.id);
+      navigate('/rooms/1231231/audios/testId');
+    }
+    
     // navigate('groups/21312301');
     // router.push(`/servers/${params?.serverId}/groups/${channel.id}`)
   };
@@ -91,6 +96,7 @@ const RoomGroup = ({ channel, server, role }: ServerChannelProps) => {
       )}
     </button>
   );
+  
 };
 
 export default RoomGroup;
