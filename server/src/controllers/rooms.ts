@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { MemberRole, Room, RoomType } from '@prisma/client';
-import { isTruthy, uuid } from '@/lib/utils';
+import { createMsg, isTruthy, uuid } from '@/lib/utils';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import path from 'path';
@@ -101,7 +101,11 @@ export const getRooms = async (
     return res.status(200).json(rooms);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -147,7 +151,11 @@ export const getRoomByRoomId = async (
     return res.status(200).json(room);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -230,7 +238,11 @@ export const createRoom = async (
     return res.status(200).json(newRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -314,7 +326,11 @@ export const joinRoom = async (
     // Can not join hidden room without invite code
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -371,7 +387,11 @@ export const joinRoomByInviteCode = async (
     return res.status(200).json(udpatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -431,7 +451,11 @@ export const leaveRoom = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -504,7 +528,11 @@ export const updateRoom = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -537,6 +565,10 @@ export const deleteRoom = async (
     return res.status(200).send({ message: 'Room deleted successfully' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };

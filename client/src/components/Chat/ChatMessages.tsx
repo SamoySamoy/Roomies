@@ -3,31 +3,18 @@ import { ServerToClientEvents, socket } from '@/lib/socket';
 import { Fragment, useRef, ElementRef, useEffect } from 'react';
 import { Loader2, ServerCrash } from 'lucide-react';
 import { Group, Member, Message, Profile, Room } from '@/lib/types';
-import { dt } from '@/lib/utils';
-
-// import { useChatQuery } from '@/hooks/use-chat-query';
-// import { useChatSocket } from '@/hooks/use-chat-socket';
-// import { useChatScroll } from '@/hooks/use-chat-scroll';
 
 import ChatWelcome from './ChatWelcome';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatScroll } from '@/hooks/useChatScroll';
-import { useChatQuery } from '@/hooks/useChatQuery';
 import ChatItem from './ChatItem';
 import { GroupOrigin } from '@/lib/socket';
-import { useAuth } from '@/hooks/useAuth';
-// import { ChatItem } from './chat-item';
+import { CursorResult, queryKeyFactory, useMessagesInfiniteQuery } from '@/hooks/queries';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 
 type ChatMessagesProps = {
-  // name: string;
-  // member: Member;
-  // chatId: string;
-  // apiUrl: string;
-  // socketUrl: string;
-  // socketQuery: Record<string, string>;
-  // paramKey: 'channelId' | 'conversationId';
-  // paramValue: string;
-  // type: 'channel' | 'conversation';
+  name: string;
+  type: 'group' | 'conversation';
   currentGroup: Group;
   currentRoom: Room;
   currentMember: Member;
@@ -39,62 +26,29 @@ const ChatMessages = ({
   currentRoom,
   currentMember,
   origin,
-}: // name,
-// member,
-// chatId,
-// apiUrl,
-// socketUrl,
-// socketQuery,
-// paramKey,
-// paramValue,
-// type,
-ChatMessagesProps) => {
-  // const queryKey = `chat:${chatId}`;
-  // const addKey = `chat:${chatId}:messages`;
-  // const updateKey = `chat:${chatId}:messages:update`;
-
+  name,
+  type,
+}: ChatMessagesProps) => {
   const chatRef = useRef<ElementRef<'div'>>(null);
   const bottomRef = useRef<ElementRef<'div'>>(null);
-
-  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChatQuery({
-  //   queryKey,
-  //   apiUrl,
-  //   paramKey,
-  //   paramValue,
-  // });
-  // useChatSocket({ queryKey, addKey, updateKey });
-  // useChatScroll({
-  //   chatRef,
-  //   bottomRef,
-  //   loadMore: fetchNextPage,
-  //   shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
-  //   count: data?.pages?.[0]?.items?.length ?? 0,
-  // });
-
-  // if (status === 'loading') {
-  //   return (
-  //     <div className='flex flex-col flex-1 justify-center items-center'>
-  //       <Loader2 className='h-7 w-7 text-zinc-500 animate-spin my-4' />
-  //       <p className='text-xs text-zinc-500 dark:text-zinc-400'>Loading messages...</p>
-  //     </div>
-  //   );
-  // }
-
-  // if (status === 'error') {
-  //   return (
-  //     <div className='flex flex-col flex-1 justify-center items-center'>
-  //       <ServerCrash className='h-7 w-7 text-zinc-500 my-4' />
-  //       <p className='text-xs text-zinc-500 dark:text-zinc-400'>Something went wrong!</p>
-  //     </div>
-  //   );
-  // }
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState('');
   const [join, setJoin] = useState('');
   const [leave, setLeave] = useState('');
   const [justLoad, setJustLoad] = useState(false);
+  const queryClient = useQueryClient();
   const typingTimer = useRef<any>(null);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending, isError } =
+    useMessagesInfiniteQuery(currentGroup.id);
+  useChatScroll({
+    chatRef,
+    bottomRef,
+    loadMore: fetchNextPage,
+    shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
+    count: data?.pages?.[0]?.messages?.length ?? 0,
+  });
 
   useEffect(() => {
     socket.emit('client:group:join', origin);
@@ -114,20 +68,89 @@ ChatMessagesProps) => {
         setTyping('');
       }, 1500);
     };
-    const onGroupMessages: ServerToClientEvents['server:group:message:get'] = messages => {
-      setMessages(messages);
-      setJustLoad(true);
-    };
     const onMessage: ServerToClientEvents['server:group:message:post'] = message => {
-      // message new -> old
-      setMessages(prev => [message, ...prev]);
+      queryClient.setQueryData(
+        queryKeyFactory.messages(currentGroup.id),
+        (oldData: InfiniteData<CursorResult, unknown>) => {
+          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+            return {
+              pages: [
+                {
+                  messages: [message],
+                },
+              ],
+            };
+          }
+          const newData = [...oldData.pages];
+          newData[0] = {
+            ...newData[0],
+            messages: [message, ...newData[0].messages],
+          };
+          return {
+            ...oldData,
+            pages: newData,
+          };
+        },
+      );
+    };
+    const onUpdateMessage: ServerToClientEvents['server:group:message:update'] = updatedMessage => {
+      queryClient.setQueryData(
+        queryKeyFactory.messages(currentGroup.id),
+        (oldData: InfiniteData<CursorResult, unknown>) => {
+          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+            return oldData;
+          }
+          const newData = oldData.pages.map(page => {
+            return {
+              ...page,
+              messages: page.messages.map(message => {
+                if (message.id === updatedMessage.id) {
+                  return updatedMessage;
+                }
+                return message;
+              }),
+            };
+          });
+          return {
+            ...oldData,
+            pages: newData,
+          };
+        },
+      );
+    };
+
+    const onDeleteMessage: ServerToClientEvents['server:group:message:update'] = updatedMessage => {
+      queryClient.setQueryData(
+        queryKeyFactory.messages(currentGroup.id),
+        (oldData: InfiniteData<CursorResult, unknown>) => {
+          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+            return oldData;
+          }
+          const newData = oldData.pages.map(page => {
+            return {
+              ...page,
+              messages: page.messages.map(message => {
+                if (message.id === updatedMessage.id) {
+                  return updatedMessage;
+                }
+                return message;
+              }),
+            };
+          });
+          return {
+            ...oldData,
+            pages: newData,
+          };
+        },
+      );
     };
 
     socket.on('server:group:join', onJoin);
     socket.on('server:group:leave', onLeave);
     socket.on('server:group:typing', onTyping);
     socket.on('server:group:message:post', onMessage);
-    socket.on('server:group:message:get', onGroupMessages);
+    socket.on('server:group:message:update', onUpdateMessage);
+    socket.on('server:group:message:delete', onDeleteMessage);
 
     return () => {
       socket.emit('client:group:leave', origin);
@@ -135,86 +158,61 @@ ChatMessagesProps) => {
       socket.off('server:group:join', onJoin);
       socket.off('server:group:leave', onLeave);
       socket.off('server:group:typing', onTyping);
-      socket.off('server:group:message:get', onGroupMessages);
       socket.off('server:group:message:post', onMessage);
+      socket.off('server:group:message:update', onUpdateMessage);
+      socket.off('server:group:message:delete', onDeleteMessage);
     };
   }, []);
 
-  useEffect(() => {
-    if (justLoad) {
-      bottomRef.current?.scrollIntoView({
-        behavior: 'smooth',
-      });
-    }
-  }, [justLoad]);
+  if (isPending) {
+    return (
+      <div className='flex flex-col flex-1 justify-center items-center'>
+        <Loader2 className='h-7 w-7 text-zinc-500 animate-spin my-4' />
+        <p className='text-xs text-zinc-500 dark:text-zinc-400'>Loading messages...</p>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const shouldScroll = () => {
-      // console.log(chatRef.current?.scrollHeight!); // Độ dài scroll của cả khối
-      // console.log(chatRef.current?.scrollTop!); // Scroll đang cách top của cả khối là bao nhiêu
-      // console.log(chatRef.current?.clientHeight!); // Độ dài khi hiển thị lên màn hình
-      const distanceFromBottom =
-        chatRef.current?.scrollHeight! -
-        chatRef.current?.scrollTop! -
-        chatRef.current?.clientHeight!;
-
-      return distanceFromBottom <= chatRef.current?.clientHeight!;
-    };
-
-    if (shouldScroll()) {
-      setJustLoad(false);
-      bottomRef.current?.scrollIntoView({
-        behavior: 'smooth',
-      });
-    }
-  }, [messages.length]);
+  if (isError) {
+    return (
+      <div className='flex flex-col flex-1 justify-center items-center'>
+        <ServerCrash className='h-7 w-7 text-zinc-500 my-4' />
+        <p className='text-xs text-zinc-500 dark:text-zinc-400'>Something went wrong!</p>
+      </div>
+    );
+  }
 
   return (
     <div ref={chatRef} className='flex-1 flex flex-col overflow-y-auto'>
-      {/* {!hasNextPage && <div className='flex-1' />}
+      {!hasNextPage && <div className='flex-1' />}
       {!hasNextPage && <ChatWelcome type={type} name={name} />}
-      {hasNextPage && ( */}
-      <div className='flex justify-center'>
-        {/* {isFetchingNextPage ? (
+      {hasNextPage && (
+        <div className='flex justify-center'>
+          {isFetchingNextPage ? (
             <Loader2 className='h-6 w-6 text-zinc-500 animate-spin my-4' />
-          ) : ( */}
-        <button
-          // onClick={() => fetchNextPage()}
-          className='text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 text-xs my-4 dark:hover:text-zinc-300 transition'
-        >
-          Load previous messages
-        </button>
-        {/* )} */}
-      </div>
-      {/* )} */}
+          ) : (
+            <button
+              onClick={() => fetchNextPage()}
+              className='text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 text-xs my-4 dark:hover:text-zinc-300 transition'
+            >
+              Load previous messages
+            </button>
+          )}
+        </div>
+      )}
       <div className='flex flex-col-reverse'>
-        {messages.map(message => (
-          <ChatItem
-            message={message}
-            currentMember={currentMember}
-            origin={origin}
-            key={message.id}
-          />
-        ))}
-        {/* {data?.pages?.map((group, i) => (
+        {data.pages.map((page, i) => (
           <Fragment key={i}>
-            {group.items.map((message: MessageWithMemberWithProfile) => (
+            {page.messages.map(message => (
               <ChatItem
                 key={message.id}
-                id={message.id}
-                currentMember={member}
-                member={message.member}
-                content={message.content}
-                fileUrl={message.fileUrl}
-                deleted={message.deleted}
-                timestamp={i18n.format(new Date(message.createdAt))}
-                isUpdated={message.updatedAt !== message.createdAt}
-                socketUrl={socketUrl}
-                socketQuery={socketQuery}
+                message={message}
+                currentMember={currentMember}
+                origin={origin}
               />
             ))}
           </Fragment>
-        ))} */}
+        ))}
       </div>
       {typing && (
         <p className='text-sm text-center dark:text-slate-400/80 text-slate-600/80'>{typing}</p>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Group, Room } from '@/lib/types';
 import { GroupType } from '@/lib/types';
+import { GroupOrigin } from '@/lib/socket';
 
 export type ModalType =
   | 'createRoom'
@@ -21,8 +22,8 @@ export type ModalData = {
   room?: Room;
   group?: Group;
   groupType?: GroupType;
-  apiUrl?: string;
-  query?: Record<string, any>;
+  origin?: GroupOrigin;
+  messageId?: string;
 };
 
 export type ModalState = {

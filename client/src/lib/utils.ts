@@ -25,7 +25,13 @@ export const getQueryString = (obj: Record<string, any> | undefined | null) => {
   const queryFilter = obj || {};
   const queryKeys = Array.from(Object.keys(queryFilter));
   const queryValues = Array.from(Object.values(queryFilter));
-  const queryString = obj ? '?' + qs.stringify(queryFilter) : '';
+  const queryString = obj
+    ? '?' +
+      qs.stringify(queryFilter, {
+        skipNull: true,
+        skipEmptyString: true,
+      })
+    : '';
   return {
     queryFilter,
     queryKeys,

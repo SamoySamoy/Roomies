@@ -1,9 +1,11 @@
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
-import { addIp, getIp, sendPasswordResetEmail } from '@/lib/utils';
+
 import { db } from '@/prisma/db';
-import { AccessTokenPayload, AuthenticatedRequest } from '@/lib/types';
+import { createMsg, genToken, decodeToken, sendPasswordResetEmail } from '@/lib/utils';
+import { AuthenticatedRequest } from '@/lib/types';
+import { refreshTokenCookieOptions } from '@/lib/config';
 
 type BodyAuth = {
   email: string;
@@ -17,32 +19,47 @@ export const register = async (req: RequestWithAuthBody, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: 'Need email and password',
-      });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need email and password',
+        }),
+      );
     }
 
-    const profile = await db.profile.findUnique({
+    const duplicateProfile = await db.profile.findUnique({
       where: { email },
     });
-
-    if (profile) {
-      return res.status(400).json({ message: 'Email already used' });
+    if (duplicateProfile) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Email already in used',
+        }),
+      );
     }
 
-    const ip = getIp(req);
-    const hashedPassword = await bcrypt.hash(String(password), 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newProfile = await db.profile.create({
       data: {
         email,
         password: hashedPassword,
-        ip,
       },
     });
-    return res.status(200).json(newProfile);
+
+    return res.status(201).json(
+      createMsg({
+        type: 'success',
+        successMessage: 'Profile created successfully!',
+      }),
+    );
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -51,142 +68,300 @@ export const login = async (req: RequestWithAuthBody, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: 'Need email and password',
-      });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need email and password',
+        }),
+      );
     }
 
     const profile = await db.profile.findUnique({
       where: { email },
     });
-
     if (!profile) {
-      return res.status(400).json({ message: 'Email not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Email not found',
+        }),
+      );
     }
 
     const isRightPassword = await bcrypt.compare(password, profile.password);
     if (!isRightPassword) {
-      return res.status(400).json({ message: 'Wrong email or password' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Wrong email or password',
+        }),
+      );
     }
 
-    const accessToken = jwt.sign(
-      {
+    const accessToken = genToken({
+      type: 'accessToken',
+      payload: {
         profileId: profile.id,
-      } satisfies AccessTokenPayload,
-      process.env.ACCESS_TOKEN_SECRET as string,
-      {
-        expiresIn: '1h',
       },
-    );
-    const ip = getIp(req);
-    const updatedProfile = await addIp(email, ip);
-    // TODO: Add Access and request token for profile
+    });
+    const refreshToken = genToken({
+      type: 'refreshToken',
+      payload: {
+        profileId: profile.id,
+      },
+    });
+    await db.refreshToken.create({
+      data: {
+        profileId: profile.id,
+        refreshToken,
+      },
+    });
+
+    res.cookie('jwt', refreshToken, refreshTokenCookieOptions);
     return res.status(200).json({
       accessToken,
-      message: `Login successfully!`,
+      ...createMsg({
+        type: 'success',
+        successMessage: 'Login successfully',
+      }),
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
 export const logout = async (req: AuthenticatedRequest, res: Response) => {
-  return res.sendStatus(204);
-
-  const profileId = req.user?.profileId!;
-  const updatedProfile = await db.profile.update({
-    where: { id: profileId },
-    data: { ip: '' },
+  if (!req.cookies.jwt) return res.sendStatus(204);
+  const refreshToken = req.cookies.jwt as string;
+  const refreshTokenInDb = await db.refreshToken.findFirst({
+    where: {
+      refreshToken,
+    },
   });
-  return res.status(200).json(updatedProfile);
+
+  if (!refreshTokenInDb) {
+    res.clearCookie('jwt', refreshTokenCookieOptions);
+    return res.sendStatus(204);
+  }
+
+  await db.refreshToken.delete({
+    where: {
+      id: refreshTokenInDb.id,
+    },
+  });
+  res.clearCookie('jwt', refreshTokenCookieOptions);
+  return res.sendStatus(204);
 };
 
-export const forgotPassword = async (req: RequestWithAuthBody, res: Response) => {
+export const forgot = async (req: RequestWithAuthBody, res: Response) => {
   try {
     const { email } = req.body;
     if (!email) {
-      return res.status(404).json({ message: 'Email missing' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need email',
+        }),
+      );
     }
     const profile = await db.profile.findUnique({
       where: { email: email },
     });
-
     if (!profile) {
-      return res.status(404).json({ message: 'Email not found' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Email not found',
+        }),
+      );
     }
 
-    const resetToken = jwt.sign(
-      {
+    const resetToken = genToken({
+      type: 'resetToken',
+      payload: {
         profileId: profile.id,
-      } satisfies AccessTokenPayload,
-      process.env.RESET_TOKEN_SECRET as string,
-      {
-        expiresIn: '20m',
       },
-    );
-
+    });
     await db.resetToken.create({
       data: {
         profileId: profile.id,
-        token: resetToken,
+        resetToken,
       },
     });
 
-    sendPasswordResetEmail(profile.email, resetToken);
-    return res.status(200).json({ message: 'Password reset email sent' });
+    sendPasswordResetEmail({
+      email: profile.email,
+      token: resetToken,
+    });
+
+    return res.status(200).json(
+      createMsg({
+        type: 'success',
+        successMessage: 'Password reset email sent',
+      }),
+    );
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
-export const resetPassword = async (req: RequestWithAuthBody, res: Response) => {
+export const reset = async (
+  req: Request<{ token: string }, any, Partial<BodyAuth>, any>,
+  res: Response,
+) => {
   try {
     const { password } = req.body;
-    const { token } = req.params;
-  
-    console.log(token);
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized - Missing token' });
-    }
-    const decodedToken = jwt.verify(token, process.env.RESET_TOKEN_SECRET as string) as {
-      profileId: string;
-    };
-    const profileId = decodedToken.profileId;
+    const token = req.params.token;
 
-    const storedToken = await db.resetToken.findFirst({
+    if (!token || !password) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need reset token and new password',
+        }),
+      );
+    }
+
+    const resetTokenInDb = await db.resetToken.findFirst({
       where: {
-        profileId,
-        token,
+        resetToken: token,
       },
     });
-
-    if (!storedToken) {
-      return res.status(401).json({ message: 'Invalid or expired token' });
+    if (!resetTokenInDb) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Invalid token',
+        }),
+      );
     }
-
-    if (!password) {
-      return res.status(404).json({ message: 'Missing new password' });
+    const decoded = decodeToken({
+      type: 'resetToken',
+      token: resetTokenInDb.resetToken,
+    });
+    if (!decoded) {
+      return res.status(401).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Invalid token or expired token',
+        }),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await db.profile.update({
-      where: { id: profileId },
-      data: {
-        password: hashedPassword,
-      },
-    });
-
-    await db.resetToken.delete({
-      where: {
-        id: storedToken.id,
-      },
-    });
+    await Promise.all([
+      db.profile.update({
+        where: { id: decoded.profileId },
+        data: {
+          password: hashedPassword,
+        },
+      }),
+      db.resetToken.delete({
+        where: {
+          id: resetTokenInDb.id,
+        },
+      }),
+    ]);
 
     return res.status(200).json({ message: 'Password reset successful' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
+  }
+};
+export const refresh = async (req: Request, res: Response) => {
+  try {
+    // Check if lack of info
+    // No refresh token in cookie means unauthentication
+    if (!req.cookies?.jwt) {
+      return res.sendStatus(401);
+    }
+
+    // Exist refresh token
+    const refreshToken = req.cookies.jwt;
+    // Delete old cookies
+    res.clearCookie('jwt', refreshTokenCookieOptions);
+
+    const refreshTokenInDb = await db.refreshToken.findFirst({
+      where: {
+        refreshToken,
+      },
+    });
+    if (!refreshTokenInDb) {
+      return res.sendStatus(403);
+    }
+
+    const decoded = decodeToken({
+      type: 'refreshToken',
+      token: refreshTokenInDb.refreshToken,
+    });
+    // Token hết hạn hoặc lỗi
+    if (!decoded) {
+      // Xóa refresh token cũ trong DB
+      await db.refreshToken.delete({
+        where: {
+          id: refreshTokenInDb.id,
+        },
+      });
+      return res.sendStatus(403);
+    }
+
+    // Còn hạn
+    const newAccessToken = genToken({
+      type: 'accessToken',
+      payload: {
+        profileId: refreshTokenInDb.profileId,
+      },
+    });
+    const newRefreshToken = genToken({
+      type: 'refreshToken',
+      payload: {
+        profileId: refreshTokenInDb.profileId,
+      },
+    });
+    await Promise.all([
+      // Xóa refresh token cũ trong DB
+      db.refreshToken.delete({
+        where: {
+          id: refreshTokenInDb.id,
+        },
+      }),
+      db.refreshToken.create({
+        data: {
+          profileId: refreshTokenInDb.profileId,
+          refreshToken: newRefreshToken,
+        },
+      }),
+    ]);
+
+    res.cookie('jwt', newRefreshToken, refreshTokenCookieOptions);
+    return res.status(200).json({
+      accessToken: newAccessToken,
+      ...createMsg({
+        type: 'success',
+        successMessage: 'Refresh successfully',
+      }),
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
