@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { Message } from './types';
 
 export type ServerToClientEvents = {
+  'server:group:join:success': (msg: string) => void;
   'server:group:join': (msg: string) => void;
   'server:group:leave': (msg: string) => void;
   'server:group:typing': (msg: string) => void;
