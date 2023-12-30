@@ -55,7 +55,7 @@ export function setupWs(httpServer: HTTPServer) {
 
       socket.join(origin.groupId);
       // On user join group - to user only
-      socket.emit('server:group:join', `You just join group ${origin.groupId}`);
+      socket.emit('server:group:join', `You just join group  ${origin.groupId}`);
       // On user join group - to other user in group
       socket.broadcast
         .to(origin.groupId)
