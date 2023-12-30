@@ -70,9 +70,14 @@ export function setupWs(httpServer: HTTPServer) {
       }
 
       // On user join group - to other user in group
-      socket.broadcast
-        .to(origin.groupId)
-        .emit('server:group:join:success', `Profile ${origin.profileId} just join group`);
+      try {
+        socket.broadcast
+          .to(origin.groupId)
+          .emit('server:group:join:success', `Profile ${origin.profileId} just join group`);
+      } catch (error) {
+        console.log(error);
+        socket.emit('server:group:join:error', `${error}`);
+      }
 
       // On user join group - get all messages
       try {
