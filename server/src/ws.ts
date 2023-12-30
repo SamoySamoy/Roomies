@@ -5,13 +5,20 @@ import { Message, MemberRole } from '@prisma/client';
 import { corsOptions } from './lib/config';
 
 export type ServerToClientEvents = {
-  'server:group:join': (msg: string) => void;
-  'server:group:leave': (msg: string) => void;
-  'server:group:typing': (msg: string) => void;
-  'server:group:message:get': (messages: Message[]) => void;
-  'server:group:message:post': (message: Message) => void;
-  'server:group:message:update': (messages: Message) => void;
-  'server:group:message:delete': (messages: Message) => void;
+  'server:group:join:success': (msg: string) => void;
+  'server:group:join:error': (msg: string) => void;
+  'server:group:leave:success': (msg: string) => void;
+  'server:group:leave:error': (msg: string) => void;
+  'server:group:typing:success': (msg: string) => void;
+  'server:group:typing:error': (msg: string) => void;
+  'server:group:message:get:success': (messages: Message[]) => void;
+  'server:group:message:get:error': (messages: string) => void;
+  'server:group:message:post:success': (message: Message) => void;
+  'server:group:message:post:error': (message: string) => void;
+  'server:group:message:update:success': (messages: Message) => void;
+  'server:group:message:update:error': (messages: string) => void;
+  'server:group:message:delete:success': (messages: Message) => void;
+  'server:group:message:delete:error': (messages: string) => void;
 };
 
 export type Origin = {
@@ -53,50 +60,99 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:group:join', async origin => {
       console.log('User join');
 
-      socket.join(origin.groupId);
-      // On user join group - to user only
-      socket.emit('server:group:join', `You just join group  ${origin.groupId}`);
+      try {
+        socket.join(origin.groupId);
+        // On user join group - to user only
+        socket.emit('server:group:join:success', `You just join group  ${origin.groupId}`);
+      } catch (error) {
+        console.log(error);
+        socket.emit('server:group:join:error', `${error}`);
+      }
+
       // On user join group - to other user in group
-      socket.broadcast
-        .to(origin.groupId)
-        .emit('server:group:join', `Profile ${origin.profileId} just join group`);
+      try {
+        socket.broadcast
+          .to(origin.groupId)
+          .emit('server:group:join:success', `Profile ${origin.profileId} just join group`);
+      } catch (error) {
+        console.log(error);
+        socket.emit('server:group:join:error', `${error}`);
+      }
+
       // On user join group - get all messages
-      socket.emit('server:group:message:get', await getMessagesByGroupId(origin));
+      try {
+        socket.emit('server:group:message:get:success', await getMessagesByGroupId(origin));
+      } catch (error) {
+        console.log(error);
+        socket.emit('server:group:message:get:error', `${error}`);
+      }
     });
 
     // On user leave group
     socket.on('client:group:leave', async origin => {
-      console.log('User leave');
-
-      socket.leave(origin.groupId);
-      io.to(origin.groupId).emit(
-        'server:group:leave',
-        `Profile ${origin.profileId} just leave group`,
-      );
+      try {
+        console.log('User leave');
+        socket.leave(origin.groupId);
+        io.to(origin.groupId).emit(
+          'server:group:leave:success',
+          `Profile ${origin.profileId} just leave group`,
+        );
+      } catch (error) {
+        console.error(error);
+        io.to(origin.groupId).emit('server:group:leave:error', `${error}`);
+      }
     });
 
     // On user typing
     socket.on('client:group:typing', async (origin, arg) => {
-      socket.broadcast.to(origin.groupId).emit('server:group:typing', `${arg.email} is typing ...`);
+      try {
+        socket.broadcast
+          .to(origin.groupId)
+          .emit('server:group:typing:success', `${arg.email} is typing ...`);
+      } catch (error) {
+        console.error(error);
+        io.to(origin.groupId).emit('server:group:typing:error', `${error}`);
+      }
     });
 
     // On user send message
     socket.on('client:group:message:post', async (origin, arg) => {
-      const newMessage = await createMessage(origin, arg);
-      io.to(origin.groupId).emit('server:group:message:post', newMessage);
+      try {
+        const newMessage = await createMessage(origin, arg);
+        io.to(origin.groupId).emit('server:group:message:post:success', newMessage);
+      } catch (error) {
+        console.log(error);
+        io.to(origin.groupId).emit('server:group:message:post:error', `${error}`);
+      }
     });
 
     // On user update message
     socket.on('client:group:message:update', async (origin, arg) => {
-      const updatedMessage = await updateMessage(origin, arg);
-      io.to(origin.groupId).emit('server:group:message:update', updatedMessage!);
+      try {
+        const updatedMessage = await updateMessage(origin, arg);
+        io.to(origin.groupId).emit('server:group:message:update:success', updatedMessage!);
+      } catch (error) {
+        console.log(error);
+        io.to(origin.groupId).emit('server:group:message:update:error', `${error}`);
+      }
     });
 
     // On user delete message
     socket.on('client:group:message:delete', async (origin, arg) => {
-      const deletedMessage = await deleteMesage(origin, arg);
-      io.to(origin.groupId).emit('server:group:message:delete', deletedMessage);
+      try {
+        const deletedMessage = await deleteMesage(origin, arg);
+        io.to(origin.groupId).emit('server:group:message:delete:success', deletedMessage);
+      } catch (error) {
+        console.log(error);
+        io.to(origin.groupId).emit('server:group:message:delete:error', `${error}`);
+      }
     });
+  });
+
+  // Handle errors on the socket IO instance
+  io.on('error', error => {
+    console.error('Socket.IO error:', error);
+    // maybe more
   });
 
   return io;
