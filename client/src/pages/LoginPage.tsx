@@ -13,6 +13,8 @@ import { useLoginMutation } from '@/hooks/mutations';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { Lock } from 'lucide-react';
+import bg from '@/assets/bg.jpg';
 
 const LoginPage = () => {
   const { setAuth } = useAuth();
@@ -40,39 +42,86 @@ const LoginPage = () => {
 
   return (
     <Form {...form}>
-      <Link to='/register'>To Register</Link>
-      <p>Login</p>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name='email'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder='email' {...field} disabled={isLoading} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='password'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input placeholder='password' {...field} disabled={isLoading} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type='submit' variant='primary' disabled={isLoading}>
-          Create
-        </Button>
-      </form>
+      <div
+        style={{
+          backgroundImage: `url(${bg})`,
+          backgroundSize: 'cover',
+        }}
+        className='h-full'
+      >
+        <div className='flex justify-center py-12'>
+          <div className='w-full shadow-md py-12 px-4 sm:px-6 lg:px-8  max-w-md space-y-8 blur-bg'>
+            <div>
+              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-slate-200'>
+                Login
+              </h2>
+            </div>
+
+            <form onSubmit={form.handleSubmit(onSubmit)} className='mt-8 space-y-6'>
+              <FormField
+                control={form.control}
+                name='email'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='Email'
+                        className='shad-input'
+                        {...field}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='password'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='shad-form_label'>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='Password'
+                        className='shad-input'
+                        {...field}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className='flex'>
+                <div className='text-sm ml-auto'>
+                  <Link to='/forgot' className='font-medium text-slate-200 hover:text-indigo-400'>
+                    Forgot your password?
+                  </Link>
+                </div>
+              </div>
+
+              <Button
+                className='group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                type='submit'
+                variant='primary'
+                disabled={isLoading}
+              >
+                <Lock className='absolute w-7 h-7 opacity-40 inset-y-1 left-0 flex items-center pl-3' />
+                Submit
+              </Button>
+
+              <Link to='/register'>
+                <p className='text-lg text-center mt-4 text-slate-200 hover:text-indigo-400 hover:scale-110 transition-all duration-300'>
+                  Create an account?
+                </p>
+              </Link>
+            </form>
+          </div>
+        </div>
+      </div>
     </Form>
   );
 };
