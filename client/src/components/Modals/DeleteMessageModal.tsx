@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,29 +8,21 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
+import { socket } from '@/lib/socket';
 
 const DeleteMessageModal = () => {
   const {
     isOpen,
     modalType,
     closeModal,
-    data: { room, group, apiUrl, query },
+    data: { origin, messageId },
   } = useModal();
 
   const onDelete = async () => {
-    try {
-      // setIsLoading(true);
-      // const url = qs.stringifyUrl({
-      //   url: apiUrl || "",
-      //   query,
-      // });
-      // await axios.delete(url);
-      // onClose();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      // setIsLoading(false);
-    }
+    socket.emit('client:group:message:delete', origin!, {
+      messageId: messageId!,
+    });
+    closeModal();
   };
 
   return (

@@ -4,6 +4,7 @@ import MobileToggle from '@/components/MobileToggle';
 import MemberAvatar from '@/components/MemberAvatar';
 import SocketIndicator from '@/components/SocketIndicator';
 import ChatVideoButton from './ChatVideoButton';
+import { getFileUrl } from '@/lib/utils';
 
 interface ChatHeaderProps {
   name: string;
@@ -14,10 +15,14 @@ interface ChatHeaderProps {
 const ChatHeader = ({ name, type, imageUrl }: ChatHeaderProps) => {
   return (
     <div className='text-md font-semibold px-3 flex items-center h-12 border-neutral-200 dark:border-neutral-800 border-b-2'>
-      {/* <MobileToggle /> */}
+      {/* <MobileToggle serverId={serverId} /> */}
       {type === 'group' && <Hash className='w-5 h-5 text-zinc-500 dark:text-zinc-400 mr-2' />}
       {type === 'conversation' && (
-        <MemberAvatar src={imageUrl} fallback='UN' className='h-8 w-8 md:h-8 md:w-8 mr-2' />
+        <MemberAvatar
+          src={getFileUrl(imageUrl)}
+          className='h-8 w-8 md:h-8 md:w-8 mr-2'
+          fallback={name}
+        />
       )}
       <p className='font-semibold text-md text-black dark:text-white'>{name}</p>
       <div className='ml-auto flex items-center'>

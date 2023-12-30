@@ -1,7 +1,7 @@
-import { useQuery, UndefinedInitialDataOptions } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, UndefinedInitialDataOptions } from '@tanstack/react-query';
 
 import useApi from './useApi';
-import { Group, Member, Room, RoomType } from '@/lib/types';
+import { Group, Member, Message, Room, RoomType } from '@/lib/types';
 import { getQueryString } from '@/lib/utils';
 
 export const queryKeyFactory = {
@@ -11,6 +11,7 @@ export const queryKeyFactory = {
   group: (groupId: string, keys: any[]) => ['group', 'groupId', groupId, ...keys],
   members: (roomdId: string, keys: any[]) => ['members', 'roomId', roomdId, ...keys],
   member: (memberId: string, keys: any[]) => ['member', 'memberId', memberId, ...keys],
+  messages: (groupId: string) => ['messages', groupId],
 } as const;
 
 export type RoomQueryInclude = {
@@ -101,5 +102,28 @@ export const useMembersQuery = (roomId: string, args?: Partial<MemberQueryInclud
       return res.data;
     },
     throwOnError: true,
+  });
+};
+
+export type CursorResult = {
+  messages: Message[];
+  lastCursor: string | null;
+};
+
+export const useMessagesInfiniteQuery = (groupId: string) => {
+  const api = useApi();
+
+  return useInfiniteQuery<CursorResult>({
+    queryKey: queryKeyFactory.messages(groupId),
+    queryFn: async ({ pageParam = undefined }) => {
+      const { queryString } = getQueryString({
+        groupId,
+        cursor: pageParam,
+      });
+      const res = await api.get<CursorResult>(`/messages${queryString}`);
+      return res.data;
+    },
+    initialPageParam: '',
+    getNextPageParam: lastPage => lastPage.lastCursor,
   });
 };

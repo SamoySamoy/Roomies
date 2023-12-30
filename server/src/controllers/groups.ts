@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { GroupType, MemberRole } from '@prisma/client';
 import { AuthenticatedRequest } from '@/lib/types';
-import { isTruthy } from '@/lib/utils';
+import { createMsg, isTruthy } from '@/lib/utils';
 
 type QueryInclude = {
   messages: string;
@@ -32,7 +32,11 @@ export const getGroups = async (
     return res.status(200).json(groups);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -59,7 +63,11 @@ export const getGroupByGroupId = async (
     return res.status(200).json(group);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -145,7 +153,11 @@ export const createGroup = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
