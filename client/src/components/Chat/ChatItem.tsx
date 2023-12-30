@@ -52,10 +52,13 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
   };
 
   const onEdit = async (values: ChatSchema) => {
+    console.log(values);
     socket.emit('client:group:message:update', origin, {
       content: values.content,
       messageId: message.id,
     });
+    form.reset();
+    setIsEditing(false);
   };
 
   useEffect(() => {
@@ -75,7 +78,12 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
     <div className='relative group flex items-center hover:bg-black/5 p-4 transition w-full'>
       <div className='group flex gap-x-2 items-start w-full'>
         <div onClick={onMemberClick} className='cursor-pointer hover:drop-shadow-md transition'>
-          <MemberAvatar src={getFileUrl(message.member.profile.imageUrl)} fallback='UN' />
+          <MemberAvatar
+            src={getFileUrl(message.member.profile.imageUrl)}
+            fallback={
+              <p className='text-lg'>{message.member.profile.email.split('@')[0].slice(0, 2)}</p>
+            }
+          />
         </div>
         <div className='flex flex-col w-full'>
           <div className='flex items-center gap-x-2'>
@@ -153,7 +161,12 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
                     </FormItem>
                   )}
                 />
-                <Button disabled={form.formState.isSubmitting} size='sm' variant='primary'>
+                <Button
+                  disabled={form.formState.isSubmitting}
+                  size='sm'
+                  variant='primary'
+                  type='submit'
+                >
                   Save
                 </Button>
               </form>
@@ -180,8 +193,8 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
                 openModal({
                   modalType: 'deleteMessage',
                   data: {
-                    // apiUrl: `${socketUrl}/${id}`,
-                    // query: socketQuery,
+                    origin,
+                    messageId: message.id,
                   },
                 })
               }

@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import { createServer } from 'http';
+import { ExpressPeerServer } from 'peer';
 import path from 'path';
 import express from 'express';
 import cors from 'cors';
@@ -10,12 +11,14 @@ import apiRouter from './routes';
 import { setupWs } from './ws';
 import { corsOptions } from './lib/config';
 import { logger } from './middlewares/logger';
+import { setupPeerServer } from './peer';
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
 const app = express();
 const httpServer = createServer(app);
-setupWs(httpServer);
+const peerServer = setupPeerServer(httpServer);
+const io = setupWs(httpServer);
 
 app.use(cors(corsOptions));
 app.use(
@@ -28,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use('/peer', peerServer);
 app.use('/api/public', express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {

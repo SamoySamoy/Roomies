@@ -24,7 +24,7 @@ export type ConversationOrigin = Origin & {
 };
 
 export type MessageTyping = { email: string };
-export type MessageCreate = { content: string };
+export type MessageCreate = { content: string; fileUrl?: string };
 export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 

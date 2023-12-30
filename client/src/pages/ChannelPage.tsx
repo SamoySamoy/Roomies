@@ -27,6 +27,8 @@ const ChannelPage = () => {
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>
       <ChatHeader name={currentGroup?.name!} type='group' />
       <ChatMessages
+        name={currentGroup?.name!}
+        type='group'
         origin={origin}
         currentGroup={currentGroup!}
         currentMember={currentMember!}

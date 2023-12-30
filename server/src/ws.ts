@@ -2,6 +2,7 @@ import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
 import { Message, MemberRole } from '@prisma/client';
+import { corsOptions } from './lib/config';
 
 export type ServerToClientEvents = {
   'server:group:join': (msg: string) => void;
@@ -25,7 +26,7 @@ export type ConversationOrigin = Origin & {
 };
 
 export type MessageTyping = { email: string };
-export type MessageCreate = { content: string };
+export type MessageCreate = { content: string; fileUrl?: string };
 export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
@@ -44,9 +45,7 @@ export function setupWs(httpServer: HTTPServer) {
     path: '/api/socket',
     serveClient: false,
     addTrailingSlash: false,
-    cors: {
-      credentials: true,
-    },
+    cors: corsOptions,
   });
 
   io.on('connection', socket => {
@@ -89,16 +88,18 @@ export function setupWs(httpServer: HTTPServer) {
 
     // On user update message
     socket.on('client:group:message:update', async (origin, arg) => {
-      const newMessage = await updateMessage(origin, arg);
-      io.to(origin.groupId).emit('server:group:message:update', newMessage);
+      const updatedMessage = await updateMessage(origin, arg);
+      io.to(origin.groupId).emit('server:group:message:update', updatedMessage!);
     });
 
     // On user delete message
     socket.on('client:group:message:delete', async (origin, arg) => {
-      const newMessage = await deleteMesage(origin, arg);
-      io.to(origin.groupId).emit('server:group:message:delete', newMessage);
+      const deletedMessage = await deleteMesage(origin, arg);
+      io.to(origin.groupId).emit('server:group:message:delete', deletedMessage);
     });
   });
+
+  return io;
 }
 
 const getMessagesByGroupId = async (
@@ -127,7 +128,7 @@ const createMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:post']>
 ) => {
   const [origin, arg] = args;
-  const member = await db.member.findFirstOrThrow({
+  const member = await db.member.findFirst({
     where: {
       profileId: origin.profileId,
       roomId: origin.roomId,
@@ -137,8 +138,9 @@ const createMessage = async (
   const message = await db.message.create({
     data: {
       content: arg.content,
+      fileUrl: arg.fileUrl,
       groupId: origin.groupId,
-      memberId: member.id,
+      memberId: member?.id!,
       deleted: false,
     },
     include: {
@@ -156,17 +158,15 @@ const updateMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:update']>
 ) => {
   const [origin, arg] = args;
-  const member = await db.member.findFirstOrThrow({
-    where: {
-      profileId: origin.profileId,
-      roomId: origin.roomId,
-    },
+  const message = await db.message.findUnique({
+    where: { id: arg.messageId },
   });
-
-  const isMessageOwner = arg.messageId === member.id;
-  const isAdmin = member.role === MemberRole.ADMIN;
-  const isModerator = member.role === MemberRole.MODERATOR;
-  const canModify = isMessageOwner || isAdmin || isModerator;
+  const member = await db.member.findUnique({
+    where: { id: message?.memberId },
+  });
+  if (member?.profileId !== origin.profileId) {
+    return message;
+  }
 
   const updatedMessage = await db.message.update({
     where: {
