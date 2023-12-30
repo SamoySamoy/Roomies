@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { AuthenticatedRequest } from '@/lib/types';
+import { createMsg } from '@/lib/utils';
 
 const MESSAGES_BATCH = 10;
 
@@ -67,7 +68,11 @@ export const getMessages = async (
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -97,7 +102,11 @@ export const getMessageById = async (
     return res.status(200).json(message);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -150,7 +159,11 @@ export const createMessage = async (
     return res.status(200).json(newMessage);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -197,7 +210,11 @@ export const editMessage = async (
     return res.status(200).json(editedMessage);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -246,6 +263,10 @@ export const deleteMessage = async (
     return res.status(200).send({ message: 'Room deleted successfully' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };

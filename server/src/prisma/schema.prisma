@@ -12,7 +12,6 @@ model Profile {
   id       String  @id @default(uuid())
   email    String  @unique
   password String  @db.Text
-  ip       String? @db.Text
   imageUrl String? @db.Text
 
   rooms   Room[]
@@ -21,6 +20,18 @@ model Profile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ResetToken {
+  id         String @id @default(uuid())
+  profileId  String
+  resetToken String @db.Text
+}
+
+model RefreshToken {
+  id           String @id @default(uuid())
+  profileId    String
+  refreshToken String @db.Text
 }
 
 enum RoomType {
@@ -158,10 +169,4 @@ model DirectMessage {
 
   @@index([memberId])
   @@index([conversationId])
-}
-
-model ResetToken {
-  id      String  @id @default(uuid())
-  profileId String
-  token String  @db.Text
 }
