@@ -21,23 +21,22 @@ const LeaveRoomModal = () => {
     data: { room },
   } = useModal();
   const { toast } = useToast();
-  const { roomId } = useParams<{ roomId: string }>();
   const mutation = useLeaveRoomMutation();
 
   const onLeave = () => {
     mutation.mutate(
       {
-        roomId: roomId!,
+        roomId: room?.id!,
       },
       {
         onSuccess: () => {
           toast({
-            title: 'Delete room ok',
+            title: 'Leave room ok',
           });
         },
         onError: () => {
           toast({
-            title: 'Delete room failed',
+            title: 'Leave room failed',
           });
         },
         onSettled: () => {
