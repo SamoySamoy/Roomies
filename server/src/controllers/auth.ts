@@ -109,7 +109,7 @@ export const forgotPassword = async (req: RequestWithAuthBody, res: Response) =>
       return res.status(404).json({ message: 'Email missing' });
     }
     const profile = await db.profile.findUnique({
-      where: { email },
+      where: { email: email },
     });
 
     if (!profile) {
@@ -141,10 +141,12 @@ export const forgotPassword = async (req: RequestWithAuthBody, res: Response) =>
   }
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: RequestWithAuthBody, res: Response) => {
   try {
-    const { newPassword } = req.body;
-    const token = req.params.token;
+    const { password } = req.body;
+    const { token } = req.params;
+  
+    console.log(token);
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized - Missing token' });
     }
@@ -164,7 +166,11 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    if (!password) {
+      return res.status(404).json({ message: 'Missing new password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     await db.profile.update({
       where: { id: profileId },
       data: {
