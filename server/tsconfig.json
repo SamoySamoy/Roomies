@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "module": "CommonJS",
     "moduleResolution": "Node",
     "outDir": "./dist",
