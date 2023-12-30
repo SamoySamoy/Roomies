@@ -1,40 +1,41 @@
 import { Request, Response } from 'express';
 import { db } from '@/prisma/db';
-import { Server, Member, Channel } from '@prisma/client';
+import { Room, Member, Group } from '@prisma/client';
 import sharp from 'sharp';
+import { createMsg } from '@/lib/utils';
 
 export const getProfileById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    const { all, servers, members, channels } = req.query;
+    const { all, rooms, members, groups } = req.query;
 
     const user = await db.profile.findUnique({
       where: { id: id },
       include: {
-        servers: true,
+        rooms: true,
         members: true,
-        channels: true,
+        groups: true,
       },
     });
 
     const returnData: {
-      servers?: Server[];
+      rooms?: Room[];
       members?: Member[];
-      channels?: Channel[];
+      groups?: Group[];
     } = {};
 
     if (user) {
       if (all) {
         return res.status(200).json(user);
       } else {
-        if (servers) {
-          returnData.servers = user.servers;
+        if (rooms) {
+          returnData.rooms = user.rooms;
         }
         if (members) {
           returnData.members = user.members;
         }
-        if (channels) {
-          returnData.channels = user.channels;
+        if (groups) {
+          returnData.groups = user.groups;
         }
         return res.status(200).json(returnData);
       }
