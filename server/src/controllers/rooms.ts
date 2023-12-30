@@ -205,7 +205,9 @@ export const createRoom = async (
     const relImagePath = path.join(folderPath, imageName);
     const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
     if (!fs.existsSync(absImageFolderPath)) {
-      await fsPromises.mkdir(absImageFolderPath);
+      await fsPromises.mkdir(absImageFolderPath, {
+        recursive: true,
+      });
     }
     await sharp(image.buffer)
       .resize(300, 300)
