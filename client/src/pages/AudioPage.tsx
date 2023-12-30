@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-const socket = io('/');
+// const socket = getSocket();
 import Video from "@/components/ui/video";
 import { Button } from "@/components/ui/button";
 import Peer from 'peerjs';
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { vi } from "@faker-js/faker";
+import { getSocket } from "@/lib/socket";
+import { GroupOrigin, socket } from "@/lib/socket";
+import { useAuth } from "@/hooks/useAuth";
 const AudioPage = () => {
     const [videoList, setVideoList] = useState<{peerId: string, mute: boolean, stream: MediaStream}[]>([]);
     const [peerId, setPeerId] = useState<string>('');
@@ -14,15 +17,41 @@ const AudioPage = () => {
     const { audioId } = useParams();
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [canShareScreen, setCanShareScreen] = useState(true);
+
+    const { auth } = useAuth();
+    const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
+    const origin: GroupOrigin = {
+    groupId: groupId!,
+    roomId: roomId!,
+    profileId: auth.profileId!,
+  };
     useEffect(() => {
-        const peer = new Peer();
-        
+        const peer = new Peer(origin.profileId);
         peer.on('open', (id) => {
             setPeerId(id);
             console.log(id);
-            socket.emit('join-room', audioId, id);
+            socket.emit('client:group:join', origin);
             
         });
+
+        peer.on('call', function (call) {
+            call.answer(localStream!);
+            call.on('stream', function(callerStream) {
+                addVideo(call.peer, false, callerStream);
+            });
+
+        })
+
+        socket.on('server:group:join:success', (msg) => {
+            const newProfileId = msg.split(' ')[1];
+            const call = peer.call(newProfileId, localStream!);
+            call.on('stream', function(otherStream){
+                addVideo(call.peer, true, otherStream);
+            });
+            call.on('close', function() {
+                removeVideo(call.peer);
+            });
+        })
         navigator.mediaDevices.getUserMedia({audio: true, video: true}).then(function (stream) {
             if (myVideo.current != null){
                 myVideo.current.srcObject = stream;
@@ -49,7 +78,7 @@ const AudioPage = () => {
     function clickCamera() {
         if (camera === 'on') setCamera('off');
         else setCamera('on');
-        socket.emit('camera-off', peerId);
+        // socket.emit('camera-off', peerId);
         const videoTrack = localStream?.getTracks().find(track => track.kind === 'video');
         if (videoTrack) videoTrack.enabled = false;
     }
