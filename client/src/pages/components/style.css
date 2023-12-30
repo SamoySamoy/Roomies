@@ -1,17 +1,23 @@
 @keyframes gradient-rotate {
-    0% {
-      background-position: 100% 0%;
-    }
-  
-    to {
-      background-position: 0% 0%;
-    }
+  0% {
+    background-position: 100% 0%;
+  }
+
+  to {
+    background-position: 0% 0%;
+  }
 }
-  
+
 .hero-join-button {
-    background: linear-gradient(120deg, rgba(49, 120, 196, 0.7), rgba(49, 120, 196, 0.3), #3178c6, rgba(49, 120, 196, 0.5));
-    background-size: 200% 200%;
-    animation: gradient-rotate 5s linear infinite reverse;
+  background: linear-gradient(
+    120deg,
+    rgba(49, 120, 196, 0.7),
+    rgba(49, 120, 196, 0.3),
+    #3178c6,
+    rgba(49, 120, 196, 0.5)
+  );
+  background-size: 200% 200%;
+  animation: gradient-rotate 5s linear infinite reverse;
 }
 
 .ability-section,
@@ -31,7 +37,11 @@
   transform: translateY(0);
 }
 
+.border-bright4 {
+  box-shadow: 0 0 10px 5px rgba(178, 31, 127, 0.5);
+}
 
-.test {
-    visibility: visible;
+.blur-bg {
+  backdrop-filter: blur(5px); /* Điều chỉnh mức độ làm mờ ở đây */
+  background-color: rgba(255, 255, 255, 0.05); /* Màu nền với độ trong suốt */
 }
