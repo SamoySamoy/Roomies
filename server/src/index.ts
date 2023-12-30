@@ -10,7 +10,7 @@ import apiRouter from './routes';
 import { setupWs } from './ws';
 import { corsOptions } from './lib/config';
 import { logger } from './middlewares/logger';
-import { setupPeerServer } from './peer';
+import { setupPeerServer } from './peerServer';
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
@@ -33,11 +33,18 @@ app.use(cookieParser());
 app.use('/peer', peerServer);
 app.use('/api/public', express.static(path.join(__dirname, '..', 'public')));
 
-app.get('/', (req, res) => {
-  return res.status(200).json({
-    message: 'Hello World',
+if (process.env.NODE_ENV === 'development') {
+  app.get('/*', (req, res) => {
+    return res.status(200).json({
+      message: 'Hello World',
+    });
   });
-});
+} else {
+  app.use(express.static(path.join(__dirname, '..', 'client')));
+  app.get('/*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'index.html'));
+  });
+}
 
 app.use('/api', apiRouter);
 
