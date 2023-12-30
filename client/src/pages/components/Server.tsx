@@ -9,13 +9,13 @@ const Categories = () => {
   });
 
   return (
-    <Element name='server' className={`${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'} transform transition ease-in-out duration-1000 `}>
-      <div ref={ref}>
-        <div className='w-full'>
-          <div className='py-20 border-2 px-10 mx-20 rounded-3xl hero-join-button'>
-            <h1 className='md:leading-[72px] text-3xl font-bold'>
-              We have <span className='text-emerald-400'>Powerful Server</span>
-            </h1>
+    <Element name='server' className={`${inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'} transform transition ease-in-out duration-1000 `}>
+      <div className='w-full pb-20'>
+        <div className='py-20 border-2 px-10 mx-20 rounded-3xl hero-join-button'>
+          <h1 className='md:leading-[72px] text-3xl font-bold'>
+            We have <span className='text-emerald-400'>Powerful Server</span>
+          </h1>
+          <div ref={ref}>
             <div className='mx-auto grid md:grid-cols-5 gap-4'>
               {[
                 { icon: <Globe size={30} />, text: 'Crystal-Clear Voice Channels' },

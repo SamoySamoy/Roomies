@@ -18,7 +18,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border-2 font-bold rounded-full border-white hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Home
             </Button>
@@ -32,7 +32,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border-2 font-bold rounded-full border-white hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Explore
             </Button>
@@ -46,7 +46,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border-2 font-bold rounded-full border-white hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Room
             </Button>
@@ -62,7 +62,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border-2 font-bold rounded-full border-white hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Sign In
             </Button>

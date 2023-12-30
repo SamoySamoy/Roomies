@@ -4,6 +4,7 @@ import MainContent from './components/MainContent';
 import Ability from './components/Ability';
 import Categories from './components/Categories';
 import Server from './components/Server';
+import Review from './components/Review';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
 import ScrollToTopButton from './components/ScrollToTopButton';
@@ -101,6 +102,9 @@ const LandingPage = () => {
       </Element>
       <Element name='server'>
         <Server />
+      </Element>
+      <Element name='review'>
+        <Review />
       </Element>
       <Element name='cta'>
         <CTA />
