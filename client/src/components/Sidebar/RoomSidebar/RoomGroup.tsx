@@ -18,10 +18,18 @@ const iconMap = {
   [GroupType.VIDEO]: Video,
 } as const;
 
+
+const groupMap = {
+  [GroupType.TEXT]: 'groups',
+  [GroupType.AUDIO]: 'audiogroups',
+  [GroupType.VIDEO]: 'videogroups',
+} as const;
+
 const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
   const { openModal } = useModal();
   const { groupId } = useParams<{ groupId: string }>();
   const Icon = iconMap[group.type];
+  const groups = groupMap[group.type];
 
   const onAction = (e: React.MouseEvent, modalType: ModalType) => {
     e.stopPropagation();
@@ -43,7 +51,7 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
         },
       )}
     >
-      <Link to={`/rooms/${room.id}/groups/${group.id}`} className='flex gap-x-2'>
+      <Link to={`/rooms/${room.id}/${groups}/${group.id}`} className='flex gap-x-2'>
         <Icon className='flex-shrink-0 w-5 h-5 text-zinc-500 dark:text-zinc-400' />
         <p
           className={cn(
