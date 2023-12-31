@@ -6,7 +6,6 @@ import bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import path from 'path';
 import fsPromises from 'fs/promises';
-import fs from 'fs';
 import { AuthenticatedRequest } from '@/lib/types';
 
 type QueryInclude = {
@@ -233,7 +232,7 @@ export const createRoom = async (
     const relFolderPath = '/public/rooms';
     const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
 
-    const imageName = `${getFileName(image.filename)}_${uuid()}.webp`;
+    const imageName = `${getFileName(image.originalname)}_${uuid()}.webp`;
     const relImagePath = path.join(relFolderPath, imageName);
     const absImagePath = path.join(absFolderPath, imageName);
 
@@ -278,7 +277,7 @@ type BodyJoin = {
   roomPassword: string;
 };
 
-// join room by inviteCode
+// join room
 export const joinRoom = async (
   req: AuthenticatedRequest<ParamsRoomId, Partial<BodyJoin>>,
   res: Response,
@@ -300,6 +299,7 @@ export const joinRoom = async (
         },
       }),
     ]);
+
     if (!profile) {
       return res.status(400).json(
         createMsg({
@@ -316,12 +316,13 @@ export const joinRoom = async (
         }),
       );
     }
+
     const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
-      return res.status(400).json(
+      return res.status(204).json(
         createMsg({
-          type: 'invalid',
-          invalidMessage: 'Profile already join this room',
+          type: 'success',
+          successMessage: 'Profile already join this room',
         }),
       );
     }
@@ -435,10 +436,15 @@ export const joinRoomByInviteCode = async (
     }
     const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
-      return res.sendStatus(204);
+      return res.status(204).json(
+        createMsg({
+          type: 'success',
+          successMessage: 'Profile already join this room',
+        }),
+      );
     }
 
-    const udpatedRoom = await db.room.update({
+    const updatedRoom = await db.room.update({
       where: {
         id: room.id,
       },
@@ -452,7 +458,7 @@ export const joinRoomByInviteCode = async (
         },
       },
     });
-    return res.status(200).json(udpatedRoom);
+    return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
     return res.status(500).json(

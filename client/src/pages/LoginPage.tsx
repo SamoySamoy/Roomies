@@ -90,6 +90,7 @@ const LoginPage = () => {
                         {...field}
                         disabled={isLoading}
                         autoComplete='current-password'
+                        type='password'
                       />
                     </FormControl>
                     <FormMessage />

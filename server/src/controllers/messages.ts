@@ -251,7 +251,7 @@ export const uploadFile = async (
     const relFolderPath = `/public/groups/${groupId}`;
     const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
 
-    let filename = file.filename;
+    let filename = file.originalname;
     if (isImageFile(filename)) {
       filename = `${getFileName(filename)}_${uuid()}.webp`;
     } else {

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Room } from '@/lib/types';
-import { CreateRoomButton, ExploreButton, LogoutButton } from './NavigationButton';
+import { CreateRoomButton, ExploreButton, InviteButton, LogoutButton } from './NavigationButton';
 import NavigationItem from './NavigationItem';
 
 type Props = {
@@ -16,6 +16,7 @@ const NavigationSidebar = ({ rooms }: Props) => {
     <div className='flex h-full w-full flex-col items-center space-y-4 bg-[#E3E5E8] py-3 text-primary dark:bg-[#1E1F22]'>
       <ExploreButton />
       <CreateRoomButton />
+      <InviteButton />
       <Separator className='mx-auto h-[2px] w-10 rounded-md bg-zinc-300 dark:bg-zinc-700' />
       <ScrollArea className='w-full flex-1'>
         {rooms.map(room => (

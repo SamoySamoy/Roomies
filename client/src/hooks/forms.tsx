@@ -21,6 +21,35 @@ export const useLoginForm = (init?: LoginSchema) =>
     },
   });
 
+export const forgotSchema = z.object({
+  email: z.string().min(1).email({
+    message: 'Require email',
+  }),
+});
+export type ForgotSchema = z.infer<typeof forgotSchema>;
+export const useForgotForm = (init?: ForgotSchema) =>
+  useForm<ForgotSchema>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: {
+      email: init?.email || '',
+    },
+  });
+
+export const resetSchema = z.object({
+  password: z.string().min(3, {
+    message: 'Password at least 3 character',
+  }),
+  confirmPassword: z.string().trim(),
+});
+export type ResetSchema = z.infer<typeof resetSchema>;
+export const useResetForm = (init?: ResetSchema) =>
+  useForm<ResetSchema>({
+    resolver: zodResolver(resetSchema),
+    defaultValues: {
+      password: init?.password || '',
+    },
+  });
+
 export const createRoomSchema = z.object({
   roomName: z.string().trim().min(1, {
     message: 'Room name is required.',
@@ -58,6 +87,20 @@ export const useJoinRoomForm = (init?: JoinRoomSchema) =>
     defaultValues: {
       roomId: init?.roomId || '',
       roomPassword: init?.roomPassword || '',
+    },
+  });
+
+export const joinRoomByInviteCode = z.object({
+  inviteCode: z.string().min(1, {
+    message: 'Invite code is required',
+  }),
+});
+export type JoinRoomByInviteCodeSchema = z.infer<typeof joinRoomByInviteCode>;
+export const useJoinRoomByInviteCodeForm = (init?: JoinRoomByInviteCodeSchema) =>
+  useForm<JoinRoomByInviteCodeSchema>({
+    resolver: zodResolver(joinRoomByInviteCode),
+    defaultValues: {
+      inviteCode: init?.inviteCode || '',
     },
   });
 

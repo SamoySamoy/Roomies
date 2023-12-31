@@ -1,11 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CreateGroupSchema, JoinRoomSchema, LoginSchema } from './forms';
+import {
+  CreateGroupSchema,
+  ForgotSchema,
+  JoinRoomByInviteCodeSchema,
+  JoinRoomSchema,
+  LoginSchema,
+  ResetSchema,
+} from './forms';
 import { useAuth } from './useAuth';
-import { MemberRole, Profile, Room } from '@/lib/types';
+import { MemberRole, Room } from '@/lib/types';
 import useApi from './useApi';
 import { queryKeyFactory } from './queries';
 import { getQueryString } from '@/lib/utils';
-import { AxiosError } from 'axios';
 
 export const useLoginMutation = () => {
   const { setAuth } = useAuth();
@@ -27,17 +33,44 @@ export const useRegisterMutation = () => {
   const api = useApi();
   return useMutation({
     mutationFn: async (data: LoginSchema) => {
-      const res = await api.post<Profile>('/auth/register', data);
+      const res = await api.post('/auth/register', data);
+      return res;
+    },
+  });
+};
+export const useForgotMutation = () => {
+  const api = useApi();
+  return useMutation({
+    mutationFn: async (data: ForgotSchema) => {
+      const res = await api.post('/auth/forgot', data);
       return res.data;
     },
   });
 };
+export const useResetMutation = () => {
+  const api = useApi();
+  return useMutation({
+    mutationFn: async ({
+      token,
+      password,
+    }: ResetSchema & {
+      token: string;
+    }) => {
+      const res = await api.post(`/auth/reset/${token}`, { password });
+      return res;
+    },
+  });
+};
 export const useLogoutMutation = () => {
+  const { setAuth } = useAuth();
   const api = useApi();
 
   return useMutation({
     mutationFn: async () => {
       await api.get('/auth/logout');
+    },
+    onSuccess: () => {
+      setAuth(undefined);
     },
   });
 };
@@ -56,7 +89,6 @@ export const useCreateRoomMutation = (args?: { refetch: boolean }) => {
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -78,7 +110,6 @@ export const useLeaveRoomMutation = (args?: { refetch: boolean }) => {
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -91,18 +122,20 @@ export const useJoinRoomMutation = (args?: { refetch: boolean }) => {
   const api = useApi();
   return useMutation({
     mutationFn: async (data: JoinRoomSchema) => {
-      const res = await api.post<Room>(`/rooms/join/${data.roomId}`, {
+      const res = await api.post<Room | null>(`/rooms/join/${data.roomId}`, {
         roomPassword: data.roomPassword,
       });
-      return res.data;
+      // 204 means already join room
+      return res.data || res.status === 204;
     },
-    onSuccess: () => {
+    onSuccess: data => {
+      if (typeof data == 'boolean') return;
+
       if (args?.refetch) {
         return queryClient.refetchQueries({
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -110,21 +143,23 @@ export const useJoinRoomMutation = (args?: { refetch: boolean }) => {
   });
 };
 
-export const useInviteRoomMutation = (args?: { refetch: boolean }) => {
+export const useJoinRoomByInviteCodeMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   return useMutation({
-    mutationFn: async ({ inviteCode }: { inviteCode: string }) => {
-      const res = await api.post<Room>(`/rooms/join/invite/${inviteCode}`);
-      return res.data;
+    mutationFn: async ({ inviteCode }: JoinRoomByInviteCodeSchema) => {
+      const res = await api.post<Room | null>(`/rooms/join/invite/${inviteCode}`);
+      // 204 means already join room
+      return res.data || res.status === 204;
     },
-    onSuccess: () => {
+    onSuccess: data => {
+      if (typeof data == 'boolean' && data == true) return;
+
       if (args?.refetch) {
         return queryClient.refetchQueries({
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -162,7 +197,6 @@ export const useDeleteRoomMutation = (args?: { refetch: boolean }) => {
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });

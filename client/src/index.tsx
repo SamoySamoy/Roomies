@@ -15,6 +15,9 @@ import {
   FirstRoomPage,
   RoomRedirectPage,
   AudioPage,
+  ForgotPage,
+  ResetPage,
+  InvitePage,
 } from '@/pages';
 import {
   LandingLayout,
@@ -54,12 +57,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     {/* <Route path='conversations/:memberId' Component={ConversationPage} /> */}
                   </Route>
                 </Route>
+                <Route path='invite/:inviteCode' Component={InvitePage} />
               </Route>
 
               {/* Require No Auth */}
               <Route Component={NoAuthLayout}>
                 <Route path='login' Component={LoginPage} />
                 <Route path='register' Component={RegisterPage} />
+                <Route path='forgot' Component={ForgotPage} />
+                <Route path='reset/:token' Component={ResetPage} />
               </Route>
             </Route>
           </Route>

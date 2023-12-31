@@ -86,7 +86,7 @@ const CreateRoomModal = () => {
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-center text-2xl font-bold'>Customize your room</DialogTitle>
-          <DialogDescription className='text-justify text-zinc-500'>
+          <DialogDescription className='text-left text-zinc-500'>
             Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>

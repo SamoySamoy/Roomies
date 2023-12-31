@@ -11,12 +11,13 @@ export type ModalType =
   | 'createGroup'
   | 'editGroup'
   | 'deleteGroup'
-  | 'invite'
+  | 'inviteCode'
   | 'members'
   | 'messageFile'
   | 'deleteMessage'
   | 'joinPublicRoom'
-  | 'joinPrivateRoom';
+  | 'joinPrivateRoom'
+  | 'joinByInviteCode';
 
 export type ModalData = {
   room?: Room;

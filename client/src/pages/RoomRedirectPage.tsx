@@ -26,7 +26,7 @@ const RoomRedirectPage = () => {
     return <Navigate to={'/error-page'} replace />;
   }
 
-  const initialGroup = room.groups.find(group => group.name === 'default');
+  let initialGroup = room.groups.find(group => group.name === 'default') || room.groups[0];
 
   return <Navigate to={`/rooms/${roomId}/groups/${initialGroup!.id}`} replace />;
 };
