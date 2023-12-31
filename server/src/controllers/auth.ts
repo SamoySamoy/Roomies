@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import { db } from '@/prisma/db';
-import { createMsg, genToken, decodeToken, sendPasswordResetEmail } from '@/lib/utils';
 import { AuthenticatedRequest } from '@/lib/types';
 import { refreshTokenCookieOptions } from '@/lib/config';
+import { createMsg, genToken, decodeToken, sendPasswordResetEmail } from '@/lib/utils';
 
 type BodyAuth = {
   email: string;
@@ -98,6 +97,34 @@ export const login = async (req: RequestWithAuthBody, res: Response) => {
       );
     }
 
+    // Có thể xảy ra trường hợp user chưa logout nhưng đã có thể login (TH này phải xử lý ở phía client, nhưng ở server cũng phải đảm bảo xử lý TH này)
+    if (req.cookies.jwt) {
+      // Detected old refresh token
+      const oldRefreshToken = req.cookies.jwt;
+      const oldRefreshTokenInDb = await db.refreshToken.findFirst({
+        where: {
+          refreshToken: oldRefreshToken,
+          id: profile.id,
+        },
+      });
+      if (oldRefreshTokenInDb) {
+        await db.refreshToken.delete({
+          where: {
+            id: oldRefreshTokenInDb.id,
+          },
+        });
+      } else {
+        // Không tìm thấy trong DB tương ứng với oldRefreshToken bởi vì oldRefreshToken đã được sử dụng bởi hacker
+        // Clear các refresh token còn lại và bắt các thiết bị khác đăng nhập lại
+        await db.refreshToken.deleteMany({
+          where: {
+            profileId: profile.id,
+          },
+        });
+      }
+      res.clearCookie('jwt', refreshTokenCookieOptions);
+    }
+
     const accessToken = genToken({
       type: 'accessToken',
       payload: {
@@ -116,7 +143,6 @@ export const login = async (req: RequestWithAuthBody, res: Response) => {
         refreshToken,
       },
     });
-
     res.cookie('jwt', refreshToken, refreshTokenCookieOptions);
     return res.status(200).json({
       accessToken,
@@ -287,21 +313,40 @@ export const refresh = async (req: Request, res: Response) => {
   try {
     // Check if lack of info
     // No refresh token in cookie means unauthentication
-    if (!req.cookies?.jwt) {
+    if (!req.cookies.jwt) {
       return res.sendStatus(401);
     }
 
     // Exist refresh token
-    const refreshToken = req.cookies.jwt;
+    const existRefreshToken = req.cookies.jwt;
     // Delete old cookies
     res.clearCookie('jwt', refreshTokenCookieOptions);
 
+    console.log(existRefreshToken);
+
     const refreshTokenInDb = await db.refreshToken.findFirst({
       where: {
-        refreshToken,
+        refreshToken: existRefreshToken,
       },
     });
     if (!refreshTokenInDb) {
+      // No user have identical refreshToken means Forbidden (Fake JWT)
+      // existRefreshToken đã bị dùng lại nhưng nếu hết hạn thì không sao, nếu còn hạn lập tức xoá hết refresh token hiện tại của user
+      const decodedExistToken = decodeToken({
+        type: 'refreshToken',
+        token: existRefreshToken,
+      });
+      // existRefreshToken fake hoặc hết hạn
+      if (!decodedExistToken) {
+        return res.sendStatus(403);
+      }
+      // Nếu refresh vẫn còn hạn tức là đã bị dùng bởi hacker
+      // Clear các refresh token còn lại và bắt các thiết bị khác đăng nhập lại
+      await db.refreshToken.deleteMany({
+        where: {
+          profileId: decodedExistToken.profileId,
+        },
+      });
       return res.sendStatus(403);
     }
 

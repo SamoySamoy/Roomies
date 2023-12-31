@@ -4,3 +4,4 @@ export { default as ExploreLayout } from './ExploreLayout';
 export { default as NavigationLayout } from './NavigationLayout';
 export { default as ProtectedLayout } from './ProtectedLayout';
 export { default as NoAuthLayout } from './NoAuthLayout';
+export { default as PersistAuthLayout } from './PersistAuthLayout';

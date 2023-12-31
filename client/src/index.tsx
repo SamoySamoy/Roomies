@@ -14,16 +14,16 @@ import {
   MyRoomsPage,
   FirstRoomPage,
   RoomRedirectPage,
-  AudioPage
-
+  AudioPage,
 } from '@/pages';
 import {
   LandingLayout,
+  RoomLayout,
+  ExploreLayout,
   NoAuthLayout,
   ProtectedLayout,
   NavigationLayout,
-  RoomLayout,
-  ExploreLayout,
+  PersistAuthLayout,
 } from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -32,31 +32,39 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public */}
           <Route path='/'>
             <Route Component={LandingLayout}>
               <Route index Component={LandingPage} />
             </Route>
-            <Route Component={ProtectedLayout}>
-              <Route path='explore' Component={ExploreLayout}>
-                <Route index Component={ExplorePage} />
-              </Route>
-              <Route path='my-rooms' Component={MyRoomsPage} />
-              <Route path='first-room' Component={FirstRoomPage} />
-              <Route path='rooms' Component={NavigationLayout}>
-                <Route path=':roomId' Component={RoomLayout}>
-                  <Route index Component={RoomRedirectPage} />
-                  <Route path='groups/:groupId' Component={ChannelPage} />
-                  <Route path='audiogroups/:groupId' Component={AudioPage} />
-                  <Route path='conversations/:memberId' Component={ConversationPage} />
+
+            {/* Require Auth */}
+            <Route Component={PersistAuthLayout}>
+              <Route Component={ProtectedLayout}>
+                <Route path='explore' Component={ExploreLayout}>
+                  <Route index Component={ExplorePage} />
+                </Route>
+                <Route path='my-rooms' Component={MyRoomsPage} />
+                <Route path='first-room' Component={FirstRoomPage} />
+                <Route path='rooms' Component={NavigationLayout}>
+                  <Route path=':roomId' Component={RoomLayout}>
+                    <Route index Component={RoomRedirectPage} />
+                    <Route path='groups/:groupId' Component={ChannelPage} />
+                    <Route path='audiogroups/:groupId' Component={AudioPage} />
+                    <Route path='conversations/:memberId' Component={ConversationPage} />
+                  </Route>
                 </Route>
               </Route>
             </Route>
 
+            {/* Require No Auth */}
             <Route Component={NoAuthLayout}>
               <Route path='login' Component={LoginPage} />
               <Route path='register' Component={RegisterPage} />
             </Route>
           </Route>
+
+          {/* Error */}
           <Route path='/error-page' Component={ErrorPage} />
           <Route path='*' Component={ErrorPage} />
         </Routes>

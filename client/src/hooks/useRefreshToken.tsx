@@ -5,15 +5,19 @@ const useRefreshToken = () => {
   const { setAuth } = useAuth();
 
   const refresh = async () => {
-    const response = await api.get<{ accessToken: string }>('/refresh', {
-      withCredentials: true,
-    });
-    console.log(response.data.accessToken);
-    // return { ...prev, accessToken: response.data.accessToken };
-    // setAuth();
-    return response.data.accessToken;
+    let result: string | undefined = undefined;
+    try {
+      const res = await api.get<{ accessToken: string }>('/auth/refresh');
+      result = res.data.accessToken;
+    } catch (err) {
+      console.log(err);
+      result = undefined;
+    }
+    console.log(result);
+    setAuth(result);
+    return result;
   };
-  return refresh;
+  return { refresh };
 };
 
 export default useRefreshToken;

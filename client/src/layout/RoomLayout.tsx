@@ -20,7 +20,10 @@ const RoomLayout = () => {
     profilesOfMembers: true,
   });
 
+  console.log('In room Layout');
+
   useEffect(() => {
+    console.log('Query room', room);
     setCurrentRoom(room);
   }, [room]);
 
