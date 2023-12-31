@@ -3,6 +3,8 @@ import { db } from '@/prisma/db';
 import { GroupType, MemberRole } from '@prisma/client';
 import { AuthenticatedRequest } from '@/lib/types';
 import { isTruthy } from '@/lib/utils';
+import { createMsg } from '@/lib/utils';
+
 
 type QueryInclude = {
   profile: string;
@@ -34,7 +36,11 @@ export const getMembers = async (
     return res.status(200).json(members);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -198,7 +204,11 @@ export const updateMember = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -246,6 +256,10 @@ export const deleteMember = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };

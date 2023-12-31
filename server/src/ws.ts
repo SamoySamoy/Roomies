@@ -143,6 +143,7 @@ export function setupWs(httpServer: HTTPServer) {
         const deletedMessage = await deleteMesage(origin, arg);
         io.to(origin.groupId).emit('server:group:message:delete:success', deletedMessage);
       } catch (error) {
+        
         console.log(error);
         io.to(origin.groupId).emit('server:group:message:delete:error', `${error}`);
       }
