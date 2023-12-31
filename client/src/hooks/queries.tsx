@@ -26,91 +26,112 @@ export type RoomQueryFilter = {
   roomType: RoomType | 'viewable' | 'all';
 };
 
-export const useRoomsQuery = (
+export type QueryOptions<T> = Omit<UndefinedInitialDataOptions<T>, 'queryKey' | 'queryFn'>;
+
+export function useRoomsQuery<T = Room[]>(
   args?: Partial<RoomQueryInclude & RoomQueryFilter>,
-  options?: Omit<UndefinedInitialDataOptions<Room[]>, 'queryKey' | 'queryFn'>,
-) => {
+  options?: QueryOptions<T>,
+) {
   const { queryString, queryValues } = getQueryString(args);
   const api = useApi();
 
-  return useQuery<Room[]>({
+  return useQuery<T>({
     queryKey: queryKeyFactory.rooms(queryValues),
     queryFn: async () => {
-      const res = await api.get<Room[]>(`/rooms${queryString}`);
+      const res = await api.get<T>(`/rooms${queryString}`);
       return res.data;
     },
     ...options,
   });
-};
+}
 
-export const useRoomQuery = (roomId: string, args?: Partial<RoomQueryInclude>) => {
+export function useRoomQuery<T = Room>(
+  roomId: string,
+  args?: Partial<RoomQueryInclude>,
+  options?: QueryOptions<T>,
+) {
   const { queryString, queryValues } = getQueryString(args);
   const api = useApi();
 
-  return useQuery<Room>({
+  return useQuery<T>({
     queryKey: queryKeyFactory.room(roomId, queryValues),
     queryFn: async () => {
-      const res = await api.get<Room>(`/rooms/${roomId}${queryString}`);
+      const res = await api.get<T>(`/rooms/${roomId}${queryString}`);
       return res.data;
     },
+    ...options,
   });
-};
+}
 
 export type GroupQueryInclude = {
   messages: boolean;
   profile: boolean;
 };
 
-export const useGroupsQuery = (roomId: string, args?: Partial<GroupQueryInclude>) => {
+export function useGroupsQuery<T = Group[]>(
+  roomId: string,
+  args?: Partial<GroupQueryInclude>,
+  options?: QueryOptions<T>,
+) {
   const { queryString, queryValues } = getQueryString({ ...args, roomId });
   const api = useApi();
 
-  return useQuery<Group[]>({
+  return useQuery<T>({
     queryKey: queryKeyFactory.groups(roomId, queryValues),
     queryFn: async () => {
-      const res = await api.get<Group[]>(`/groups/${queryString}`);
+      const res = await api.get<T>(`/groups/${queryString}`);
       return res.data;
     },
+    ...options,
   });
-};
+}
 
-export const useGroupQuery = (groupId: string, args?: Partial<GroupQueryInclude>) => {
+export function useGroupQuery<T = Group>(
+  groupId: string,
+  args?: Partial<GroupQueryInclude>,
+  options?: QueryOptions<T>,
+) {
   const { queryString, queryValues } = getQueryString(args);
   const api = useApi();
 
-  return useQuery<Group>({
+  return useQuery<T>({
     queryKey: queryKeyFactory.group(groupId, queryValues),
     queryFn: async () => {
-      const res = await api.get<Group>(`/groups/${groupId}${queryString}`);
+      const res = await api.get<T>(`/groups/${groupId}${queryString}`);
       return res.data;
     },
+    ...options,
   });
-};
+}
 
 export type MemberQueryInclude = {
   profile: boolean;
 };
 
-export const useMembersQuery = (roomId: string, args?: Partial<MemberQueryInclude>) => {
+export function useMembersQuery<T = Member[]>(
+  roomId: string,
+  args?: Partial<MemberQueryInclude>,
+  options?: QueryOptions<T>,
+) {
   const { queryString, queryValues } = getQueryString({ ...args, roomId });
   const api = useApi();
 
-  return useQuery<Member[]>({
+  return useQuery<T>({
     queryKey: queryKeyFactory.members(roomId, queryValues),
     queryFn: async () => {
-      const res = await api.get<Member[]>(`/members${queryString}`);
+      const res = await api.get<T>(`/members${queryString}`);
       return res.data;
     },
-    throwOnError: true,
+    ...options,
   });
-};
+}
 
 export type CursorResult = {
   messages: Message[];
   lastCursor: string | null;
 };
 
-export const useMessagesInfiniteQuery = (groupId: string) => {
+export function useMessagesInfiniteQuery(groupId: string) {
   const api = useApi();
 
   return useInfiniteQuery<CursorResult>({
@@ -125,5 +146,6 @@ export const useMessagesInfiniteQuery = (groupId: string) => {
     },
     initialPageParam: '',
     getNextPageParam: lastPage => lastPage.lastCursor,
+    refetchOnMount: true,
   });
-};
+}

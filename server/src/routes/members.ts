@@ -11,9 +11,6 @@ const members = Router();
 
 members.get('/', getMembers);
 
-// members.get('/:memberId', getMemberByMemberId);
-// members.post('/', createMember);
-
 members.put('/:memberId', updateMember);
 members.delete('/:memberId', deleteMember);
 

@@ -63,7 +63,13 @@ const RegisterPage = () => {
                   <FormItem>
                     <FormLabel className='text-white'>Email</FormLabel>
                     <FormControl>
-                      <Input type='text' className='shad-input' {...field} placeholder='Email' />
+                      <Input
+                        type='email'
+                        autoComplete='email'
+                        className='shad-input'
+                        {...field}
+                        placeholder='Email'
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -82,12 +88,19 @@ const RegisterPage = () => {
                         className='shad-input'
                         {...field}
                         placeholder='Password'
+                        autoComplete='current-password'
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className='flex items-center justify-between'>
+                <Link to='/' className='text-sm font-medium text-slate-200 hover:text-indigo-400'>
+                  To landing page
+                </Link>
+              </div>
 
               <Button
                 className='group relative flex w-full justify-center rounded-md border border-transparent bg-green-500 py-2 px-4 text-sm font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'

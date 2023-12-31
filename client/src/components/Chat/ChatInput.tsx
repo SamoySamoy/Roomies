@@ -1,22 +1,21 @@
 import { Plus } from 'lucide-react';
-
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useModal } from '@/hooks/useModal';
 import EmojiPicker from '@/components/EmojiPicker';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { ChatSchema, useChatForm } from '@/hooks/forms';
-import { Member } from '@/lib/types';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ChatInputProps {
   name: string;
   type: 'group' | 'conversation';
   origin: GroupOrigin;
-  currentMember: Member;
 }
 
-const ChatInput = ({ name, type, origin, currentMember }: ChatInputProps) => {
+const ChatInput = ({ name, type, origin }: ChatInputProps) => {
   const { openModal } = useModal();
+  const { auth } = useAuth();
   const form = useChatForm();
 
   const onMessage = (values: ChatSchema) => {
@@ -28,7 +27,7 @@ const ChatInput = ({ name, type, origin, currentMember }: ChatInputProps) => {
 
   const onTyping = () => {
     socket.emit('client:group:typing', origin, {
-      email: currentMember.profile.email,
+      email: auth.email!,
     });
   };
 
@@ -47,6 +46,9 @@ const ChatInput = ({ name, type, origin, currentMember }: ChatInputProps) => {
                     onClick={() =>
                       openModal({
                         modalType: 'messageFile',
+                        data: {
+                          origin,
+                        },
                       })
                     }
                     className='absolute top-7 left-8 h-[24px] w-[24px] bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600 dark:hover:bg-zinc-300 transition rounded-full p-1 flex items-center justify-center'

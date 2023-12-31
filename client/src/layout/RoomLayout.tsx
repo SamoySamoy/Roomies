@@ -1,31 +1,30 @@
-import { useEffect } from 'react';
 import { LoadingPage } from '@/components/Loading';
 import RoomSidebar from '@/components/Sidebar/RoomSidebar';
 import { useRoomQuery } from '@/hooks/queries';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
-import { useCurrent } from '@/hooks/useCurrent';
 
 const RoomLayout = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const { setCurrentRoom } = useCurrent();
+
   const {
     data: room,
     isPending,
     isFetching,
     isRefetching,
     isError,
-  } = useRoomQuery(roomId!, {
-    groups: true,
-    members: true,
-    profilesOfMembers: true,
-  });
+  } = useRoomQuery(
+    roomId!,
+    {
+      groups: true,
+      members: true,
+      profilesOfMembers: true,
+    },
+    {
+      refetchOnMount: true,
+    },
+  );
 
-  console.log('In room Layout');
-
-  useEffect(() => {
-    console.log('Query room', room);
-    setCurrentRoom(room);
-  }, [room]);
+  console.log('In room layout');
 
   if (isPending || isFetching || isRefetching) {
     return <LoadingPage />;

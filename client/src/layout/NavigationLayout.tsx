@@ -16,9 +16,11 @@ const NavigationLayout = () => {
       status: 'joined',
     },
     {
-      refetchOnMount: true,
+      // refetchOnMount: true,
     },
   );
+
+  console.log('In navigation layout');
 
   if (isPending || isFetching || isRefetching) {
     return <LoadingPage />;

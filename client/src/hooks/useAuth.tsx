@@ -1,15 +1,17 @@
 import { create } from 'zustand';
 import { jwtDecode } from 'jwt-decode';
 
-export type TokenPayload = {
+export type AccessTokenPayload = {
   profileId: string;
+  email: string;
+  imageUrl: string | null;
 };
 
 export type AuthState = {
   auth: Partial<{
     accessToken: string;
   }> &
-    Partial<TokenPayload>;
+    Partial<AccessTokenPayload>;
 };
 
 export type AuthActions = {
@@ -20,6 +22,8 @@ export const useAuth = create<AuthState & AuthActions>()(set => ({
   auth: {
     accessToken: undefined,
     profileId: undefined,
+    email: undefined,
+    imageUrl: undefined,
   },
   setAuth: newAccessToken => {
     if (!newAccessToken) {
@@ -27,15 +31,19 @@ export const useAuth = create<AuthState & AuthActions>()(set => ({
         auth: {
           accessToken: undefined,
           profileId: undefined,
+          email: undefined,
+          imageUrl: undefined,
         },
       });
     }
 
-    const decoded = jwtDecode<TokenPayload>(newAccessToken);
+    const decoded = jwtDecode<AccessTokenPayload>(newAccessToken);
     return set({
       auth: {
         accessToken: newAccessToken,
         profileId: decoded?.profileId,
+        email: decoded?.email,
+        imageUrl: decoded?.imageUrl,
       },
     });
   },

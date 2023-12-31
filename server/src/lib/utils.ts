@@ -1,8 +1,11 @@
+import path from 'path';
+import fsPromises from 'fs/promises';
+import fs from 'fs';
 import { UUID, randomUUID } from 'node:crypto';
-import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import { AccessTokenPayload, RefreshTokenPayload, ResetTokenPayload } from './types';
 import { smtpTransporter } from './config';
+import { IMAGE_EXT_LIST, TRUTHY } from './constants';
 
 // export const getIp = (req: Request) =>
 //   (req.headers['x-forwarded-for'] || req.socket.remoteAddress)?.toString();
@@ -22,7 +25,6 @@ import { smtpTransporter } from './config';
 
 export const uuid: () => string | UUID = randomUUID;
 
-const TRUTHY = [1, true, '1', 'true'];
 export const isTruthy = (value: any) => TRUTHY.includes(value);
 
 export const convertMbToBytes = (mb: number) => mb * Math.pow(1024, 2);
@@ -30,6 +32,28 @@ export const convertMbToBytes = (mb: number) => mb * Math.pow(1024, 2);
 export const getFormatedDate = () => {
   const now = new Date();
   return `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+};
+
+export const getExtName = (filename: string) => {
+  return path.extname(filename).slice(1).toLowerCase();
+};
+
+export const getFileName = (filename: string) => {
+  return path.parse(filename).name;
+};
+
+export const isImageFile = (filename: string | undefined | null) => {
+  if (!filename) return false;
+  // path.extname trả về đuôi file có chấm ở đầu (VD: .img, .pdf)
+  const fileExt = getExtName(filename);
+  return IMAGE_EXT_LIST.includes(fileExt);
+};
+
+export const mkdirIfNotExist = async (absFolderPath: string) => {
+  if (fs.existsSync(absFolderPath)) return;
+  await fsPromises.mkdir(absFolderPath, {
+    recursive: true,
+  });
 };
 
 export type GenTokenOption =

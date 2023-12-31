@@ -70,6 +70,7 @@ const LoginPage = () => {
                         className='shad-input'
                         {...field}
                         disabled={isLoading}
+                        autoComplete='email'
                       />
                     </FormControl>
                     <FormMessage />
@@ -88,6 +89,7 @@ const LoginPage = () => {
                         className='shad-input'
                         {...field}
                         disabled={isLoading}
+                        autoComplete='current-password'
                       />
                     </FormControl>
                     <FormMessage />
@@ -95,12 +97,16 @@ const LoginPage = () => {
                 )}
               />
 
-              <div className='flex'>
-                <div className='text-sm ml-auto'>
-                  <Link to='/forgot' className='font-medium text-slate-200 hover:text-indigo-400'>
-                    Forgot your password?
-                  </Link>
-                </div>
+              <div className='flex items-center justify-between'>
+                <Link to='/' className='text-sm font-medium text-slate-200 hover:text-indigo-400'>
+                  To landing page
+                </Link>
+                <Link
+                  to='/forgot'
+                  className='text-sm font-medium text-slate-200 hover:text-indigo-400'
+                >
+                  Forgot your password?
+                </Link>
               </div>
 
               <Button

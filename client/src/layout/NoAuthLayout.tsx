@@ -5,7 +5,7 @@ const NoAuthLayout = () => {
   const { auth } = useAuth();
   const location = useLocation();
   const from = location?.state?.from?.pathname || '/';
-  console.log(location);
+  // console.log(location);
 
   if (auth.accessToken) {
     return <Navigate to={from} replace />;

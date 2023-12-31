@@ -16,7 +16,7 @@ export const useLoginMutation = () => {
       return res.data;
     },
     onSuccess: data => {
-      console.log(data.accessToken);
+      // console.log(data.accessToken);
     },
     onError: () => {
       setAuth(undefined);
@@ -29,6 +29,15 @@ export const useRegisterMutation = () => {
     mutationFn: async (data: LoginSchema) => {
       const res = await api.post<Profile>('/auth/register', data);
       return res.data;
+    },
+  });
+};
+export const useLogoutMutation = () => {
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async () => {
+      await api.get('/auth/logout');
     },
   });
 };
@@ -47,7 +56,7 @@ export const useCreateRoomMutation = (args?: { refetch: boolean }) => {
           queryKey: queryKeyFactory.rooms([]),
         });
       }
-      console.log('Invalidate');
+      // console.log('Invalidate');
       return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
@@ -55,7 +64,7 @@ export const useCreateRoomMutation = (args?: { refetch: boolean }) => {
   });
 };
 
-export const useLeaveRoomMutation = () => {
+export const useLeaveRoomMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   return useMutation({
@@ -64,14 +73,20 @@ export const useLeaveRoomMutation = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      if (args?.refetch) {
+        return queryClient.refetchQueries({
+          queryKey: queryKeyFactory.rooms([]),
+        });
+      }
+      // console.log('Invalidate');
+      return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
     },
   });
 };
 
-export const useJoinRoomMutation = () => {
+export const useJoinRoomMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   return useMutation({
@@ -82,14 +97,20 @@ export const useJoinRoomMutation = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      if (args?.refetch) {
+        return queryClient.refetchQueries({
+          queryKey: queryKeyFactory.rooms([]),
+        });
+      }
+      // console.log('Invalidate');
+      return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
     },
   });
 };
 
-export const useInviteRoomMutation = () => {
+export const useInviteRoomMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   return useMutation({
@@ -98,7 +119,13 @@ export const useInviteRoomMutation = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      if (args?.refetch) {
+        return queryClient.refetchQueries({
+          queryKey: queryKeyFactory.rooms([]),
+        });
+      }
+      // console.log('Invalidate');
+      return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
     },
@@ -121,7 +148,7 @@ export const useUpdateRoomMutation = () => {
   });
 };
 
-export const useDeleteRoomMutation = () => {
+export const useDeleteRoomMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   return useMutation({
@@ -130,7 +157,13 @@ export const useDeleteRoomMutation = () => {
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      if (args?.refetch) {
+        return queryClient.refetchQueries({
+          queryKey: queryKeyFactory.rooms([]),
+        });
+      }
+      // console.log('Invalidate');
+      return queryClient.invalidateQueries({
         queryKey: queryKeyFactory.rooms([]),
       });
     },
@@ -146,7 +179,6 @@ export const useCreateGroupMutation = () => {
         roomId: string;
       },
     ) => {
-      console.log(data);
       const res = await api.post<Room>('/groups', data);
       return res.data;
     },
@@ -155,11 +187,11 @@ export const useCreateGroupMutation = () => {
         queryKey: queryKeyFactory.room(roomId, []),
       });
     },
-    onError(err) {
-      if (err instanceof AxiosError) {
-        console.log(err);
-      }
-    },
+    // onError(err) {
+    //   if (err instanceof AxiosError) {
+    //     console.log(err);
+    //   }
+    // },
   });
 };
 

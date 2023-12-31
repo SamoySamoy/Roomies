@@ -2,7 +2,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Room } from '@/lib/types';
-import { CreateRoomButton, ExploreButton, ProfileButton } from './NavigationButton';
+import { CreateRoomButton, ExploreButton, LogoutButton, ProfileButton } from './NavigationButton';
 import NavigationItem from './NavigationItem';
 
 type Props = {
@@ -26,6 +26,7 @@ const NavigationSidebar = ({ rooms }: Props) => {
       <div className='mt-auto flex flex-col items-center gap-y-4 pb-3'>
         <ThemeToggle />
         <ProfileButton />
+        <LogoutButton />
       </div>
     </div>
   );

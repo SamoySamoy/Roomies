@@ -9,10 +9,15 @@ const MyRoomsPage = () => {
     isFetching,
     isRefetching,
     isError,
-  } = useRoomsQuery({
-    roomType: 'all',
-    status: 'joined',
-  });
+  } = useRoomsQuery(
+    {
+      roomType: 'all',
+      status: 'joined',
+    },
+    {
+      refetchOnMount: true,
+    },
+  );
 
   if (isPending || isFetching || isRefetching) {
     return <LoadingPage />;

@@ -1,9 +1,19 @@
+import path from 'path';
+import fsPromises from 'fs/promises';
+
 import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { AuthenticatedRequest } from '@/lib/types';
-import { createMsg } from '@/lib/utils';
-
-const MESSAGES_BATCH = 10;
+import {
+  createMsg,
+  getExtName,
+  getFileName,
+  isImageFile,
+  mkdirIfNotExist,
+  uuid,
+} from '@/lib/utils';
+import sharp from 'sharp';
+import { MESSAGES_BATCH } from '@/lib/constants';
 
 type QueryFilter = {
   cursor: string;
@@ -14,10 +24,9 @@ type BodyCreateMessage = {
   groupId: string;
   roomId: string;
   content: string;
-  fileUrl: string;
 };
 
-type BodyEditMessage = {
+type BodyUpdateMessage = {
   content: string;
 };
 
@@ -32,7 +41,12 @@ export const getMessages = async (
   try {
     const { cursor, groupId } = req.query;
     if (!groupId) {
-      return res.status(400).json({ message: 'Require cursor and group id' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require cursor and group id',
+        }),
+      );
     }
     const messages = await db.message.findMany({
       where: {
@@ -96,7 +110,12 @@ export const getMessageById = async (
     });
 
     if (!message) {
-      return res.status(400).json({ message: 'Message not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Message not found',
+        }),
+      );
     }
 
     return res.status(200).json(message);
@@ -116,11 +135,16 @@ export const createMessage = async (
   res: Response,
 ) => {
   try {
-    const { groupId, roomId, content, fileUrl } = req.body;
+    const { groupId, roomId, content } = req.body;
     const profileId = req.user?.profileId!;
 
     if (!groupId || !roomId || !content) {
-      return res.status(400).json({ message: 'Require group id, room id, content, missing' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require group id, room id, content, missing',
+        }),
+      );
     }
 
     const [group, member] = await Promise.all([
@@ -138,16 +162,118 @@ export const createMessage = async (
       }),
     ]);
     if (!group) {
-      return res.status(400).json({ message: 'Group not exist' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group not exist',
+        }),
+      );
     }
     if (!member) {
-      return res
-        .status(400)
-        .json({ message: 'Can not create message. You are not member of this channel' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Can not create message. You are not member of this channel',
+        }),
+      );
     }
 
     const newMessage = db.message.create({
-      data: { content, fileUrl, memberId: member.id, groupId: groupId },
+      data: { content, fileUrl: null, memberId: member.id, groupId: groupId },
+      include: {
+        member: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json(newMessage);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
+  }
+};
+// create new message in channel
+export const uploadFile = async (
+  req: AuthenticatedRequest<any, Partial<BodyCreateMessage>, any>,
+  res: Response,
+) => {
+  try {
+    const { groupId, roomId } = req.body;
+    const profileId = req.user?.profileId!;
+
+    if (!groupId || !roomId) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require group id, room id, missing',
+        }),
+      );
+    }
+
+    const [group, member] = await Promise.all([
+      db.group.findFirst({
+        where: {
+          id: groupId,
+          roomId,
+        },
+      }),
+      db.member.findFirst({
+        where: {
+          profileId,
+          roomId,
+        },
+      }),
+    ]);
+    if (!group) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group not exist',
+        }),
+      );
+    }
+    if (!member) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Can not create message. You are not member of this channel',
+        }),
+      );
+    }
+
+    const file = req.file!;
+    const relFolderPath = `/public/groups/${groupId}`;
+    const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
+
+    let filename = file.filename;
+    if (isImageFile(filename)) {
+      filename = `${getFileName(filename)}_${uuid()}.webp`;
+    } else {
+      filename = `${getFileName(filename)}_${uuid()}.${getExtName(filename)}`;
+    }
+    const relFilePath = path.join(relFolderPath, filename);
+    const absFilePath = path.join(absFolderPath, filename);
+
+    await mkdirIfNotExist(absFolderPath);
+    if (isImageFile(filename)) {
+      await sharp(file.buffer).resize(350, 200).webp().toFile(absFilePath);
+    } else {
+      await fsPromises.writeFile(absFilePath, file.buffer);
+    }
+
+    const newMessage = db.message.create({
+      data: {
+        content: 'This message is a file',
+        fileUrl: relFilePath,
+        memberId: member.id,
+        groupId: group.id,
+      },
       include: {
         member: {
           include: {
@@ -167,9 +293,9 @@ export const createMessage = async (
   }
 };
 
-// Edit message by messageId
-export const editMessage = async (
-  req: AuthenticatedRequest<ParamsWithMessageId, BodyEditMessage, any>,
+// Update message by messageId
+export const updateMessage = async (
+  req: AuthenticatedRequest<ParamsWithMessageId, BodyUpdateMessage, any>,
   res: Response,
 ) => {
   try {
@@ -181,17 +307,28 @@ export const editMessage = async (
       where: { id: messageId },
     });
     if (!message) {
-      return res.status(400).json({ message: 'Message not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Message not found',
+        }),
+      );
     }
 
     const member = await db.member.findUnique({
       where: { id: message.memberId },
     });
+
     if (member?.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only the author can edit his message' });
+      return res.status(403).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only the author can edit his / her message',
+        }),
+      );
     }
 
-    const editedMessage = await db.message.update({
+    const updateedMessage = await db.message.update({
       where: {
         id: messageId,
       },
@@ -207,7 +344,7 @@ export const editMessage = async (
       },
     });
 
-    return res.status(200).json(editedMessage);
+    return res.status(200).json(updateedMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -231,18 +368,27 @@ export const deleteMessage = async (
       where: { id: messageId },
     });
     if (!message) {
-      return res.status(400).json({ message: 'Message not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Message not found',
+        }),
+      );
     }
 
     const member = await db.member.findUnique({
       where: { id: message.memberId },
     });
-
     if (member?.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only the author can delete his message' });
+      return res.status(403).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only the author can delete his / her message',
+        }),
+      );
     }
 
-    await db.message.update({
+    const deletedMessage = await db.message.update({
       where: {
         id: messageId,
       },
@@ -260,7 +406,7 @@ export const deleteMessage = async (
       },
     });
 
-    return res.status(200).send({ message: 'Room deleted successfully' });
+    return res.status(200).send(deletedMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(

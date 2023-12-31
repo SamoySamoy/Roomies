@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 import { socket } from '@/lib/socket';
+import { useState } from 'react';
 
 const DeleteMessageModal = () => {
   const {
@@ -17,11 +18,14 @@ const DeleteMessageModal = () => {
     closeModal,
     data: { origin, messageId },
   } = useModal();
+  const [isLoading, setIsLoading] = useState(false);
 
   const onDelete = async () => {
+    setIsLoading(true);
     socket.emit('client:group:message:delete', origin!, {
       messageId: messageId!,
     });
+    setIsLoading(false);
     closeModal();
   };
 
@@ -37,18 +41,10 @@ const DeleteMessageModal = () => {
         </DialogHeader>
         <DialogFooter className='bg-gray-100 px-6 py-4'>
           <div className='flex items-center justify-between w-full'>
-            <Button
-              // disabled={isLoading}
-              onClick={closeModal}
-              variant='destructive'
-            >
+            <Button disabled={isLoading} onClick={closeModal} variant='destructive'>
               Cancel
             </Button>
-            <Button
-              // disabled={isLoading}
-              variant='primary'
-              onClick={onDelete}
-            >
+            <Button disabled={isLoading} variant='primary' onClick={onDelete}>
               Confirm
             </Button>
           </div>

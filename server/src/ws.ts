@@ -1,8 +1,21 @@
+import path from 'path';
+import fsPromises from 'fs/promises';
+import sharp from 'sharp';
 import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
-import { Message, MemberRole } from '@prisma/client';
+import { Message } from '@prisma/client';
 import { corsOptions } from './lib/config';
+import { IMAGE_SIZE_LIMIT_IN_MB } from './lib/constants';
+import { ValidationError } from './lib/types';
+import {
+  convertMbToBytes,
+  getExtName,
+  getFileName,
+  isImageFile,
+  mkdirIfNotExist,
+  uuid,
+} from './lib/utils';
 
 export type ServerToClientEvents = {
   'server:group:join:success': (msg: string) => void;
@@ -11,14 +24,14 @@ export type ServerToClientEvents = {
   'server:group:leave:error': (msg: string) => void;
   'server:group:typing:success': (msg: string) => void;
   'server:group:typing:error': (msg: string) => void;
-  'server:group:message:get:success': (messages: Message[]) => void;
-  'server:group:message:get:error': (messages: string) => void;
   'server:group:message:post:success': (message: Message) => void;
-  'server:group:message:post:error': (message: string) => void;
+  'server:group:message:post:error': (msg: string) => void;
+  'server:group:message:upload:success': (message: Message) => void;
+  'server:group:message:upload:error': (msg: string) => void;
   'server:group:message:update:success': (messages: Message) => void;
-  'server:group:message:update:error': (messages: string) => void;
+  'server:group:message:update:error': (msg: string) => void;
   'server:group:message:delete:success': (messages: Message) => void;
-  'server:group:message:delete:error': (messages: string) => void;
+  'server:group:message:delete:error': (msg: string) => void;
 };
 
 export type Origin = {
@@ -32,17 +45,24 @@ export type ConversationOrigin = Origin & {
   memberId: string;
 };
 
-export type MessageTyping = { email: string };
-export type MessageCreate = { content: string; fileUrl?: string };
+export type MessageIdentity = { email: string };
+export type MessageCreate = { content: string };
+export type MessageUpload = {
+  filename: string;
+  filesize: number;
+  filetype: string;
+  buffer: Buffer | ArrayBuffer | ReadableStream<Uint8Array> | Blob;
+};
+
 export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
 export type ClientToServerEvents = {
-  'client:group:join': (origin: GroupOrigin) => void;
-  'client:group:leave': (origin: GroupOrigin) => void;
-  'client:group:typing': (origin: GroupOrigin, arg: MessageTyping) => void;
-  'client:group:message:get': (origin: GroupOrigin) => void;
+  'client:group:join': (origin: GroupOrigin, arg: MessageIdentity) => void;
+  'client:group:leave': (origin: GroupOrigin, arg: MessageIdentity) => void;
+  'client:group:typing': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:message:post': (origin: GroupOrigin, arg: MessageCreate) => void;
+  'client:group:message:upload': (origin: GroupOrigin, file: MessageUpload) => void;
   'client:group:message:update': (origin: GroupOrigin, arg: MessageUpdate) => void;
   'client:group:message:delete': (origin: GroupOrigin, arg: MessageDelete) => void;
 };
@@ -53,53 +73,54 @@ export function setupWs(httpServer: HTTPServer) {
     serveClient: false,
     addTrailingSlash: false,
     cors: corsOptions,
+    maxHttpBufferSize: convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB),
   });
 
   io.on('connection', socket => {
     // On user join group
-    socket.on('client:group:join', async origin => {
-      console.log('User join');
+    socket.on('client:group:join', async (origin, arg) => {
+      socket.join(origin.groupId);
 
       try {
-        socket.join(origin.groupId);
         // On user join group - to user only
-        socket.emit('server:group:join:success', `You just join group  ${origin.groupId}`);
-      } catch (error) {
+        socket.emit('server:group:join:success', `You just join group ${origin.groupId}`);
+      } catch (error: any) {
         console.log(error);
-        socket.emit('server:group:join:error', `${error}`);
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:group:join:error', `Unexpected error. Something went wrong`);
+        }
       }
 
       // On user join group - to other user in group
       try {
         socket.broadcast
           .to(origin.groupId)
-          .emit('server:group:join:success', `Profile ${origin.profileId} just join group`);
-      } catch (error) {
+          .emit('server:group:join:success', `${arg.email} just join group`);
+      } catch (error: any) {
         console.log(error);
-        socket.emit('server:group:join:error', `${error}`);
-      }
-
-      // On user join group - get all messages
-      try {
-        socket.emit('server:group:message:get:success', await getMessagesByGroupId(origin));
-      } catch (error) {
-        console.log(error);
-        socket.emit('server:group:message:get:error', `${error}`);
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:group:join:error', `Unexpected error. Something went wrong`);
+        }
       }
     });
 
     // On user leave group
-    socket.on('client:group:leave', async origin => {
+    socket.on('client:group:leave', async (origin, arg) => {
+      socket.leave(origin.groupId);
+
       try {
-        console.log('User leave');
-        socket.leave(origin.groupId);
-        io.to(origin.groupId).emit(
-          'server:group:leave:success',
-          `Profile ${origin.profileId} just leave group`,
-        );
-      } catch (error) {
-        console.error(error);
-        io.to(origin.groupId).emit('server:group:leave:error', `${error}`);
+        io.to(origin.groupId).emit('server:group:leave:success', `${arg.email} just leave group`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:leave:error', `${error.message}`);
+        } else {
+          socket.emit('server:group:leave:error', `Unexpected error. Something went wrong`);
+        }
       }
     });
 
@@ -109,20 +130,46 @@ export function setupWs(httpServer: HTTPServer) {
         socket.broadcast
           .to(origin.groupId)
           .emit('server:group:typing:success', `${arg.email} is typing ...`);
-      } catch (error) {
-        console.error(error);
-        io.to(origin.groupId).emit('server:group:typing:error', `${error}`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:typing:error', `${error.message}`);
+        } else {
+          socket.emit('server:group:typing:error', `Unexpected error. Something went wrong`);
+        }
       }
     });
 
-    // On user send message
+    // On user create new message
     socket.on('client:group:message:post', async (origin, arg) => {
       try {
         const newMessage = await createMessage(origin, arg);
         io.to(origin.groupId).emit('server:group:message:post:success', newMessage);
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
-        io.to(origin.groupId).emit('server:group:message:post:error', `${error}`);
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:message:post:error', `${error.message}`);
+        } else {
+          socket.emit('server:group:message:post:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user upload a file
+    socket.on('client:group:message:upload', async (origin, arg) => {
+      try {
+        const newMessage = await uploadFile(origin, arg);
+        io.to(origin.groupId).emit('server:group:message:upload:success', newMessage);
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:message:upload:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:group:message:upload:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
       }
     });
 
@@ -130,10 +177,17 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:group:message:update', async (origin, arg) => {
       try {
         const updatedMessage = await updateMessage(origin, arg);
-        io.to(origin.groupId).emit('server:group:message:update:success', updatedMessage!);
-      } catch (error) {
-        console.log(error);
-        io.to(origin.groupId).emit('server:group:message:update:error', `${error}`);
+        io.to(origin.groupId).emit('server:group:message:update:success', updatedMessage);
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:message:update:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:group:message:update:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
       }
     });
 
@@ -142,10 +196,16 @@ export function setupWs(httpServer: HTTPServer) {
       try {
         const deletedMessage = await deleteMesage(origin, arg);
         io.to(origin.groupId).emit('server:group:message:delete:success', deletedMessage);
-      } catch (error) {
-        
-        console.log(error);
-        io.to(origin.groupId).emit('server:group:message:delete:error', `${error}`);
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:group:message:delete:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:group:message:delete:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
       }
     });
   });
@@ -159,59 +219,44 @@ export function setupWs(httpServer: HTTPServer) {
   return io;
 }
 
-const getMessagesByGroupId = async (
-  ...args: Parameters<ClientToServerEvents['client:group:message:get']>
-) => {
-  const [origin] = args;
-  if (!origin.groupId) {
-    throw new Error('Missing groupId');
-  }
-  const messages = await db.message.findMany({
-    where: {
-      groupId: origin.groupId,
-    },
-    include: {
-      member: {
-        include: {
-          profile: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-  return messages;
-};
-
 const createMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:post']>
 ) => {
   const [origin, arg] = args;
   if (!origin.profileId || !origin.groupId || !origin.roomId) {
-    throw new Error('Missing profileId, groupId or roomId');
+    throw new ValidationError('Require profile id, group id and room id');
   }
   if (!arg.content) {
-    throw new Error('Missing content argument');
+    throw new ValidationError('Require message content');
   }
-  const member = await db.member.findFirst({
-    where: {
-      profileId: origin.profileId,
-      roomId: origin.roomId,
-    },
-  });
 
+  const [group, member] = await Promise.all([
+    db.group.findFirst({
+      where: {
+        id: origin.groupId,
+        roomId: origin.roomId,
+      },
+    }),
+    db.member.findFirst({
+      where: {
+        profileId: origin.profileId,
+        roomId: origin.roomId,
+      },
+    }),
+  ]);
+  if (!group) {
+    throw new ValidationError(`Group ${origin.groupId} not exist`);
+  }
   if (!member) {
-    throw new Error('Can not send message. Member not found or you are not member of this channel');
+    throw new ValidationError(`Can not create message. You are not member of this channel`);
   }
 
-  const message = await db.message.create({
+  const newMessage = await db.message.create({
     data: {
       content: arg.content,
-      fileUrl: arg.fileUrl,
+      fileUrl: null,
       groupId: origin.groupId,
-      memberId: member?.id!,
-      deleted: false,
+      memberId: member.id,
     },
     include: {
       member: {
@@ -221,7 +266,79 @@ const createMessage = async (
       },
     },
   });
-  return message;
+  return newMessage;
+};
+
+const uploadFile = async (
+  ...args: Parameters<ClientToServerEvents['client:group:message:upload']>
+) => {
+  const [origin, file] = args;
+  if (!origin.profileId || !origin.groupId || !origin.roomId) {
+    throw new ValidationError('Require profile id, group id and room id');
+  }
+
+  if (file.filesize > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
+    throw new ValidationError('File size not over 5 MB');
+  }
+
+  const [group, member] = await Promise.all([
+    db.group.findFirst({
+      where: {
+        id: origin.groupId,
+        roomId: origin.roomId,
+      },
+    }),
+    db.member.findFirst({
+      where: {
+        profileId: origin.profileId,
+        roomId: origin.roomId,
+      },
+    }),
+  ]);
+  if (!group) {
+    throw new ValidationError(`Group ${origin.groupId} not exist`);
+  }
+  if (!member) {
+    throw new ValidationError(`Can not create message. You are not member of this channel`);
+  }
+
+  const relFolderPath = `/public/groups/${origin.groupId}`;
+  const absFolderPath = path.join(__dirname, '..', relFolderPath);
+  let filename = file.filename;
+  if (isImageFile(filename)) {
+    filename = `${getFileName(filename)}_${uuid()}.webp`;
+  } else {
+    filename = `${getFileName(filename)}_${uuid()}.${getExtName(filename)}`;
+  }
+  const relFilePath = path.join(relFolderPath, filename);
+  const absFilePath = path.join(absFolderPath, filename);
+
+  await mkdirIfNotExist(absFolderPath);
+  if (isImageFile(filename)) {
+    await sharp(file.buffer as Buffer)
+      .resize(350, 200)
+      .webp()
+      .toFile(absFilePath);
+  } else {
+    await fsPromises.writeFile(absFilePath, file.buffer as Buffer);
+  }
+
+  const newMessage = db.message.create({
+    data: {
+      content: 'This message is a file',
+      fileUrl: relFilePath,
+      memberId: member.id,
+      groupId: group.id,
+    },
+    include: {
+      member: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  return newMessage;
 };
 
 const updateMessage = async (
@@ -229,24 +346,27 @@ const updateMessage = async (
 ) => {
   const [origin, arg] = args;
   if (!origin.profileId || !origin.groupId || !origin.roomId) {
-    throw new Error('Missing profileId, groupId or roomId');
+    throw new ValidationError('Require profile id, group id and room id');
   }
   if (!arg.content || !arg.messageId) {
-    throw new Error('Missing content or messageId argument');
+    throw new ValidationError('Require message id and message content');
   }
+
   const message = await db.message.findUnique({
     where: { id: arg.messageId },
   });
   if (!message) {
-    throw new Error('Message not found');
+    throw new ValidationError(`Message ${arg.messageId} not found`);
   }
 
-  const member = await db.member.findUnique({
-    where: { id: message?.memberId },
+  const owner = await db.member.findUnique({
+    where: { id: message.memberId },
   });
-
-  if (member?.profileId !== origin.profileId) {
-    return message;
+  if (!owner) {
+    throw new ValidationError('The owner of this message was not found');
+  }
+  if (owner.profileId !== origin.profileId) {
+    throw new ValidationError('Only the author can edit his / her message');
   }
 
   const updatedMessage = await db.message.update({
@@ -272,18 +392,29 @@ const deleteMesage = async (
 ) => {
   const [origin, arg] = args;
   if (!origin.profileId || !origin.groupId || !origin.roomId) {
-    throw new Error('Missing profileId, groupId or roomId');
+    throw new ValidationError('Require profile id, group id and room id');
   }
   if (!arg.messageId) {
-    throw new Error('Missing messageId argument');
+    throw new ValidationError('Require message id');
   }
+
   const message = await db.message.findUnique({
     where: { id: arg.messageId },
   });
-
   if (!message) {
-    throw new Error('Message not found');
+    throw new ValidationError(`Message ${arg.messageId} not found`);
   }
+
+  const owner = await db.member.findUnique({
+    where: { id: message.memberId },
+  });
+  if (!owner) {
+    throw new ValidationError('The owner of this message was not found');
+  }
+  if (owner.profileId !== origin.profileId) {
+    throw new ValidationError('Only the author can delete his / her message');
+  }
+
   const deletedMessage = await db.message.update({
     where: {
       id: arg.messageId,

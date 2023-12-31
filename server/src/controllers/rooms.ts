@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { MemberRole, Room, RoomType } from '@prisma/client';
-import { createMsg, isTruthy, uuid } from '@/lib/utils';
+import { createMsg, getFileName, isTruthy, mkdirIfNotExist, uuid } from '@/lib/utils';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import path from 'path';
@@ -145,7 +145,12 @@ export const getRoomByRoomId = async (
     });
 
     if (!room) {
-      return res.status(404).json({ message: 'Room not found' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not found',
+        }),
+      );
     }
 
     return res.status(200).json(room);
@@ -176,19 +181,39 @@ export const createRoom = async (
     const profileId = req.user?.profileId!;
 
     if (!roomName || !profileId) {
-      return res.status(400).json({ message: 'Need room name, type, profile id' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need room name, type, profile id',
+        }),
+      );
     }
     roomType = roomType.toUpperCase() as RoomType;
 
     if (!req.file) {
-      return res.status(400).json({ message: 'Require room image' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room image',
+        }),
+      );
     }
 
     if (!Object.keys(RoomType).includes(roomType)) {
-      return res.status(400).json({ message: 'Invalid room type' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Invalid room type',
+        }),
+      );
     }
     if (roomType === 'PRIVATE' && !roomPassword) {
-      return res.status(400).json({ message: 'Require password for private room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require password for private room',
+        }),
+      );
     }
 
     const profile = await db.profile.findUnique({
@@ -196,25 +221,26 @@ export const createRoom = async (
       select: { id: true },
     });
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
 
-    const image = req.file;
-    const folderPath = '/public/rooms';
-    const imageName = `${uuid()}.webp`;
-    const relImagePath = path.join(folderPath, imageName);
-    const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
-    if (!fs.existsSync(absImageFolderPath)) {
-      await fsPromises.mkdir(absImageFolderPath, {
-        recursive: true,
-      });
-    }
-    await sharp(image.buffer)
-      .resize(300, 300)
-      .webp()
-      .toFile(path.join(absImageFolderPath, imageName));
+    const image = req.file!;
+    const relFolderPath = '/public/rooms';
+    const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
+
+    const imageName = `${getFileName(image.filename)}_${uuid()}.webp`;
+    const relImagePath = path.join(relFolderPath, imageName);
+    const absImagePath = path.join(absFolderPath, imageName);
+
+    await mkdirIfNotExist(absFolderPath);
+    await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
+
     const hashedPassword = roomType === 'PRIVATE' ? await bcrypt.hash(roomPassword, 10) : '';
-
     const newRoom = await db.room.create({
       data: {
         name: roomName,
@@ -275,14 +301,29 @@ export const joinRoom = async (
       }),
     ]);
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!room) {
-      return res.status(400).json({ message: 'Room not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not found',
+        }),
+      );
     }
     const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
-      return res.status(200).json({ message: 'Profile already join this room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile already join this room',
+        }),
+      );
     }
 
     // Có 3 loại room PUBLIC, PRIVATE, HIDDEN
@@ -313,16 +354,31 @@ export const joinRoom = async (
       }
       case 'PRIVATE': {
         if (!roomPassword) {
-          return res.status(400).json({ message: 'Require password for private room' });
+          return res.status(400).json(
+            createMsg({
+              type: 'invalid',
+              invalidMessage: 'Require password for private room',
+            }),
+          );
         }
         const isRightPassword = await bcrypt.compare(roomPassword, room.password!);
         if (!isRightPassword) {
-          return res.status(400).json({ message: 'Unauthenticated permission for private room' });
+          return res.status(400).json(
+            createMsg({
+              type: 'invalid',
+              invalidMessage: 'Unauthenticated permission for private room',
+            }),
+          );
         }
         return res.status(200).json(await updateRoom());
       }
       default: {
-        return res.status(400).json({ message: 'Can not join room' });
+        return res.status(400).json(
+          createMsg({
+            type: 'invalid',
+            invalidMessage: 'Can not join room',
+          }),
+        );
       }
     }
     // Can not join hidden room without invite code
@@ -362,10 +418,20 @@ export const joinRoomByInviteCode = async (
       }),
     ]);
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!room) {
-      return res.status(400).json({ message: 'Room not found or Invite code not exist' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not found or Invite code not exist',
+        }),
+      );
     }
     const isAlreadyJoinServer = room.members.find(mem => mem.profileId === profile.id);
     if (isAlreadyJoinServer) {
@@ -421,13 +487,28 @@ export const leaveRoom = async (
       }),
     ]);
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!room) {
-      return res.status(400).json({ message: 'Room not exist' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not exist',
+        }),
+      );
     }
     if (room.profileId === profile.id) {
-      return res.status(400).json({ message: 'Can not leave room that created by yourself' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Can not leave room that created by yourself',
+        }),
+      );
     }
 
     const updatedRoom = await db.room.update({
@@ -478,11 +559,21 @@ export const updateRoom = async (
       },
     });
     if (!room) {
-      return res.status(400).json({ message: 'Room not exist' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not exist',
+        }),
+      );
     }
     // Only the room creatator can update room
     if (room.profileId !== profileId) {
-      return res.status(400).json({ message: 'Only Admin can update room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only Admin can update room',
+        }),
+      );
     }
 
     const updatedData: Partial<Room> = {};
@@ -493,10 +584,20 @@ export const updateRoom = async (
     if (newRoomType) {
       newRoomType = newRoomType.toUpperCase() as RoomType;
       if (!Object.keys(RoomType).includes(newRoomType)) {
-        return res.status(400).json({ message: 'Invalid room type' });
+        return res.status(400).json(
+          createMsg({
+            type: 'invalid',
+            invalidMessage: 'Invalid room type',
+          }),
+        );
       }
       if (newRoomType === 'PRIVATE' && !newServerPassword) {
-        return res.status(400).json({ message: 'Require password for private room' });
+        return res.status(400).json(
+          createMsg({
+            type: 'invalid',
+            invalidMessage: 'Require password for private room',
+          }),
+        );
       }
       const hashedPassword =
         newRoomType === 'PRIVATE' ? await bcrypt.hash(newServerPassword, 10) : '';
@@ -510,14 +611,17 @@ export const updateRoom = async (
       req.files[0]?.fieldname === 'roomImage'
     ) {
       const image = req.files[0];
-      const newImageUrl = `/public/rooms/${uuid()}.webp`;
-      await sharp(image.buffer)
-        .resize(300, 300)
-        .webp()
-        .toFile(path.join(__dirname, '..', '..', newImageUrl.substring(1)));
+      const imageName = `${getFileName(image.filename)}_${uuid()}.webp`;
+      const relFolderPath = '/public/rooms';
+      const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
+      const relImagePath = path.join(relFolderPath, imageName);
+      const absImagePath = path.join(absFolderPath, imageName);
+
+      await mkdirIfNotExist(absFolderPath);
+      await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
       const oldImageUrl = path.join(__dirname, '..', '..', room.imageUrl!.substring(1));
       await fsPromises.unlink(oldImageUrl);
-      updatedData.imageUrl = newImageUrl;
+      updatedData.imageUrl = relImagePath;
     }
 
     const updatedRoom = await db.room.update({
@@ -551,11 +655,21 @@ export const deleteRoom = async (
       where: { id: roomId },
     });
     if (!room) {
-      return res.status(400).json({ message: 'Room not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Room not found',
+        }),
+      );
     }
     // Only the room creatator can update room
     if (room.profileId !== profileId) {
-      return res.status(403).json({ message: 'Only Admin can delete room' });
+      return res.status(403).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only Admin can delete room',
+        }),
+      );
     }
 
     await db.room.delete({
@@ -564,7 +678,12 @@ export const deleteRoom = async (
       },
     });
 
-    return res.status(200).send({ message: 'Room deleted successfully' });
+    return res.status(200).send(
+      createMsg({
+        type: 'success',
+        successMessage: 'Room deleted successfully',
+      }),
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json(

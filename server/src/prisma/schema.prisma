@@ -14,24 +14,32 @@ model Profile {
   password String  @db.Text
   imageUrl String? @db.Text
 
-  rooms   Room[]
-  groups  Group[]
-  members Member[]
+  rooms        Room[]
+  groups       Group[]
+  members      Member[]
+  ResetToken   ResetToken[]
+  RefreshToken RefreshToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model ResetToken {
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   profileId  String
-  resetToken String @db.Text
+  profile    Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resetToken String  @db.Text
+
+  @@index([profileId])
 }
 
 model RefreshToken {
-  id           String @id @default(uuid())
+  id           String  @id @default(uuid())
   profileId    String
-  refreshToken String @db.Text
+  profile      Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  refreshToken String  @db.Text
+
+  @@index([profileId])
 }
 
 enum RoomType {
