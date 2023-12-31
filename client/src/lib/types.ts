@@ -109,3 +109,9 @@ export interface DirectMessage {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UserData {
+  id: string;
+  username: string;
+  email: string;
+}

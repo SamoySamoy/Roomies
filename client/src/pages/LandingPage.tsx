@@ -32,7 +32,7 @@ const LandingPage = () => {
       <div className=''>
         <div className='py-20 px-20'>
           <h1 className='py-2  text-3xl font-semibold'>
-            What's special about <span className='text-emerald-400'> Roomies </span> ?
+            What's special about <span className='text-green-500'> Roomies </span> ?
           </h1>
         </div>
 
@@ -48,7 +48,7 @@ const LandingPage = () => {
             smooth={true}
             className={`text-white transition duration-300 ease-in-out transform hover:scale-110 cursor-pointer ${
               isTop 
-              ? 'flex items-center justify-center hover:text-green-400 hover:underline' 
+              ? 'flex items-center justify-center hover:text-green-500 hover:underline' 
               : 'bg-zinc-900 py-6 flex items-center justify-center rounded-2xl border border-zinc-600 dark:hover:border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff8]'
             }`}
           >
@@ -60,7 +60,7 @@ const LandingPage = () => {
             smooth={true}
             className={`text-white transition duration-300 ease-in-out transform hover:scale-110 cursor-pointer ${
               isTop 
-              ? 'flex items-center justify-center hover:text-green-400 hover:underline' 
+              ? 'flex items-center justify-center hover:text-green-500 hover:underline' 
               : 'bg-zinc-900 py-6 flex items-center justify-center rounded-2xl border border-zinc-600 dark:hover:border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff8]'
             }`}
           >
@@ -72,7 +72,7 @@ const LandingPage = () => {
             smooth={true}
             className={`text-white transition duration-300 ease-in-out transform hover:scale-110 cursor-pointer ${
               isTop 
-              ? 'flex items-center justify-center hover:text-green-400 hover:underline' 
+              ? 'flex items-center justify-center hover:text-green-500 hover:underline' 
               : 'bg-zinc-900 py-6 flex items-center justify-center rounded-2xl border border-zinc-600 dark:hover:border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff8]'
             }`}
           >
@@ -84,7 +84,7 @@ const LandingPage = () => {
             smooth={true}
             className={`text-white transition duration-300 ease-in-out transform hover:scale-110 cursor-pointer ${
               isTop 
-              ? 'flex items-center justify-center hover:text-green-400 hover:underline' 
+              ? 'flex items-center justify-center hover:text-green-500 hover:underline' 
               : 'bg-zinc-900 py-6 flex items-center justify-center rounded-2xl border border-zinc-600 dark:hover:border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff8]'
             }`}
           >
