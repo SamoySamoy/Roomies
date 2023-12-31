@@ -1,10 +1,8 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Room } from '@/lib/types';
-import { CreateRoomButton, ExploreButton } from './NavigationButton';
+import { CreateRoomButton, ExploreButton, ProfileButton } from './NavigationButton';
 import NavigationItem from './NavigationItem';
 
 type Props = {
@@ -27,15 +25,7 @@ const NavigationSidebar = ({ rooms }: Props) => {
       <Separator className='mx-auto h-[2px] w-10 rounded-md bg-zinc-300 dark:bg-zinc-700' />
       <div className='mt-auto flex flex-col items-center gap-y-4 pb-3'>
         <ThemeToggle />
-        <ActionTooltip
-          side='right'
-          label={<p className='text-sm font-bold text-foreground'>Your profile</p>}
-        >
-          <Avatar className='duration-400 h-11 w-11 cursor-pointer transition-all hover:scale-110'>
-            <AvatarImage src='https://picsum.photos/seed/picsum/100' />
-            <AvatarFallback>CH</AvatarFallback>
-          </Avatar>
-        </ActionTooltip>
+        <ProfileButton />
       </div>
     </div>
   );

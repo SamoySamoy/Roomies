@@ -7,7 +7,7 @@ const LandingHeader = () => {
     <div className='flex w-full items-center justify-between border-b border-solid border-slate-400/30 bg-background px-10 py-5 shadow-[0_0_2rem_-0.5rem_#fff8] bg-black'>
       <div className='text-3xl font-bold text-foreground'>
         <Link to={'/'}>
-          <p className='text-emerald-400 pl-10'>ROOMIES</p>
+          <p className='text-green-500 pl-10'>ROOMIES</p>
         </Link>
       </div>
       <div className='flex items-center gap-4 pr-10'>
@@ -18,7 +18,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-green-500 hover:text-green-500 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Home
             </Button>
@@ -32,7 +32,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-green-500 hover:text-green-500 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Explore
             </Button>
@@ -46,7 +46,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-green-500 hover:text-green-500 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Room
             </Button>
@@ -62,7 +62,7 @@ const LandingHeader = () => {
           >
             <Button
               variant='outline'
-              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-emerald-400 hover:text-emerald-400 bg-zinc-900 hover:bg-zinc-900 w-24'
+              className='border border-zinc-600 shadow-[0_0_2rem_-0.5rem_#fff7] font-bold rounded-full hover:border-green-500 hover:text-green-500 bg-zinc-900 hover:bg-zinc-900 w-24'
             >
               Sign In
             </Button>
@@ -74,7 +74,7 @@ const LandingHeader = () => {
             to={'/register'}
             className='rounded-full transition duration-300 ease-in-out transform hover:scale-110 hover:underline dark:hover:shadow-[0_0_2rem_-0.5rem_#fff]'
           >
-            <Button className='bg-emerald-400 rounded-full w-24'>
+            <Button className='bg-green-500 rounded-full w-24'>
               <span className='font-bold text-background'>Get start</span>
             </Button>
           </Link>

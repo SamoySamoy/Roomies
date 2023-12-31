@@ -8,26 +8,26 @@ const Footer = () => {
         <div className='col-span-2'>
           <div className='text-4xl font-bold text-foreground'>
             <Link to={'/'}>
-              <p className='text-emerald-400'>ROOMIES</p>
+              <p className='text-green-500'>ROOMIES</p>
             </Link>
           </div>
           <h3 className='text-2xl font-bold mt-10'>Contact Us</h3>
           <h3 className='py-1'>Call : +123 400 123</h3>
           <h3 className='py-1'>Email: example@mail.com</h3>
           <div className='flex gap-4 py-4'>
-            <div className='p-4 bg-emerald-400 rounded-xl'>
+            <div className='p-4 bg-green-500 rounded-xl'>
               <Facebook className='w-6 h-6 text-white stroke-white' />
             </div>
-            <div className='p-4 bg-emerald-400 rounded-xl'>
+            <div className='p-4 bg-green-500 rounded-xl'>
               <Linkedin className='w-6 h-6 text-white stroke-white' />
             </div>
-            <div className='p-4 bg-emerald-400 rounded-xl'>
+            <div className='p-4 bg-green-500 rounded-xl'>
               <Instagram className='w-6 h-6 text-white stroke-white' />
             </div>
-            <div className='p-4 bg-emerald-400 rounded-xl'>
+            <div className='p-4 bg-green-500 rounded-xl'>
               <Twitch className='w-6 h-6 text-white stroke-white' />
             </div>
-            <div className='p-4 bg-emerald-400 rounded-xl'>
+            <div className='p-4 bg-green-500 rounded-xl'>
               <Github className='w-6 h-6 text-white stroke-white' />
             </div>
           </div>

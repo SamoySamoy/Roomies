@@ -16,7 +16,7 @@ export type ModalType =
   | 'messageFile'
   | 'deleteMessage'
   | 'joinPublicRoom'
-  | 'joinPrivateRoom';
+  | 'joinPrivateRoom'
 
 export type ModalData = {
   room?: Room;
