@@ -20,6 +20,7 @@ const ChannelPage = () => {
     profileId: auth.profileId!,
   };
   const { currentRoom } = useCurrent();
+  console.log(currentRoom);
   const currentGroup = currentRoom?.groups.find(group => group.id === groupId);
   const currentMember = currentRoom?.members.find(member => member.profileId === auth.profileId);
 

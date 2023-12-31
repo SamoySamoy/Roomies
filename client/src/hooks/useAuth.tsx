@@ -22,11 +22,17 @@ export const useAuth = create<AuthState & AuthActions>()(set => ({
     profileId: undefined,
   },
   setAuth: newAccessToken => {
-    let decoded: TokenPayload | undefined;
-    if (newAccessToken) {
-      decoded = jwtDecode<TokenPayload>(newAccessToken);
+    if (!newAccessToken) {
+      return set({
+        auth: {
+          accessToken: undefined,
+          profileId: undefined,
+        },
+      });
     }
-    set({
+
+    const decoded = jwtDecode<TokenPayload>(newAccessToken);
+    return set({
       auth: {
         accessToken: newAccessToken,
         profileId: decoded?.profileId,

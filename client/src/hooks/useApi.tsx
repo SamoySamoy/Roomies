@@ -1,14 +1,15 @@
-import { api } from '@/lib/api';
 import { useEffect } from 'react';
+
 import { useAuth } from './useAuth';
 import useRefreshToken from './useRefreshToken';
+import { api } from '@/lib/api';
 
 const useApi = () => {
   const { auth } = useAuth();
-  const refresh = useRefreshToken();
+  const { refresh } = useRefreshToken();
 
   useEffect(() => {
-    const requestIntercept = api.interceptors.request.use(
+    const reqIntercept = api.interceptors.request.use(
       config => {
         if (!config.headers['Authorization'] && auth.accessToken) {
           config.headers['Authorization'] = `Bearer ${auth.accessToken}`;
@@ -17,7 +18,7 @@ const useApi = () => {
       },
       error => Promise.reject(error),
     );
-    const responseIntercept = api.interceptors.response.use(
+    const resIntercept = api.interceptors.response.use(
       response => response,
       async error => {
         const prevRequest = error?.config;
@@ -25,16 +26,18 @@ const useApi = () => {
         if (error?.response?.status === 403 && !prevRequest?.sent) {
           prevRequest.sent = true;
           const newAccessToken = await refresh();
-          prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-          return api(prevRequest);
+          if (newAccessToken) {
+            prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+            return api(prevRequest);
+          }
         }
         return Promise.reject(error);
       },
     );
 
     return () => {
-      api.interceptors.request.eject(requestIntercept);
-      api.interceptors.response.eject(responseIntercept);
+      api.interceptors.request.eject(reqIntercept);
+      api.interceptors.response.eject(resIntercept);
     };
   }, [auth, refresh]);
 

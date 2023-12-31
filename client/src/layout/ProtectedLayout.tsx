@@ -1,12 +1,21 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 const ProtectedLayout = () => {
   const { auth } = useAuth();
+  const location = useLocation();
+  console.log(location);
 
   if (!auth.accessToken) {
-    console.log('Navigate by protected');
-    return <Navigate to='/login' replace />;
+    return (
+      <Navigate
+        to='/login'
+        replace
+        state={{
+          from: location,
+        }}
+      />
+    );
   }
   return <Outlet />;
 };
