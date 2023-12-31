@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ActionTooltip from '@/components/ActionToolTip';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Room } from '@/lib/types';
-import { CreateRoomButton, ExploreButton } from './NavigationButton';
+import { CreateRoomButton, ExploreButton, LogoutButton } from './NavigationButton';
 import NavigationItem from './NavigationItem';
 
 type Props = {
@@ -36,6 +36,7 @@ const NavigationSidebar = ({ rooms }: Props) => {
             <AvatarFallback>CH</AvatarFallback>
           </Avatar>
         </ActionTooltip>
+        <LogoutButton />
       </div>
     </div>
   );

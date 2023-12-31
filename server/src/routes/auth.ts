@@ -5,10 +5,10 @@ const authRouter = Router();
 
 authRouter.post('/register', register);
 authRouter.post('/login', login);
-authRouter.post('/logout', logout);
 authRouter.post('/forgot', forgot);
 authRouter.post('/reset', reset);
 
+authRouter.get('/logout', logout);
 authRouter.get('/refresh', refresh);
 
 export default authRouter;

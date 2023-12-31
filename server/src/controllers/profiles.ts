@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 import { db } from '@/prisma/db';
 import { Room, Member, Group } from '@prisma/client';
 import sharp from 'sharp';
-import { createMsg } from '@/lib/utils';
+import { createMsg, uuid } from '@/lib/utils';
+import path from 'path';
+import fsPromises from 'fs/promises';
+import fs from 'fs';
+import { AuthenticatedRequest } from '@/lib/types';
 
 export const getProfileById = async (req: Request, res: Response) => {
   try {
@@ -52,25 +56,46 @@ export const getProfileById = async (req: Request, res: Response) => {
   }
 };
 
-export const uploadProfileImage = async (req: Request, res: Response) => {
+export const uploadProfileImage = async (
+  req: AuthenticatedRequest<any, any, any>,
+  res: Response,
+) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ message: 'Require profile image' });
     }
-    // Get the buffer of the uploaded image
-    const imageBuffer = req.file.buffer;
+    const profileId = req.user?.profileId!;
+    const profile = await db.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true },
+    });
+    if (!profile) {
+      return res.status(400).json({ message: 'Profile not found' });
+    }
 
-    // Resize the image using sharp and let multer handle the storage
-    await sharp(imageBuffer).resize(100, 100).toFile(req.file.path);
+    const image = req.file;
+    const folderPath = '/public/user';
+    const imageName = `${uuid()}.webp`;
+    const relImagePath = path.join(folderPath, imageName);
+    const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
+    if (!fs.existsSync(absImageFolderPath)) {
+      await fsPromises.mkdir(absImageFolderPath, {
+        recursive: true,
+      });
+    }
+    await sharp(image.buffer)
+      .resize(300, 300)
+      .webp()
+      .toFile(path.join(absImageFolderPath, imageName));
 
     await db.profile.update({
-      where: { id: req.params.id },
+      where: { id: profileId },
       data: {
-        imageUrl: req.file.path,
+        imageUrl: relImagePath,
       },
     });
 
-    return res.status(200).json({ message: 'Add image successfully' });
+    return res.status(200).json(profile);
   } catch (error) {
     console.error(error);
     return res.status(500).json(

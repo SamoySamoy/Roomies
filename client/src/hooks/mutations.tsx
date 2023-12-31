@@ -32,6 +32,15 @@ export const useRegisterMutation = () => {
     },
   });
 };
+export const useLogoutMutation = () => {
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async () => {
+      await api.get('/auth/logout');
+    },
+  });
+};
 
 export const useCreateRoomMutation = (args?: { refetch: boolean }) => {
   const queryClient = useQueryClient();
