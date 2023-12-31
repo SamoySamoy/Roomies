@@ -25,9 +25,9 @@ const RegisterPage = () => {
   const onSubmit = async (values: LoginSchema) => {
     mutation.mutate(values, {
       onSuccess: () => {
-        toast({
-          title: 'Register ok',
-        });
+        // toast({
+        //   title: 'Register ok',
+        // });
         navigate('/login');
       },
       onError: () => {
@@ -47,10 +47,10 @@ const RegisterPage = () => {
         }}
         className='h-full'
       >
-        <div className='flex justify-center py-12'>
+        <div className='flex justify-center pt-20'>
           <div className='w-full shadow-2xl py-12 px-4 sm:px-6 lg:px-8  max-w-md space-y-8 blur-bg'>
             <div>
-              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-slate-200'>
+              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-emerald-400'>
                 Register
               </h2>
             </div>
@@ -61,7 +61,7 @@ const RegisterPage = () => {
                 name='email'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className='text-white'>Email</FormLabel>
                     <FormControl>
                       <Input type='text' className='shad-input' {...field} placeholder='Email' />
                     </FormControl>
@@ -75,7 +75,7 @@ const RegisterPage = () => {
                 name='password'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className='shad-form_label'>Password</FormLabel>
+                    <FormLabel className='shad-form_label text-white'>Password</FormLabel>
                     <FormControl>
                       <Input
                         type='password'
@@ -90,7 +90,7 @@ const RegisterPage = () => {
               />
 
               <Button
-                className='group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                className='group relative flex w-full justify-center rounded-md border border-transparent bg-emerald-400 py-2 px-4 text-sm font-medium text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2'
                 type='submit'
                 variant='primary'
                 disabled={isLoading}
