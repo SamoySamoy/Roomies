@@ -14,6 +14,10 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Button } from '@/components/ui/button';
 import FileUpload from '@/components/FileUpload';
 import { useModal } from '@/hooks/useModal';
+import { socket } from '@/lib/socket';
+import { convertMbToBytes } from '@/lib/utils';
+import { IMAGE_SIZE_LIMIT_IN_MB } from '@/lib/constants';
+import { toast, useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
   fileName: z.string().trim().min(1, {
@@ -24,7 +28,13 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 const MessageFileModal = () => {
-  const { isOpen, modalType, closeModal } = useModal();
+  const { toast } = useToast();
+  const {
+    isOpen,
+    modalType,
+    closeModal,
+    data: { origin },
+  } = useModal();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,28 +49,24 @@ const MessageFileModal = () => {
   };
 
   const onSubmit = async (values: FormSchema) => {
-    try {
-      // const url = qs.stringifyUrl({
-      //   url: apiUrl || "",
-      //   query,
-      // });
+    console.log(file);
 
-      // await axios.post(url, {
-      //   ...values,
-      //   content: values.fileUrl,
-      // });
-
-      console.log(values);
-      console.log(file);
-      const formData = new FormData();
-      formData.append('imageFile', file!);
-
-      clearForm();
-      closeModal();
-    } catch (err) {
-      console.log(err);
-      clearForm();
+    if (file && file.size > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
+      return toast({
+        title: 'Invalid',
+        description: 'File size not over 5 MB',
+      });
     }
+
+    socket.emit('client:group:message:upload', origin!, {
+      filename: file!.name,
+      filesize: file!.size,
+      filetype: file!.type,
+      buffer: file!.slice(),
+    });
+
+    clearForm();
+    closeModal();
   };
 
   return (

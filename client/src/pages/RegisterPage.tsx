@@ -63,7 +63,13 @@ const RegisterPage = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type='text' className='shad-input' {...field} placeholder='Email' />
+                      <Input
+                        type='email'
+                        autoComplete='email'
+                        className='shad-input'
+                        {...field}
+                        placeholder='Email'
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -82,6 +88,7 @@ const RegisterPage = () => {
                         className='shad-input'
                         {...field}
                         placeholder='Password'
+                        autoComplete='current-password'
                       />
                     </FormControl>
                     <FormMessage />

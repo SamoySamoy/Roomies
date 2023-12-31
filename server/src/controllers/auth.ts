@@ -129,6 +129,8 @@ export const login = async (req: RequestWithAuthBody, res: Response) => {
       type: 'accessToken',
       payload: {
         profileId: profile.id,
+        email: profile.email,
+        imageUrl: profile.imageUrl,
       },
     });
     const refreshToken = genToken({
@@ -322,11 +324,12 @@ export const refresh = async (req: Request, res: Response) => {
     // Delete old cookies
     res.clearCookie('jwt', refreshTokenCookieOptions);
 
-    console.log(existRefreshToken);
-
     const refreshTokenInDb = await db.refreshToken.findFirst({
       where: {
         refreshToken: existRefreshToken,
+      },
+      include: {
+        profile: true,
       },
     });
     if (!refreshTokenInDb) {
@@ -350,18 +353,19 @@ export const refresh = async (req: Request, res: Response) => {
       return res.sendStatus(403);
     }
 
+    // Xóa token cũ trong DB
+    await db.refreshToken.delete({
+      where: {
+        id: refreshTokenInDb.id,
+      },
+    });
+
     const decoded = decodeToken({
       type: 'refreshToken',
       token: refreshTokenInDb.refreshToken,
     });
     // Token hết hạn hoặc lỗi
     if (!decoded) {
-      // Xóa refresh token cũ trong DB
-      await db.refreshToken.delete({
-        where: {
-          id: refreshTokenInDb.id,
-        },
-      });
       return res.sendStatus(403);
     }
 
@@ -369,30 +373,23 @@ export const refresh = async (req: Request, res: Response) => {
     const newAccessToken = genToken({
       type: 'accessToken',
       payload: {
-        profileId: refreshTokenInDb.profileId,
+        profileId: refreshTokenInDb.profile.id,
+        email: refreshTokenInDb.profile.email,
+        imageUrl: refreshTokenInDb.profile.imageUrl,
       },
     });
     const newRefreshToken = genToken({
       type: 'refreshToken',
       payload: {
-        profileId: refreshTokenInDb.profileId,
+        profileId: refreshTokenInDb.profile.id,
       },
     });
-    await Promise.all([
-      // Xóa refresh token cũ trong DB
-      db.refreshToken.delete({
-        where: {
-          id: refreshTokenInDb.id,
-        },
-      }),
-      db.refreshToken.create({
-        data: {
-          profileId: refreshTokenInDb.profileId,
-          refreshToken: newRefreshToken,
-        },
-      }),
-    ]);
-
+    await db.refreshToken.create({
+      data: {
+        profileId: refreshTokenInDb.profile.id,
+        refreshToken: newRefreshToken,
+      },
+    });
     res.cookie('jwt', newRefreshToken, refreshTokenCookieOptions);
     return res.status(200).json({
       accessToken: newAccessToken,

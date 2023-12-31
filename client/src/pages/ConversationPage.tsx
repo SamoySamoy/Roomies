@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroupQuery } from '@/hooks/queries';
-import { useCurrent } from '@/hooks/useCurrent';
 import { LoadingPage } from '@/components/Loading';
 import { Message } from '@/lib/types';
 

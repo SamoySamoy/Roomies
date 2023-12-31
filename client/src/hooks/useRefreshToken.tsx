@@ -10,10 +10,10 @@ const useRefreshToken = () => {
       const res = await api.get<{ accessToken: string }>('/auth/refresh');
       result = res.data.accessToken;
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       result = undefined;
     }
-    console.log(result);
+    // console.log(result);
     setAuth(result);
     return result;
   };

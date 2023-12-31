@@ -20,9 +20,13 @@ export const getGroups = async (
   try {
     const { messages, profile, roomId } = req.query;
     if (!roomId) {
-      return res.status(404).json({ message: 'Require room id' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room id',
+        }),
+      );
     }
-
     const groups = await db.group.findMany({
       where: {
         roomId,
@@ -58,7 +62,12 @@ export const getGroupByGroupId = async (
     });
 
     if (!group) {
-      return res.status(404).json({ message: 'Group not found' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group not found',
+        }),
+      );
     }
     return res.status(200).json(group);
   } catch (error) {
@@ -87,10 +96,20 @@ export const createGroup = async (
     const profileId = req.user?.profileId!;
 
     if (!groupName || !roomId) {
-      return res.status(400).json({ message: 'Need group name, room id' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need group name, room id',
+        }),
+      );
     }
     if (groupName === 'default') {
-      return res.status(400).json({ message: 'Name can not be general' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Name can not be default',
+        }),
+      );
     }
 
     const [profile, room] = await Promise.all([
@@ -114,13 +133,21 @@ export const createGroup = async (
     ]);
 
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!room) {
-      return res.status(400).json({
-        message:
-          'Can not create group. Room not exist or you are not admin or moderator of this room',
-      });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage:
+            'Can not create group. Room not exist or you are not admin or moderator of this room',
+        }),
+      );
     }
 
     const isExistingGroup = await db.group.findFirst({
@@ -130,7 +157,12 @@ export const createGroup = async (
       },
     });
     if (isExistingGroup) {
-      return res.status(400).json({ message: 'Group with same name already exists in this room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group with same name already exists in this room',
+        }),
+      );
     }
 
     const updatedRoom = await db.room.update({
@@ -174,7 +206,12 @@ export const updateGroup = async (
     if (groupType) {
       groupType = groupType.toUpperCase() as GroupType;
       if (!Object.keys(GroupType).includes(groupType)) {
-        return res.status(400).json({ message: 'Invalid room type' });
+        return res.status(400).json(
+          createMsg({
+            type: 'invalid',
+            invalidMessage: 'Invalid room type',
+          }),
+        );
       }
     }
 
@@ -191,10 +228,20 @@ export const updateGroup = async (
       }),
     ]);
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!group) {
-      return res.status(400).json({ message: 'Group not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group not found',
+        }),
+      );
     }
 
     const room = await db.room.findUnique({
@@ -211,7 +258,12 @@ export const updateGroup = async (
       },
     });
     if (!room) {
-      return res.status(400).json({ message: 'You are not admin or moderator of this room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'You are not admin or moderator of this room',
+        }),
+      );
     }
 
     const updatedRoom = await db.room.update({
@@ -246,7 +298,11 @@ export const updateGroup = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -272,14 +328,29 @@ export const deleteGroup = async (
       }),
     ]);
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     if (!group) {
-      return res.status(400).json({ message: 'Group not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Group not found',
+        }),
+      );
     }
 
     if (group.name === 'default') {
-      return res.status(400).json({ message: 'You can not delete general group' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'You can not delete general group',
+        }),
+      );
     }
 
     const room = await db.room.findUnique({
@@ -296,7 +367,12 @@ export const deleteGroup = async (
       },
     });
     if (!room) {
-      return res.status(400).json({ message: 'You are not admin or moderator of this room' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'You are not admin or moderator of this room',
+        }),
+      );
     }
     const updatedRoom = await db.room.update({
       where: {
@@ -322,6 +398,10 @@ export const deleteGroup = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };

@@ -2,46 +2,41 @@ import { useState } from 'react';
 import { ServerToClientEvents, socket } from '@/lib/socket';
 import { Fragment, useRef, ElementRef, useEffect } from 'react';
 import { Loader2, ServerCrash } from 'lucide-react';
-import { Group, Member, Message, Profile, Room } from '@/lib/types';
+import { Group, Member } from '@/lib/types';
 
 import ChatWelcome from './ChatWelcome';
-import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatScroll } from '@/hooks/useChatScroll';
 import ChatItem from './ChatItem';
 import { GroupOrigin } from '@/lib/socket';
 import { CursorResult, queryKeyFactory, useMessagesInfiniteQuery } from '@/hooks/queries';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 type ChatMessagesProps = {
   name: string;
   type: 'group' | 'conversation';
   currentGroup: Group;
-  currentRoom: Room;
   currentMember: Member;
   origin: GroupOrigin;
 };
 
-const ChatMessages = ({
-  currentGroup,
-  currentRoom,
-  currentMember,
-  origin,
-  name,
-  type,
-}: ChatMessagesProps) => {
+const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatMessagesProps) => {
   const chatRef = useRef<ElementRef<'div'>>(null);
   const bottomRef = useRef<ElementRef<'div'>>(null);
 
-  const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState('');
+  const typingTimer = useRef<any>(null);
   const [join, setJoin] = useState('');
   const [leave, setLeave] = useState('');
-  const [justLoad, setJustLoad] = useState(false);
+
   const queryClient = useQueryClient();
-  const typingTimer = useRef<any>(null);
+  const { toast } = useToast();
+  const { auth } = useAuth();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending, isError } =
     useMessagesInfiniteQuery(currentGroup.id);
+
   useChatScroll({
     chatRef,
     bottomRef,
@@ -50,16 +45,20 @@ const ChatMessages = ({
     count: data?.pages?.[0]?.messages?.length ?? 0,
   });
 
+  /* Listening chat event */
   useEffect(() => {
-    socket.emit('client:group:join', origin);
+    console.log('Join', auth);
+    socket.emit('client:group:join', origin, {
+      email: auth.email!,
+    });
 
-    const onJoin: ServerToClientEvents['server:group:join'] = msg => {
+    const onJoin: ServerToClientEvents['server:group:join:success'] = msg => {
       setJoin(msg);
     };
-    const onLeave: ServerToClientEvents['server:group:leave'] = msg => {
+    const onLeave: ServerToClientEvents['server:group:leave:success'] = msg => {
       setLeave(msg);
     };
-    const onTyping: ServerToClientEvents['server:group:typing'] = msg => {
+    const onTyping: ServerToClientEvents['server:group:typing:success'] = msg => {
       setTyping(msg);
       if (typingTimer?.current) {
         clearTimeout(typingTimer.current);
@@ -68,7 +67,7 @@ const ChatMessages = ({
         setTyping('');
       }, 1500);
     };
-    const onMessage: ServerToClientEvents['server:group:message:post'] = message => {
+    const onNewMessage: ServerToClientEvents['server:group:message:post:success'] = message => {
       queryClient.setQueryData(
         queryKeyFactory.messages(currentGroup.id),
         (oldData: InfiniteData<CursorResult, unknown>) => {
@@ -93,74 +92,102 @@ const ChatMessages = ({
         },
       );
     };
-    const onUpdateMessage: ServerToClientEvents['server:group:message:update'] = updatedMessage => {
-      queryClient.setQueryData(
-        queryKeyFactory.messages(currentGroup.id),
-        (oldData: InfiniteData<CursorResult, unknown>) => {
-          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
-            return oldData;
-          }
-          const newData = oldData.pages.map(page => {
+    const onUpdateMessage: ServerToClientEvents['server:group:message:update:success'] =
+      updatedMessage => {
+        queryClient.setQueryData(
+          queryKeyFactory.messages(currentGroup.id),
+          (oldData: InfiniteData<CursorResult, unknown>) => {
+            if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+              return oldData;
+            }
+            const newData = oldData.pages.map(page => {
+              return {
+                ...page,
+                messages: page.messages.map(message => {
+                  if (message.id === updatedMessage.id) {
+                    return updatedMessage;
+                  }
+                  return message;
+                }),
+              };
+            });
             return {
-              ...page,
-              messages: page.messages.map(message => {
-                if (message.id === updatedMessage.id) {
-                  return updatedMessage;
-                }
-                return message;
-              }),
+              ...oldData,
+              pages: newData,
             };
-          });
-          return {
-            ...oldData,
-            pages: newData,
-          };
-        },
-      );
-    };
+          },
+        );
+      };
 
-    const onDeleteMessage: ServerToClientEvents['server:group:message:update'] = updatedMessage => {
-      queryClient.setQueryData(
-        queryKeyFactory.messages(currentGroup.id),
-        (oldData: InfiniteData<CursorResult, unknown>) => {
-          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
-            return oldData;
-          }
-          const newData = oldData.pages.map(page => {
+    const onDeleteMessage: ServerToClientEvents['server:group:message:delete:success'] =
+      updatedMessage => {
+        queryClient.setQueryData(
+          queryKeyFactory.messages(currentGroup.id),
+          (oldData: InfiniteData<CursorResult, unknown>) => {
+            if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+              return oldData;
+            }
+            const newData = oldData.pages.map(page => {
+              return {
+                ...page,
+                messages: page.messages.map(message => {
+                  if (message.id === updatedMessage.id) {
+                    return updatedMessage;
+                  }
+                  return message;
+                }),
+              };
+            });
             return {
-              ...page,
-              messages: page.messages.map(message => {
-                if (message.id === updatedMessage.id) {
-                  return updatedMessage;
-                }
-                return message;
-              }),
+              ...oldData,
+              pages: newData,
             };
-          });
-          return {
-            ...oldData,
-            pages: newData,
-          };
-        },
-      );
-    };
+          },
+        );
+      };
 
-    socket.on('server:group:join', onJoin);
-    socket.on('server:group:leave', onLeave);
-    socket.on('server:group:typing', onTyping);
-    socket.on('server:group:message:post', onMessage);
-    socket.on('server:group:message:update', onUpdateMessage);
-    socket.on('server:group:message:delete', onDeleteMessage);
+    socket.on('server:group:join:success', onJoin);
+    socket.on('server:group:leave:success', onLeave);
+    socket.on('server:group:typing:success', onTyping);
+    socket.on('server:group:message:post:success', onNewMessage);
+    socket.on('server:group:message:upload:success', onNewMessage);
+    socket.on('server:group:message:update:success', onUpdateMessage);
+    socket.on('server:group:message:delete:success', onDeleteMessage);
+
+    const onError = (msg: string) => {
+      toast({
+        title: 'Error',
+        description: msg,
+      });
+    };
+    socket.on('server:group:join:error', onError);
+    socket.on('server:group:leave:error', onError);
+    socket.on('server:group:typing:error', onError);
+    socket.on('server:group:message:post:error', onError);
+    socket.on('server:group:message:upload:error', onError);
+    socket.on('server:group:message:update:error', onError);
+    socket.on('server:group:message:delete:error', onError);
 
     return () => {
-      socket.emit('client:group:leave', origin);
+      socket.emit('client:group:leave', origin, {
+        email: auth.email!,
+      });
 
-      socket.off('server:group:join', onJoin);
-      socket.off('server:group:leave', onLeave);
-      socket.off('server:group:typing', onTyping);
-      socket.off('server:group:message:post', onMessage);
-      socket.off('server:group:message:update', onUpdateMessage);
-      socket.off('server:group:message:delete', onDeleteMessage);
+      socket.off('server:group:join:success', onJoin);
+      socket.off('server:group:leave:success', onLeave);
+      socket.off('server:group:typing:success', onTyping);
+      socket.off('server:group:message:post:success', onNewMessage);
+      socket.off('server:group:message:upload:success', onNewMessage);
+      socket.off('server:group:message:update:success', onUpdateMessage);
+      socket.off('server:group:message:delete:success', onDeleteMessage);
+
+      socket.off('server:group:join:error', onError);
+      socket.off('server:group:leave:error', onError);
+      socket.off('server:group:typing:error', onError);
+      socket.off('server:group:message:post:error', onError);
+      socket.off('server:group:message:upload:error', onError);
+      socket.off('server:group:message:update:error', onError);
+      socket.off('server:group:message:delete:error', onError);
     };
   }, []);
 

@@ -113,7 +113,6 @@ export const MemberCard = ({ member, showMenu, roomId }: MemberCardProps) => {
           });
         },
         onError: err => {
-          console.log(err);
           toast({
             title: 'Kick member Failed',
           });

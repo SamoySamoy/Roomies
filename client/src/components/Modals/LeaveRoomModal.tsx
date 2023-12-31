@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +9,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 import { useLeaveRoomMutation } from '@/hooks/mutations';
-import { useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
 const LeaveRoomModal = () => {

@@ -28,7 +28,9 @@ const AudioPage = () => {
     peer.on('open', id => {
       setPeerId(id);
       console.log(id);
-      socket.emit('client:group:join', origin);
+      socket.emit('client:group:join', origin, {
+        email: auth.email!,
+      });
     });
 
     peer.on('call', function (call) {

@@ -21,7 +21,9 @@ const JoinPublicRoomModal = () => {
   } = useModal();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const mutation = useJoinRoomMutation();
+  const mutation = useJoinRoomMutation({
+    refetch: true,
+  });
   const onDelete = () => {
     mutation.mutate(
       {

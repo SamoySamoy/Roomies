@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const EditRoomModal = () => {
   const {
@@ -80,7 +79,7 @@ const EditRoomModal = () => {
       formData.append('roomPassword', values.roomName);
     }
     if (isRoomImageChanged) {
-      console.log(imageFile);
+      // console.log(imageFile);
       formData.append('roomImage', imageFile!);
     }
 

@@ -1,7 +1,7 @@
 import qs from 'query-string';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { SERVER_API_URL } from './constants';
+import { IMAGE_EXT_LIST, SERVER_API_URL } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,6 +15,19 @@ export const dt = new Intl.DateTimeFormat('en-US', {
   minute: 'numeric',
   hour12: false,
 });
+
+export const convertMbToBytes = (mb: number) => mb * Math.pow(1024, 2);
+
+export const getExtName = (filename: string) => {
+  return filename.split('.').reverse()[0].toLowerCase();
+};
+
+export const isImageFile = (filename: string | undefined | null) => {
+  if (!filename) return false;
+  // path.extname trả về đuôi file có chấm ở đầu (VD: .img, .pdf)
+  const fileExt = getExtName(filename);
+  return IMAGE_EXT_LIST.includes(fileExt);
+};
 
 export const getFileUrl = (relUrl: string | undefined | null) => {
   if (!relUrl) return '';

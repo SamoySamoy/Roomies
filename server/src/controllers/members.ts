@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { GroupType, MemberRole } from '@prisma/client';
+import { MemberRole } from '@prisma/client';
 import { AuthenticatedRequest } from '@/lib/types';
-import { isTruthy } from '@/lib/utils';
+import { createMsg, isTruthy } from '@/lib/utils';
 
 type QueryInclude = {
   profile: string;
@@ -19,7 +19,12 @@ export const getMembers = async (
   try {
     const { profile, roomId } = req.query;
     if (!roomId) {
-      return res.status(404).json({ message: 'Require room id' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room id',
+        }),
+      );
     }
 
     const members = await db.member.findMany({
@@ -34,7 +39,11 @@ export const getMembers = async (
     return res.status(200).json(members);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room Error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -61,7 +70,9 @@ type ParamsWithMemberId = {
 //     return res.status(200).json(group);
 //   } catch (error) {
 //     console.error(error);
-//     return res.status(500).json({ error: 'Internal room Error' });
+//     return res.status(500).json(createMsg({
+//        type: 'error',
+//      }),);
 //   }
 // };
 
@@ -145,7 +156,9 @@ type BodyUpdateMember = {
 //     return res.status(200).json(updatedRoom);
 //   } catch (error) {
 //     console.error(error);
-//     return res.status(500).json({ error: 'Internal room Error' });
+//     return res.status(500).json(createMsg({
+//        type: 'error',
+//      }),);
 //   }
 // };
 
@@ -160,7 +173,12 @@ export const updateMember = async (
     const { role } = req.body;
 
     if (!role || !memberId || !roomId) {
-      return res.status(404).json({ message: 'Require room id, role, member id' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room id, role, member id',
+        }),
+      );
     }
 
     const updatedRoom = await db.room.update({
@@ -198,7 +216,11 @@ export const updateMember = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };
 
@@ -213,7 +235,12 @@ export const deleteMember = async (
     const memberId = req.params.memberId;
 
     if (!memberId || !roomId) {
-      return res.status(404).json({ message: 'Require room id, member id' });
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room id, member id',
+        }),
+      );
     }
 
     const updatedRoom = await db.room.update({
@@ -246,6 +273,10 @@ export const deleteMember = async (
     return res.status(200).json(updatedRoom);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal room error' });
+    return res.status(500).json(
+      createMsg({
+        type: 'error',
+      }),
+    );
   }
 };

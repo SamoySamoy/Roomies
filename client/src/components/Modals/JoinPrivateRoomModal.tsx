@@ -36,7 +36,9 @@ const JoinPrivateRoomModal = () => {
     roomId: room?.id!,
     roomPassword: '',
   });
-  const mutation = useJoinRoomMutation();
+  const mutation = useJoinRoomMutation({
+    refetch: true,
+  });
   const isLoading = form.formState.isSubmitting || mutation.isPending;
 
   const clearForm = () => {

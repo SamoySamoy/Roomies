@@ -70,6 +70,7 @@ const LoginPage = () => {
                         className='shad-input'
                         {...field}
                         disabled={isLoading}
+                        autoComplete='email'
                       />
                     </FormControl>
                     <FormMessage />
@@ -88,6 +89,7 @@ const LoginPage = () => {
                         className='shad-input'
                         {...field}
                         disabled={isLoading}
+                        autoComplete='current-password'
                       />
                     </FormControl>
                     <FormMessage />

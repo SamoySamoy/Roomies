@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import MemberAvatar from '@/components/MemberAvatar';
 import ActionTooltip from '@/components/ActionToolTip';
-import { cn, dt, getFileUrl } from '@/lib/utils';
+import { cn, dt, getFileUrl, isImageFile } from '@/lib/utils';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -27,23 +27,23 @@ const roleIconMap = {
 
 const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
   const { openModal } = useModal();
-  const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
+  const { roomId } = useParams<{ roomId: string }>();
+  const [isEditing, setIsEditing] = useState(false);
   const form = useChatForm({
     content: message.content,
   });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const fileUrl = false;
-  const fileType = message.fileUrl?.split('.').pop();
   const isAdmin = currentMember.role === MemberRole.ADMIN;
   const isModerator = currentMember.role === MemberRole.MODERATOR;
   const isMessageOwner = currentMember.id === message.memberId;
-  const canDeleteMessage = !message.deleted && (isAdmin || isModerator || isMessageOwner);
-  const canEditMessage = !message.deleted && !fileUrl && isMessageOwner;
-  const isPDF = fileType === 'pdf' && fileUrl;
-  const isImage = !isPDF && fileUrl;
+  const isFile = Boolean(message.fileUrl);
+  const isImage = isFile && isImageFile(message.fileUrl);
+  const isOtherFileType = isFile && !isImage;
   const isUpdated = message.createdAt !== message.updatedAt;
+  // const canDeleteMessage = !message.deleted && (isAdmin || isModerator || isMessageOwner);
+  const canEditMessage = !message.deleted && isMessageOwner && !isFile;
+  const canDeleteMessage = !message.deleted && isMessageOwner;
 
   const onMemberClick = () => {
     if (currentMember.id !== message.memberId) {
@@ -52,7 +52,6 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
   };
 
   const onEdit = async (values: ChatSchema) => {
-    console.log(values);
     socket.emit('client:group:message:update', origin, {
       content: values.content,
       messageId: message.id,
@@ -99,33 +98,37 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
               </ActionTooltip>
             </div>
             <span className='text-xs text-zinc-500 dark:text-zinc-400'>
-              {dt.format(new Date(message.createdAt as any))}
+              {dt.format(new Date(message.createdAt))}
             </span>
           </div>
           {isImage && (
             <a
-              href={fileUrl}
+              href={getFileUrl(message.fileUrl)}
               target='_blank'
               rel='noopener noreferrer'
-              className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-48 w-48'
+              className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[200px] w-[350px]'
             >
-              <img src={fileUrl} alt={message.content} className='object-cover' />
+              <img
+                src={getFileUrl(message.fileUrl)}
+                alt={message.content}
+                className='object-cover'
+              />
             </a>
           )}
-          {isPDF && (
+          {isOtherFileType && (
             <div className='relative flex items-center p-2 mt-2 rounded-md bg-background/10'>
               <FileIcon className='h-10 w-10 fill-indigo-200 stroke-indigo-400' />
               <a
-                href={fileUrl}
+                href={getFileUrl(message.fileUrl)}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='ml-2 text-sm text-indigo-500 dark:text-indigo-400 hover:underline'
               >
-                PDF File
+                File
               </a>
             </div>
           )}
-          {!fileUrl && !isEditing && (
+          {!isFile && !isEditing && (
             <p
               className={cn('text-sm text-zinc-600 dark:text-zinc-300', {
                 'italic text-zinc-500 dark:text-zinc-400 text-xs mt-1': message.deleted,
@@ -137,7 +140,7 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
               )}
             </p>
           )}
-          {!fileUrl && isEditing && (
+          {!isFile && isEditing && (
             <Form {...form}>
               <form
                 className='flex items-center w-full gap-x-2 pt-2'
