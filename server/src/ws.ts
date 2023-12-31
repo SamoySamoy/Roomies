@@ -162,6 +162,9 @@ const getMessagesByGroupId = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:get']>
 ) => {
   const [origin] = args;
+  if (!origin.groupId) {
+    throw new Error('Missing groupId');
+  }
   const messages = await db.message.findMany({
     where: {
       groupId: origin.groupId,
@@ -184,12 +187,22 @@ const createMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:post']>
 ) => {
   const [origin, arg] = args;
+  if (!origin.profileId || !origin.groupId || !origin.roomId) {
+    throw new Error('Missing profileId, groupId or roomId');
+  }
+  if (!arg.content) {
+    throw new Error('Missing content argument');
+  }
   const member = await db.member.findFirst({
     where: {
       profileId: origin.profileId,
       roomId: origin.roomId,
     },
   });
+
+  if (!member) {
+    throw new Error('Can not send message. Member not found or you are not member of this channel');
+  }
 
   const message = await db.message.create({
     data: {
@@ -214,12 +227,23 @@ const updateMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:update']>
 ) => {
   const [origin, arg] = args;
+  if (!origin.profileId || !origin.groupId || !origin.roomId) {
+    throw new Error('Missing profileId, groupId or roomId');
+  }
+  if (!arg.content || !arg.messageId) {
+    throw new Error('Missing content or messageId argument');
+  }
   const message = await db.message.findUnique({
     where: { id: arg.messageId },
   });
+  if (!message) {
+    throw new Error('Message not found');
+  }
+
   const member = await db.member.findUnique({
     where: { id: message?.memberId },
   });
+
   if (member?.profileId !== origin.profileId) {
     return message;
   }
@@ -246,6 +270,19 @@ const deleteMesage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:delete']>
 ) => {
   const [origin, arg] = args;
+  if (!origin.profileId || !origin.groupId || !origin.roomId) {
+    throw new Error('Missing profileId, groupId or roomId');
+  }
+  if (!arg.messageId) {
+    throw new Error('Missing messageId argument');
+  }
+  const message = await db.message.findUnique({
+    where: { id: arg.messageId },
+  });
+
+  if (!message) {
+    throw new Error('Message not found');
+  }
   const deletedMessage = await db.message.update({
     where: {
       id: arg.messageId,
