@@ -51,9 +51,16 @@ export const isImageFile = (filename: string | undefined | null) => {
 
 export const mkdirIfNotExist = async (absFolderPath: string) => {
   if (fs.existsSync(absFolderPath)) return;
+
   await fsPromises.mkdir(absFolderPath, {
     recursive: true,
   });
+};
+
+export const removeIfExist = async (absFolderPath: string) => {
+  if (!fs.existsSync(absFolderPath)) return;
+
+  await fsPromises.unlink(absFolderPath);
 };
 
 export type GenTokenOption =

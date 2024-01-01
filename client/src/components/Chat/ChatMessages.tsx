@@ -47,7 +47,6 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
 
   /* Listening chat event */
   useEffect(() => {
-    console.log('Join', auth);
     socket.emit('client:group:join', origin, {
       email: auth.email!,
     });

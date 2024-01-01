@@ -1,17 +1,41 @@
 import { useEffect, useState } from 'react';
 import Dropzone, { DropzoneProps } from 'react-dropzone';
 import { Plus, X, FileIcon } from 'lucide-react';
+import { getFileNameFromUrl, getFileUrl, isImageFile } from '@/lib/utils';
 
-type FileUploadProps = DropzoneProps & {
-  onChange: (file: File | null) => void;
-  preset?: string;
+export type FileUpload =
+  | {
+      type: 'offline';
+      file: File;
+    }
+  | {
+      type: 'online';
+      fileUrl: string;
+    };
+
+type FileUploadZoneProps = DropzoneProps & {
+  onChange: (file: FileUpload | null) => void;
+  value: FileUpload | null;
 };
 
-const isImageType = (fileType: string) => fileType.startsWith('image');
+const getPreview = (file: FileUpload | null | undefined) => {
+  if (file && file.type === 'online') {
+    return getFileUrl(file.fileUrl);
+  }
+  if (file && file.type === 'offline') {
+    return URL.createObjectURL(file.file);
+  }
+  return '';
+};
 
-const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>(preset || '');
+const FileUploadZone = ({ onChange, value, ...dropzoneProps }: FileUploadZoneProps) => {
+  const [preview, setPreview] = useState<string>(getPreview(value));
+
+  const clearFile = () => {
+    setPreview('');
+    onChange(null);
+  };
+
   useEffect(() => {
     return () => {
       if (preview) {
@@ -20,21 +44,17 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
     };
   }, [preview]);
 
-  const clearFile = () => {
-    setPreview('');
-    setFile(null);
-    onChange(null);
-  };
-
-  // No preview means no file
-  if (!file) {
+  if (!value) {
     return (
       <Dropzone
         onDrop={acceptedFiles => {
-          acceptedFiles.forEach(f => {
-            setFile(f);
-            setPreview(URL.createObjectURL(f));
-            onChange(f);
+          acceptedFiles.forEach(file => {
+            const newFileUpload: FileUpload = {
+              type: 'offline',
+              file,
+            };
+            setPreview(getPreview(newFileUpload));
+            onChange(newFileUpload);
           });
         }}
         multiple={false}
@@ -54,7 +74,7 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
   }
 
   // Has preview
-  if (isImageType(file?.type || '')) {
+  if (isImageFile(value.type === 'online' ? value.fileUrl : value.file.name)) {
     return (
       <div className='relative flex h-20 w-20 items-center justify-center'>
         <img src={preview} className='h-full w-full rounded-full' />
@@ -77,7 +97,7 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
         rel='noopener noreferrer'
         className='ml-2 text-sm text-indigo-500 dark:text-indigo-400 hover:underline'
       >
-        {file?.name}
+        {value.type === 'online' ? getFileNameFromUrl(value.fileUrl) : value.file.name}
       </a>
       <button
         onClick={clearFile}
@@ -90,4 +110,4 @@ const FileUpload = ({ onChange, preset, ...dropzoneProps }: FileUploadProps) => 
   );
 };
 
-export default FileUpload;
+export default FileUploadZone;

@@ -72,6 +72,26 @@ export const useCreateRoomForm = (init?: CreateRoomSchema) =>
     },
   });
 
+export const changeProfilePasswordSchema = z.object({
+  currentPassword: z.string().trim().min(1, {
+    message: 'Require old password',
+  }),
+  newPassword: z.string().trim().min(1, {
+    message: 'Require new password',
+  }),
+  confirmNewPassword: z.string().trim(),
+});
+export type ChangeProfilePasswordSchema = z.infer<typeof changeProfilePasswordSchema>;
+export const useChangeProfilePasswordForm = (init?: ChangeProfilePasswordSchema) =>
+  useForm<ChangeProfilePasswordSchema>({
+    resolver: zodResolver(changeProfilePasswordSchema),
+    defaultValues: {
+      currentPassword: init?.currentPassword || '',
+      newPassword: init?.newPassword || '',
+      confirmNewPassword: init?.confirmNewPassword || '',
+    },
+  });
+
 export const joinRoomSchema = z.object({
   roomId: z.string().trim().min(1, {
     message: 'Require room id',

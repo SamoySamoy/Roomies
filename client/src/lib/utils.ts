@@ -18,6 +18,8 @@ export const dt = new Intl.DateTimeFormat('en-US', {
 
 export const convertMbToBytes = (mb: number) => mb * Math.pow(1024, 2);
 
+export const getFileNameFromUrl = (fileUrl: string) => fileUrl.split('/').pop();
+
 export const getExtName = (filename: string) => {
   return filename.split('.').reverse()[0].toLowerCase();
 };

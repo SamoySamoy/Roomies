@@ -11,7 +11,7 @@ import messagesRouter from './messages';
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
-// apiRouter.use('/profiles', profilesRouter);
+apiRouter.use('/profiles', verifyToken, profilesRouter);
 apiRouter.use('/rooms', verifyToken, roomsRouter);
 apiRouter.use('/groups', verifyToken, groupsRouter);
 apiRouter.use('/members', verifyToken, membersRouter);

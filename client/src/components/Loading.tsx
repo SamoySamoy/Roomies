@@ -17,10 +17,18 @@ export const LoadingPage = () => {
   );
 };
 
+export const LoadingBlock = () => {
+  return (
+    <div className='w-full h-[200px] flex-1 flex justify-center items-center bg-transparent'>
+      <LoadingIcon />
+    </div>
+  );
+};
+
 type LoadingIconProps = {
   className?: string;
 };
 
-const LoadingIcon = ({ className }: LoadingIconProps) => {
+export const LoadingIcon = ({ className }: LoadingIconProps) => {
   return <Loader2 className={cn('animate-spin w-8 h-8', className)} />;
 };

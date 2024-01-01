@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/FileUpload';
+import FileUploadZone, { FileUpload } from '@/components/FileUploadZone';
 import { useModal } from '@/hooks/useModal';
 import { socket } from '@/lib/socket';
 import { convertMbToBytes } from '@/lib/utils';
 import { IMAGE_SIZE_LIMIT_IN_MB } from '@/lib/constants';
-import { toast, useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
   fileName: z.string().trim().min(1, {
@@ -41,17 +41,18 @@ const MessageFileModal = () => {
       fileName: '',
     },
   });
-  const [file, setFile] = useState<File | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<FileUpload | null>(null);
 
   const clearForm = () => {
-    setFile(null);
+    setUploadedFile(null);
     form.reset();
   };
 
-  const onSubmit = async (values: FormSchema) => {
-    console.log(file);
+  const onSubmit = async (_: FormSchema) => {
+    console.log(uploadedFile);
+    if (!uploadedFile || uploadedFile?.type === 'online') return;
 
-    if (file && file.size > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
+    if (uploadedFile.file.size > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
       return toast({
         title: 'Invalid',
         description: 'File size not over 5 MB',
@@ -59,10 +60,10 @@ const MessageFileModal = () => {
     }
 
     socket.emit('client:group:message:upload', origin!, {
-      filename: file!.name,
-      filesize: file!.size,
-      filetype: file!.type,
-      buffer: file!.slice(),
+      filename: uploadedFile.file.name,
+      filesize: uploadedFile.file.size,
+      filetype: uploadedFile.file.type,
+      buffer: uploadedFile.file.slice(),
     });
 
     clearForm();
@@ -92,11 +93,18 @@ const MessageFileModal = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FileUpload
-                          onChange={f => {
-                            setFile(f);
-                            field.onChange(f?.name || '');
+                        <FileUploadZone
+                          onChange={uploadFile => {
+                            setUploadedFile(uploadFile);
+                            field.onChange(
+                              !uploadFile
+                                ? ''
+                                : uploadFile.type === 'online'
+                                ? uploadFile.fileUrl
+                                : uploadFile.file.name,
+                            );
                           }}
+                          value={uploadedFile}
                         />
                       </FormControl>
                       <FormMessage />

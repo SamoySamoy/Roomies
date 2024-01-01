@@ -16,6 +16,12 @@ export type AuthState = {
 
 export type AuthActions = {
   setAuth: (newAccessToken: string | undefined) => void;
+  setInfo: (
+    arg: Partial<{
+      email: string;
+      imageUrl: string;
+    }>,
+  ) => void;
 };
 
 export const useAuth = create<AuthState & AuthActions>()(set => ({
@@ -46,5 +52,14 @@ export const useAuth = create<AuthState & AuthActions>()(set => ({
         imageUrl: decoded?.imageUrl,
       },
     });
+  },
+  setInfo: ({ email, imageUrl }) => {
+    set(state => ({
+      auth: {
+        ...state.auth,
+        email,
+        imageUrl,
+      },
+    }));
   },
 }));

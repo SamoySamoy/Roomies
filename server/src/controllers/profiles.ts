@@ -1,57 +1,54 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { db } from '@/prisma/db';
-import { Room, Member, Group } from '@prisma/client';
 import sharp from 'sharp';
-import { createMsg, uuid } from '@/lib/utils';
+import {
+  createMsg,
+  getFileName,
+  isTruthy,
+  mkdirIfNotExist,
+  removeIfExist,
+  uuid,
+} from '@/lib/utils';
 import path from 'path';
-import fsPromises from 'fs/promises';
-import fs from 'fs';
 import bcrypt from 'bcrypt';
 import { AuthenticatedRequest } from '@/lib/types';
 
-export const getProfileById = async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
-    const { all, rooms, members, groups } = req.query;
+type ParamsProfileId = {
+  profileId: string;
+};
 
-    const user = await db.profile.findUnique({
-      where: { id: id },
+type QueryInclude = {
+  rooms: string;
+  members: string;
+  groups: string;
+};
+
+export const getProfileByProfileId = async (
+  req: AuthenticatedRequest<ParamsProfileId, any, Partial<QueryInclude>>,
+  res: Response,
+) => {
+  try {
+    const { profileId } = req.params;
+    const { rooms, members, groups } = req.query;
+
+    const profile = await db.profile.findUnique({
+      where: { id: profileId },
       include: {
-        rooms: true,
-        members: true,
-        groups: true,
+        rooms: isTruthy(rooms),
+        members: isTruthy(members),
+        groups: isTruthy(groups),
       },
     });
-
-    const returnData: {
-      rooms?: Room[];
-      members?: Member[];
-      groups?: Group[];
-    } = {};
-
-    if (user) {
-      if (all) {
-        return res.status(200).json(user);
-      } else {
-        if (rooms) {
-          returnData.rooms = user.rooms;
-        }
-        if (members) {
-          returnData.members = user.members;
-        }
-        if (groups) {
-          returnData.groups = user.groups;
-        }
-        return res.status(200).json(returnData);
-      }
-    } else {
+    if (!profile) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'User not found',
+          invalidMessage: 'Profile not found',
         }),
       );
     }
+
+    return res.status(200).json(profile);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -67,13 +64,19 @@ export const uploadProfileImage = async (
   res: Response,
 ) => {
   try {
+    const profileId = req.user?.profileId;
+
     if (!req.file) {
-      return res.status(400).json({ message: 'Require profile image' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require profile image',
+        }),
+      );
     }
-    const profileId = req.user?.profileId!;
+
     const profile = await db.profile.findUnique({
       where: { id: profileId },
-      select: { id: true },
     });
     if (!profile) {
       return res.status(400).json(
@@ -85,24 +88,27 @@ export const uploadProfileImage = async (
     }
 
     const image = req.file;
-    const folderPath = '/public/user';
-    const imageName = `${uuid()}.webp`;
-    const relImagePath = path.join(folderPath, imageName);
-    const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
-    if (!fs.existsSync(absImageFolderPath)) {
-      await fsPromises.mkdir(absImageFolderPath, {
-        recursive: true,
-      });
+    const imageName = `${getFileName(image.originalname)}_${uuid()}.webp`;
+    const relFolderPath = '/public/users';
+    const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
+    const relImagePath = path.join(relFolderPath, imageName);
+    const absImagePath = path.join(absFolderPath, imageName);
+
+    await mkdirIfNotExist(absFolderPath);
+    await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
+    if (profile.imageUrl) {
+      const oldImagePath = path.join(absFolderPath, profile.imageUrl);
+      removeIfExist(oldImagePath);
     }
-    await sharp(image.buffer)
-      .resize(300, 300)
-      .webp()
-      .toFile(path.join(absImageFolderPath, imageName));
 
     const updatedProfile = await db.profile.update({
       where: { id: profileId },
       data: {
         imageUrl: relImagePath,
+      },
+      select: {
+        email: true,
+        imageUrl: true,
       },
     });
 
@@ -117,20 +123,16 @@ export const uploadProfileImage = async (
   }
 };
 
-export const changeProfileImage = async (
+export const deleteProfileImage = async (
   req: AuthenticatedRequest<any, any, any>,
   res: Response,
 ) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'Require profile image' });
-    }
-
     const profileId = req.user?.profileId!;
+
     const profile = await db.profile.findUnique({
       where: { id: profileId },
     });
-
     if (!profile) {
       return res.status(400).json(
         createMsg({
@@ -140,35 +142,19 @@ export const changeProfileImage = async (
       );
     }
 
-    const image = req.file;
-    const folderPath = '/public/user';
-    const imageName = `${uuid()}.webp`;
-    const relImagePath = path.join(folderPath, imageName);
-    const absImageFolderPath = path.join(__dirname, '..', '..', folderPath);
-
-    if (!fs.existsSync(absImageFolderPath)) {
-      await fsPromises.mkdir(absImageFolderPath, {
-        recursive: true,
-      });
-    }
-
-    await sharp(image.buffer)
-      .resize(300, 300)
-      .webp()
-      .toFile(path.join(absImageFolderPath, imageName));
-
     if (profile.imageUrl) {
-      const existingImagePath = path.join(__dirname, '..', '..', profile.imageUrl);
-
-      if (fs.existsSync(existingImagePath)) {
-        await fsPromises.unlink(existingImagePath);
-      }
+      const oldImagePath = path.join(__dirname, '..', '..', profile.imageUrl);
+      removeIfExist(oldImagePath);
     }
 
     const updatedProfile = await db.profile.update({
       where: { id: profileId },
       data: {
-        imageUrl: relImagePath,
+        imageUrl: null,
+      },
+      select: {
+        email: true,
+        imageUrl: true,
       },
     });
 
@@ -183,13 +169,31 @@ export const changeProfileImage = async (
   }
 };
 
-export const changePassword = async (req: AuthenticatedRequest<any, any, any>, res: Response) => {
+export type BodyChangePassword = {
+  currentPassword: string;
+  newPassword: string;
+};
+
+export const changePassword = async (
+  req: AuthenticatedRequest<any, Partial<BodyChangePassword>, any>,
+  res: Response,
+) => {
   try {
+    const { currentPassword, newPassword } = req.body;
     const profileId = req.user?.profileId!;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Need current password and new password',
+        }),
+      );
+    }
+
     const profile = await db.profile.findUnique({
       where: { id: profileId },
     });
-
     if (!profile) {
       return res.status(400).json(
         createMsg({
@@ -198,26 +202,31 @@ export const changePassword = async (req: AuthenticatedRequest<any, any, any>, r
         }),
       );
     }
-    const { password } = req.body;
 
-    if (!password) {
-      return res.status(400).json(
+    const isRightCurrentPassword = await bcrypt.compare(currentPassword, profile.password);
+    if (!isRightCurrentPassword) {
+      return res.status(401).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Need new password',
+          invalidMessage: 'Unauthentication',
         }),
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
     await db.profile.update({
       where: { id: profileId },
       data: {
-        password: hashedPassword,
+        password: newHashedPassword,
       },
     });
 
-    return res.status(200).json({ message: 'Change password successful' });
+    return res.status(200).json(
+      createMsg({
+        type: 'success',
+        successMessage: 'Change password successfully',
+      }),
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json(
