@@ -104,11 +104,12 @@ const AudioPage = () => {
   }
 
   function removeVideo(id: string) {
-    console.log(videoList);
-    let newVidList = videoList.filter(video => video.peerId !== id);
-    console.log('After remove');
-    console.log(newVidList);
-    setVideoList(newVidList)
+    // console.log(videoList);
+    // let newVidList = videoList.filter(video => video.peerId !== id);
+    // console.log('After remove');
+    // console.log(newVidList);
+    // setVideoList(newVidList)
+    setVideoList(prev => prev.filter(video => video.peerId !== id ));
   }
 
   function clickCamera() {
