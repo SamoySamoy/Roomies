@@ -17,6 +17,8 @@ export type ServerToClientEvents = {
   'server:group:message:update:error': (msg: string) => void;
   'server:group:message:delete:success': (messages: Message) => void;
   'server:group:message:delete:error': (msg: string) => void;
+  'server:peer:init:success': (id: string) => void;
+  'server:user-disconnected': (id: string) => void;
 };
 
 export type Origin = {
@@ -42,6 +44,7 @@ export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
 export type ClientToServerEvents = {
+  'client:peer:init:success': (origin: GroupOrigin) => void;
   'client:group:join': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:leave': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:typing': (origin: GroupOrigin, arg: MessageIdentity) => void;

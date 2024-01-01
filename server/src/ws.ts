@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
-import { Message } from '@prisma/client';
+import { Group, Message } from '@prisma/client';
 import { corsOptions } from './lib/config';
 import { IMAGE_SIZE_LIMIT_IN_MB } from './lib/constants';
 import { ValidationError } from './lib/types';
@@ -16,6 +16,7 @@ import {
   mkdirIfNotExist,
   uuid,
 } from './lib/utils';
+import { log } from 'console';
 
 export type ServerToClientEvents = {
   'server:group:join:success': (msg: string) => void;
@@ -32,6 +33,8 @@ export type ServerToClientEvents = {
   'server:group:message:update:error': (msg: string) => void;
   'server:group:message:delete:success': (messages: Message) => void;
   'server:group:message:delete:error': (msg: string) => void;
+  'server:peer:init:success': (id: string) => void,
+  'server:user-disconnected': (id: string) => void,
 };
 
 export type Origin = {
@@ -58,6 +61,7 @@ export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
 export type ClientToServerEvents = {
+  'client:peer:init:success': (origin: GroupOrigin) => void;
   'client:group:join': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:leave': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:typing': (origin: GroupOrigin, arg: MessageIdentity) => void;
@@ -80,6 +84,7 @@ export function setupWs(httpServer: HTTPServer) {
     // On user join group
     socket.on('client:group:join', async (origin, arg) => {
       socket.join(origin.groupId);
+      console.log(arg.email + ' join group: ' + origin.groupId);
 
       try {
         // On user join group - to user only
@@ -97,7 +102,7 @@ export function setupWs(httpServer: HTTPServer) {
       try {
         socket.broadcast
           .to(origin.groupId)
-          .emit('server:group:join:success', `${arg.email} just join group`);
+          .emit('server:group:join:success', `${arg.email} just join group ${origin.profileId}`);
       } catch (error: any) {
         console.log(error);
         if (error instanceof ValidationError) {
@@ -208,6 +213,21 @@ export function setupWs(httpServer: HTTPServer) {
         }
       }
     });
+
+    socket.on('client:peer:init:success', function (origin) {
+      console.log(origin.profileId + 'join the audio: ' + origin.groupId);
+      try {
+        socket.join(origin.groupId);
+        socket.broadcast.to(origin.groupId).emit('server:peer:init:success', origin.profileId);
+        console.log('broad cast to the room');
+      } catch(err: any) {
+        console.log(err);
+      }
+      socket.on('disconnect', function() {
+        console.log('user disconnected: '+ origin.profileId);
+        socket.broadcast.to(origin.groupId).emit('server:user-disconnected', origin.profileId);
+      });
+    })
   });
 
   // Handle errors on the socket IO instance
