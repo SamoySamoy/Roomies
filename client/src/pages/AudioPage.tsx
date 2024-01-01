@@ -131,27 +131,19 @@ const AudioPage = () => {
     setCanShareScreen(false);
   }
   return (
-    <div className='grid-cols-3 auto-rows-auto bg-slate-500 h-full'>
+    <div className='grid-cols-3 auto-rows-auto bg-slate-500 h-lvh min-w-fit'>
       <Button className='bg-lime-600 mx-1' onClick={clickCamera}>
         Camera is {camera}
       </Button>
       <Button className='bg-lime-600' onClick={shareScreen} disabled={!canShareScreen}>
         Share Screen
       </Button>
-      {/* <video ref={myVideo}></video> */}
-      <div>
-        {/* {localStream && <Video mute={true} stream={localStream} peerId={peerId}/>} */}
+      <div className='flex flex-row flex-wrap gap-1 m-1'>
         {videoList.map(function (video) {
           return <Video key={video.peerId} mute={video.mute} stream={video.stream} peerId={video.peerId}/>;
         })}
-        <span>{videoList.length}</span>
-
-        {/* <Video stream={localStream!} mute={true} peerId={origin.profileId}></Video> */}
-        {/* <video vidRef={myVid} muted={true} autoPlay></video> */}
-        {/* <Video vidRef={myVid} mute={true} peerId={origin.profileId} /> */}
-        {/* Other */}
-        {/* <video ref={otherVid} muted={true} autoPlay></video> */}
       </div>
+      <span>{videoList.length}</span>
     </div>
   );
 };

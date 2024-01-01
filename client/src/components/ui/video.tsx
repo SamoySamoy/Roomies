@@ -20,15 +20,18 @@ const Video = ({stream, peerId, mute}: VideoProps) => {
     if (mute) {
         mic = <MicOff className="absolute bottom-1 left-1" size={20}></MicOff>
     } else {
-        mic = <Mic></Mic>
+        mic = <Mic className="absolute bottom-1 left-1" size={20}></Mic>
     }
     
     return (
-        <div className="relative">
+        <div className="flex-1 basis-1/4">
+            <div className="relative"> 
             {mic}
             <span className="absolute bottom-1 left-10 text-base">{peerId}</span>
-            <video className="w-1/3 h-auto" ref={videoRef} autoPlay playsInline muted={mute}></video>
+            <video className="w-full h-full rounded-md" ref={videoRef} autoPlay playsInline muted={mute}></video>
+            </div>
         </div>
+        
     );
 }
 
