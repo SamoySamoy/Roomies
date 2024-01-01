@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { LoginSchema, useLoginForm } from '@/hooks/forms';
 import { useLoginMutation } from '@/hooks/mutations';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Lock } from 'lucide-react';
@@ -19,7 +19,6 @@ import bg from '@/assets/bg.jpg';
 const LoginPage = () => {
   const { setAuth } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const form = useLoginForm();
   const mutation = useLoginMutation();
   const isLoading = form.formState.isSubmitting || mutation.isPending;
@@ -52,7 +51,7 @@ const LoginPage = () => {
         <div className='flex justify-center pt-20'>
           <div className='w-full shadow-md py-12 px-4 sm:px-6 lg:px-8  max-w-md space-y-8 blur-bg'>
             <div>
-              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-green-500'>
+              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-emerald-500'>
                 Login
               </h2>
             </div>
@@ -111,7 +110,7 @@ const LoginPage = () => {
               </div>
 
               <Button
-                className='group relative flex w-full justify-center rounded-md border border-transparent bg-green-500 py-2 px-4 text-sm font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'
+                className='group relative flex w-full justify-center rounded-md border border-transparent bg-emerald-500 py-2 px-4 text-sm font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2'
                 type='submit'
                 variant='primary'
                 disabled={isLoading}

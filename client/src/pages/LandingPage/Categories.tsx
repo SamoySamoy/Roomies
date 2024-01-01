@@ -22,11 +22,16 @@ const Categories = () => {
   });
 
   return (
-    <Element name='categories' className={`${inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'} transform transition ease-in-out duration-700 `}>
+    <Element
+      name='categories'
+      className={`${
+        inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'
+      } transform transition ease-in-out duration-700 `}
+    >
       <div className='w-full pb-20 px-20'>
         <div className='md:max-w-[1480px] m-auto max-w-[600px] px-4 md:px-0'>
           <h1 className='md:leading-[72px] text-3xl font-bold'>
-            Explore a variety of <span className='text-green-500'>Communities</span> by topic
+            Explore a variety of <span className='text-emerald-500'>Communities</span> by topic
           </h1>
           <div ref={ref}>
             <div className='grid lg:grid-cols-4 grid-cols-2 py-12 md:gap-4 gap-1'>

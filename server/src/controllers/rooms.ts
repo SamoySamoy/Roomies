@@ -1,7 +1,14 @@
 import { Response } from 'express';
 import { db } from '@/prisma/db';
 import { MemberRole, Room, RoomType } from '@prisma/client';
-import { createMsg, getFileName, isTruthy, mkdirIfNotExist, uuid } from '@/lib/utils';
+import {
+  createMsg,
+  getFileName,
+  isTruthy,
+  mkdirIfNotExist,
+  removeIfExist,
+  uuid,
+} from '@/lib/utils';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import path from 'path';
@@ -617,7 +624,7 @@ export const updateRoom = async (
       req.files[0]?.fieldname === 'roomImage'
     ) {
       const image = req.files[0];
-      const imageName = `${getFileName(image.filename)}_${uuid()}.webp`;
+      const imageName = `${getFileName(image.originalname)}_${uuid()}.webp`;
       const relFolderPath = '/public/rooms';
       const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
       const relImagePath = path.join(relFolderPath, imageName);
@@ -625,8 +632,11 @@ export const updateRoom = async (
 
       await mkdirIfNotExist(absFolderPath);
       await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
-      const oldImageUrl = path.join(__dirname, '..', '..', room.imageUrl!.substring(1));
-      await fsPromises.unlink(oldImageUrl);
+      if (room.imageUrl) {
+        const oldImagePath = path.join(absFolderPath, room.imageUrl);
+        removeIfExist(oldImagePath);
+      }
+
       updatedData.imageUrl = relImagePath;
     }
 

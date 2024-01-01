@@ -34,6 +34,7 @@ import { useMembersQuery } from '@/hooks/queries';
 import { Navigate } from 'react-router-dom';
 import { useChangeRoleMemberMutation, useKickMemberMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { LoadingBlock } from '@/components/Loading';
 
 const roleIconMap: Record<MemberRole, React.ReactNode> = {
   [MemberRole.GUEST]: null,
@@ -58,32 +59,34 @@ const MembersModal = () => {
   });
 
   if (isError) {
-    return <Navigate to={'/error-page'} />;
+    return <Navigate to={'/error-page'} replace />;
   }
 
   return (
     <Dialog open={isOpen && modalType === 'members'} onOpenChange={closeModal}>
       <DialogContent className='bg-white text-black overflow-hidden'>
-        {isPending || isFetching ? null : (
-          <>
-            <DialogHeader className='pt-8 px-6'>
-              <DialogTitle className='text-2xl text-center font-bold'>Manage Members</DialogTitle>
-              <DialogDescription className='text-center text-zinc-500'>
-                {members.length} Members
-              </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className='mt-8 max-h-[420px] pr-6'>
-              {members.map(member => (
-                <MemberCard
-                  key={member.id}
-                  showMenu={room?.profileId !== member.profileId}
-                  roomId={room?.id!}
-                  member={member}
-                />
-              ))}
-            </ScrollArea>
-          </>
-        )}
+        <DialogHeader className='pt-8 px-6'>
+          <DialogTitle className='text-2xl text-center font-bold'>Manage Members</DialogTitle>
+          {!isPending && !isFetching && (
+            <DialogDescription className='text-center text-zinc-500'>
+              {members.length} Members
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        <ScrollArea className='mt-8 max-h-[420px] pr-6'>
+          {!isPending && !isFetching ? (
+            members.map(member => (
+              <MemberCard
+                key={member.id}
+                showMenu={room?.profileId !== member.profileId}
+                roomId={room?.id!}
+                member={member}
+              />
+            ))
+          ) : (
+            <LoadingBlock />
+          )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

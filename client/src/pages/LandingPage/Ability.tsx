@@ -21,14 +21,14 @@ const Ability = () => {
         <div className='md:max-w-[1480px] m-auto grid md:grid-cols-2 max-w-[600px] md:px-0'>
           <div className='flex flex-col justify-center '>
             <h1 className='md:leading-[72px] text-3xl font-bold'>
-              Create your own <span className='text-green-500'>Space</span>
+              Create your own <span className='text-emerald-500'>Space</span>
             </h1>
             <p className='text-lg text-gray-600'>Roomies offers many chat channels</p>
             <div ref={ref}>
               <div className='grid grid-cols-2 py-8 gap-8 justify-evenly w-[640px]'>
                 <div className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 hover:-skew-x-3 hover:scale-105 hover:shadow-[2rem_2rem_2rem_-1rem_#0004,inset_1rem_1rem_4rem_-1rem_#fff1] dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'>
                   <div className='p-4 bg-[#E9F8F3] rounded-xl'>
-                    <MessageCircleIcon size={30} className='text-green-500' />
+                    <MessageCircleIcon size={30} className='text-emerald-500' />
                   </div>
                   <div className='px-3'>
                     <h1 className='text-2xl font-semibold'>Chat</h1>

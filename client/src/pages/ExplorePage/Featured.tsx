@@ -1,9 +1,8 @@
 import { GroupType, Room, RoomType } from '@/lib/types';
 import MemberAvatar from '@/components/MemberAvatar';
-import { cn, getFileUrl } from '@/lib/utils';
+import { getFileUrl } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { User, Hash, Mic, Video, Unlock, Lock } from 'lucide-react';
+import { User, Hash, Mic, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';

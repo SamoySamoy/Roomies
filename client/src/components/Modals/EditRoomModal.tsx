@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/FileUpload';
+import FileUploadZone, { FileUpload } from '@/components/FileUploadZone';
+
 import { useModal } from '@/hooks/useModal';
 import { CreateRoomSchema, useCreateRoomForm } from '@/hooks/forms';
 import { useUpdateRoomMutation } from '@/hooks/mutations';
@@ -41,7 +42,10 @@ const EditRoomModal = () => {
   } = useModal();
   const { toast } = useToast();
   const { roomId } = useParams<{ roomId: string }>();
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<FileUpload | null>({
+    type: 'online',
+    fileUrl: room?.imageUrl!,
+  });
   const form = useCreateRoomForm({
     roomImage: room?.imageUrl!,
     roomName: room?.name!,
@@ -78,9 +82,9 @@ const EditRoomModal = () => {
       formData.append('roomType', values.roomName);
       formData.append('roomPassword', values.roomName);
     }
-    if (isRoomImageChanged) {
+    if (imageFile?.type === 'offline') {
       // console.log(imageFile);
-      formData.append('roomImage', imageFile!);
+      formData.append('roomImage', imageFile.file);
     }
 
     mutation.mutate(
@@ -131,14 +135,18 @@ const EditRoomModal = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FileUpload
-                          onChange={f => {
-                            setImageFile(f);
-                            field.onChange(f?.name || '');
+                        <FileUploadZone
+                          onChange={uploadFile => {
+                            setImageFile(uploadFile);
+                            field.onChange(
+                              !uploadFile
+                                ? ''
+                                : uploadFile.type === 'online'
+                                ? uploadFile.fileUrl
+                                : uploadFile.file.name,
+                            );
                           }}
-                          accept={{
-                            'image/*': [],
-                          }}
+                          value={imageFile}
                         />
                       </FormControl>
                       <FormMessage />

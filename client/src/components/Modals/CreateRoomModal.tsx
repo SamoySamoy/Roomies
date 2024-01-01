@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/FileUpload';
+import FileUploadZone, { FileUpload } from '@/components/FileUploadZone';
 import { useModal } from '@/hooks/useModal';
 import { CreateRoomSchema, useCreateRoomForm } from '@/hooks/forms';
 import { useCreateRoomMutation } from '@/hooks/mutations';
@@ -35,7 +35,7 @@ import { useToast } from '@/components/ui/use-toast';
 const CreateRoomModal = () => {
   const { toast } = useToast();
   const { isOpen, modalType, closeModal } = useModal();
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<FileUpload | null>(null);
   const form = useCreateRoomForm();
   const mutation = useCreateRoomMutation();
   const isLoading = form.formState.isSubmitting || mutation.isPending;
@@ -56,7 +56,9 @@ const CreateRoomModal = () => {
     formData.append('roomName', values.roomName);
     formData.append('roomType', values.roomType);
     formData.append('roomPassword', values.roomPassword);
-    formData.append('roomImage', imageFile!);
+    if (imageFile?.type === 'offline') {
+      formData.append('roomImage', imageFile.file);
+    }
     mutation.mutate(formData, {
       onSuccess: () => {
         toast({
@@ -100,11 +102,18 @@ const CreateRoomModal = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FileUpload
-                          onChange={f => {
-                            setImageFile(f);
-                            field.onChange(f?.name || '');
+                        <FileUploadZone
+                          onChange={uploadFile => {
+                            setImageFile(uploadFile);
+                            field.onChange(
+                              !uploadFile
+                                ? ''
+                                : uploadFile.type === 'online'
+                                ? uploadFile.fileUrl
+                                : uploadFile.file.name,
+                            );
                           }}
+                          value={imageFile}
                           accept={{
                             'image/*': [],
                           }}

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  ChangeProfilePasswordSchema,
   CreateGroupSchema,
   ForgotSchema,
   JoinRoomByInviteCodeSchema,
@@ -317,6 +318,61 @@ export const useKickMemberMutation = () => {
       });
       queryClient.invalidateQueries({
         queryKey: queryKeyFactory.members(roomId, []),
+      });
+    },
+  });
+};
+
+export const useChangeProfilePasswordMutation = () => {
+  const api = useApi();
+
+  return useMutation({
+    mutationFn: async (data: ChangeProfilePasswordSchema) => {
+      const res = await api.put('/profiles/changePassword', {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      return res;
+    },
+  });
+};
+
+export type UpdatedInfo = {
+  email: string;
+  imageUrl: string | null;
+};
+
+export const useUploadProfileImageMutation = () => {
+  const api = useApi();
+  const { setInfo } = useAuth();
+
+  return useMutation({
+    mutationFn: async (data: FormData) => {
+      const res = await api.put<UpdatedInfo>('/profiles/image', data);
+      return res.data;
+    },
+    onSuccess: data => {
+      setInfo({
+        email: data.email,
+        imageUrl: data.imageUrl || undefined,
+      });
+    },
+  });
+};
+
+export const useDeleteProfileImageMutation = () => {
+  const api = useApi();
+  const { setInfo } = useAuth();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.delete<UpdatedInfo>('/profiles/image');
+      return res.data;
+    },
+    onSuccess: data => {
+      setInfo({
+        email: data.email,
+        imageUrl: data.imageUrl || undefined,
       });
     },
   });
