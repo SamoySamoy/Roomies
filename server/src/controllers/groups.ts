@@ -348,7 +348,8 @@ export const deleteGroup = async (
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'You can not delete general group',
+          invalidMessage:
+            'You can not delete general group. If you are admin, you can delete whole room',
         }),
       );
     }

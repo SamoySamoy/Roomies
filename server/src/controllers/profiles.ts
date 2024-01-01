@@ -45,7 +45,12 @@ export const getProfileById = async (req: Request, res: Response) => {
         return res.status(200).json(returnData);
       }
     } else {
-      return res.status(400).json({ message: 'User not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'User not found',
+        }),
+      );
     }
   } catch (error) {
     console.error(error);
@@ -71,7 +76,12 @@ export const uploadProfileImage = async (
       select: { id: true },
     });
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
 
     const image = req.file;
@@ -122,7 +132,12 @@ export const changeProfileImage = async (
     });
 
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
 
     const image = req.file;
@@ -176,7 +191,12 @@ export const changePassword = async (req: AuthenticatedRequest<any, any, any>, r
     });
 
     if (!profile) {
-      return res.status(400).json({ message: 'Profile not found' });
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
     }
     const { password } = req.body;
 

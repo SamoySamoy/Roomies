@@ -168,6 +168,18 @@ export const updateMember = async (
 ) => {
   try {
     const profileId = req.user?.profileId!;
+    const profile = await db.profile.findUnique({
+      where: { id: profileId },
+    });
+
+    if (!profile) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
+    }
     const { roomId } = req.query;
     const memberId = req.params.memberId;
     const { role } = req.body;
@@ -177,6 +189,25 @@ export const updateMember = async (
         createMsg({
           type: 'invalid',
           invalidMessage: 'Require room id, role, member id',
+        }),
+      );
+    }
+    const room = await db.room.findUnique({
+      where: {
+        id: roomId,
+        members: {
+          some: {
+            profileId,
+            role: MemberRole.ADMIN,
+          },
+        },
+      },
+    });
+    if (!room) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only admin can change role of other members',
         }),
       );
     }
@@ -231,6 +262,18 @@ export const deleteMember = async (
 ) => {
   try {
     const profileId = req.user?.profileId!;
+    const profile = await db.profile.findUnique({
+      where: { id: profileId },
+    });
+
+    if (!profile) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
+        }),
+      );
+    }
     const { roomId } = req.query;
     const memberId = req.params.memberId;
 
@@ -239,6 +282,26 @@ export const deleteMember = async (
         createMsg({
           type: 'invalid',
           invalidMessage: 'Require room id, member id',
+        }),
+      );
+    }
+
+    const room = await db.room.findUnique({
+      where: {
+        id: roomId,
+        members: {
+          some: {
+            profileId,
+            role: MemberRole.ADMIN,
+          },
+        },
+      },
+    });
+    if (!room) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Only admin can change role of other members',
         }),
       );
     }
