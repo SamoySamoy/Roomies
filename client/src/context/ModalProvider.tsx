@@ -1,5 +1,5 @@
 import CreateRoomModal from '@/components/Modals/CreateRoomModal';
-import InviteModal from '@/components/Modals/InviteModal';
+import InviteCodeModal from '@/components/Modals/InviteCodeModal';
 import EditRoomModal from '@/components/Modals/EditRoomModal';
 import MembersModal from '@/components/Modals/MembersModal';
 import CreateGroupModal from '@/components/Modals/CreateGroupModal';
@@ -12,6 +12,7 @@ import DeleteMessageModal from '@/components/Modals/DeleteMessageModal';
 import { useModal, ModalType } from '@/hooks/useModal';
 import JoinPrivateRoomModal from '@/components/Modals/JoinPrivateRoomModal';
 import JoinPublicRoomModal from '@/components/Modals/JoinPublicRoomModal';
+import JoinByInviteCodeModal from '@/components/Modals/JoinByInviteCodeModal';
 
 const modalMap: Record<ModalType, React.FC> = {
   createRoom: CreateRoomModal,
@@ -21,12 +22,13 @@ const modalMap: Record<ModalType, React.FC> = {
   createGroup: CreateGroupModal,
   editGroup: EditGroupModal,
   deleteGroup: DeleteGroupModal,
-  invite: InviteModal,
+  inviteCode: InviteCodeModal,
   members: MembersModal,
   messageFile: MessageFileModal,
   deleteMessage: DeleteMessageModal,
   joinPrivateRoom: JoinPrivateRoomModal,
   joinPublicRoom: JoinPublicRoomModal,
+  joinByInviteCode: JoinByInviteCodeModal,
 };
 
 export default function ModalProvider() {

@@ -52,7 +52,7 @@ const LoginPage = () => {
         <div className='flex justify-center pt-20'>
           <div className='w-full shadow-md py-12 px-4 sm:px-6 lg:px-8  max-w-md space-y-8 blur-bg'>
             <div>
-              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-emerald-400'>
+              <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-green-500'>
                 Login
               </h2>
             </div>
@@ -90,6 +90,7 @@ const LoginPage = () => {
                         {...field}
                         disabled={isLoading}
                         autoComplete='current-password'
+                        type='password'
                       />
                     </FormControl>
                     <FormMessage />
@@ -110,7 +111,7 @@ const LoginPage = () => {
               </div>
 
               <Button
-                className='group relative flex w-full justify-center rounded-md border border-transparent bg-emerald-400 py-2 px-4 text-sm font-medium text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2'
+                className='group relative flex w-full justify-center rounded-md border border-transparent bg-green-500 py-2 px-4 text-sm font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'
                 type='submit'
                 variant='primary'
                 disabled={isLoading}

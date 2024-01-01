@@ -33,7 +33,7 @@ function RoomHeader({ role, room }: GroupListHeaderProps) {
           <DropdownMenuItem
             onClick={() =>
               openModal({
-                modalType: 'invite',
+                modalType: 'inviteCode',
                 data: {
                   room,
                 },

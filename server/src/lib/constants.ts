@@ -71,3 +71,7 @@ export const ALLOWED_ORIGIN = [
   'http://localhost:8000',
   'http://fall2324w3g13.int3306.freeddns.org',
 ];
+export const CLIENT_LOCATION =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5173'
+    : 'http://fall2324w3g13.int3306.freeddns.org';

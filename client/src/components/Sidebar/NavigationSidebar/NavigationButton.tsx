@@ -1,9 +1,12 @@
-import { Plus, Compass, LogOut } from 'lucide-react';
+import { Plus, Compass, LogOut, Mail } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
 import { useModal } from '@/hooks/useModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
+import ProfileModal from './ProfileModal';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export const ExploreButton = () => {
   return (
@@ -33,7 +36,7 @@ export const CreateRoomButton = () => {
       <ActionTooltip
         side='right'
         align='center'
-        label={<p className='text-sm font-bold'>Create a server</p>}
+        label={<p className='text-sm font-bold'>Create a room</p>}
       >
         <button
           onClick={() =>
@@ -43,8 +46,35 @@ export const CreateRoomButton = () => {
           }
           className='group flex items-center'
         >
-          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
-            <Plus className='text-emerald-500 transition group-hover:text-white' size={25} />
+          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-green-500 dark:bg-neutral-700'>
+            <Plus className='text-green-500 transition group-hover:text-white' size={25} />
+          </div>
+        </button>
+      </ActionTooltip>
+    </div>
+  );
+};
+
+export const InviteButton = () => {
+  const { openModal } = useModal();
+
+  return (
+    <div>
+      <ActionTooltip
+        side='right'
+        align='center'
+        label={<p className='text-sm font-bold'>Join a room by invite code</p>}
+      >
+        <button
+          onClick={() =>
+            openModal({
+              modalType: 'joinByInviteCode',
+            })
+          }
+          className='group flex items-center'
+        >
+          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-amber-500 dark:bg-neutral-700'>
+            <Mail className='text-amber-500 transition group-hover:text-white' size={25} />
           </div>
         </button>
       </ActionTooltip>
@@ -86,5 +116,29 @@ export const LogoutButton = () => {
         </button>
       </ActionTooltip>
     </div>
+  );
+};
+
+export const ProfileButton = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  return (
+    <>
+      <button onClick={openModal} className=''>
+        <Avatar className='duration-400 h-11 w-11 cursor-pointer transition-all hover:scale-110'>
+          <AvatarImage src='https://picsum.photos/seed/picsum/100' />
+          <AvatarFallback>CH</AvatarFallback>
+        </Avatar>
+      </button>
+      {showModal && <ProfileModal onClose={closeModal} />}
+    </>
   );
 };

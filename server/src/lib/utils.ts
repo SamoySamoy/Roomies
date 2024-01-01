@@ -5,7 +5,7 @@ import { UUID, randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { AccessTokenPayload, RefreshTokenPayload, ResetTokenPayload } from './types';
 import { smtpTransporter } from './config';
-import { IMAGE_EXT_LIST, TRUTHY } from './constants';
+import { CLIENT_LOCATION, IMAGE_EXT_LIST, TRUTHY } from './constants';
 
 // export const getIp = (req: Request) =>
 //   (req.headers['x-forwarded-for'] || req.socket.remoteAddress)?.toString();
@@ -116,7 +116,7 @@ export const decodeToken = <T extends TokenType, R = DecodeTokenReturn[T]>(arg: 
 };
 
 export const sendPasswordResetEmail = (arg: { email: string; token: string }) => {
-  const resetLink = `http://localhost:5173/reset/${arg.token}`;
+  const resetLink = `${CLIENT_LOCATION}/reset/${arg.token}`;
   const mailOptions = {
     from: process.env.SMTP_USERNAME,
     to: arg.email,

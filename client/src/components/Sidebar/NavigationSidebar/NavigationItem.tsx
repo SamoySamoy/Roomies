@@ -5,7 +5,7 @@ import { Room, RoomType } from '@/lib/types';
 import { Link, useParams } from 'react-router-dom';
 
 const icon = {
-  [RoomType.PUBLIC]: <Unlock className='text-emerald-500 w-5 h-5' />,
+  [RoomType.PUBLIC]: <Unlock className='text-green-500 w-5 h-5' />,
   [RoomType.PRIVATE]: <Lock className='text-red-500 w-5 h-5' />,
   [RoomType.HIDDEN]: <EyeOff className='text-slate-500 w-5 h-5' />,
 } as const;

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 import { useLeaveRoomMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const LeaveRoomModal = () => {
   const {
@@ -19,6 +20,7 @@ const LeaveRoomModal = () => {
     data: { room },
   } = useModal();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const mutation = useLeaveRoomMutation();
 
   const onLeave = () => {
@@ -31,6 +33,8 @@ const LeaveRoomModal = () => {
           toast({
             title: 'Leave room ok',
           });
+          closeModal();
+          navigate('/my-rooms');
         },
         onError: () => {
           toast({

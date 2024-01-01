@@ -31,17 +31,26 @@ const JoinPublicRoomModal = () => {
         roomPassword: '',
       },
       {
-        onSuccess: (_, { roomId }) => {
+        onSuccess: data => {
+          if (typeof data === 'boolean') {
+            toast({
+              title: 'You have already joined this room',
+            });
+            closeModal();
+            return;
+          }
+
           toast({
             title: 'Join public room ok',
           });
           closeModal();
-          navigate(`/rooms/${roomId}`);
+          navigate(`/rooms/${data.id}`);
         },
         onError: () => {
           toast({
             title: 'Join public room failed',
           });
+          closeModal();
         },
         onSettled: () => {
           mutation.reset();

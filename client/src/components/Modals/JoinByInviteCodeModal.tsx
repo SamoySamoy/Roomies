@@ -13,30 +13,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
-import { JoinRoomSchema, useJoinRoomForm } from '@/hooks/forms';
-import { useJoinRoomMutation } from '@/hooks/mutations';
+import { JoinRoomByInviteCodeSchema, useJoinRoomByInviteCodeForm } from '@/hooks/forms';
+import { useJoinRoomByInviteCodeMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-const JoinPrivateRoomModal = () => {
+const JoinByInviteCodeModal = () => {
   const { toast } = useToast();
-  const {
-    isOpen,
-    modalType,
-    closeModal,
-    data: { room },
-  } = useModal();
+  const { isOpen, modalType, closeModal } = useModal();
   const navigate = useNavigate();
-  const form = useJoinRoomForm({
-    roomId: room?.id!,
-    roomPassword: '',
-  });
-  const mutation = useJoinRoomMutation({
+  const form = useJoinRoomByInviteCodeForm();
+  const mutation = useJoinRoomByInviteCodeMutation({
     refetch: true,
   });
   const isLoading = form.formState.isSubmitting || mutation.isPending;
@@ -46,7 +37,7 @@ const JoinPrivateRoomModal = () => {
     mutation.reset();
   };
 
-  const onSubmit = async (values: JoinRoomSchema) => {
+  const onSubmit = async (values: JoinRoomByInviteCodeSchema) => {
     console.log(values);
 
     mutation.mutate(values, {
@@ -60,14 +51,14 @@ const JoinPrivateRoomModal = () => {
         }
 
         toast({
-          title: 'Join private room ok',
+          title: 'Join room by invite code ok',
         });
         closeModal();
         navigate(`/rooms/${data.id}`);
       },
       onError: () => {
         toast({
-          title: 'Join private room failed',
+          title: 'Join room by invite code failed',
         });
         closeModal();
       },
@@ -79,7 +70,7 @@ const JoinPrivateRoomModal = () => {
 
   return (
     <Dialog
-      open={isOpen && modalType === 'joinPrivateRoom'}
+      open={isOpen && modalType === 'joinByInviteCode'}
       onOpenChange={() => {
         closeModal();
         clearForm();
@@ -87,11 +78,11 @@ const JoinPrivateRoomModal = () => {
     >
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
-          <DialogTitle className='text-2xl text-center font-bold'>Join Room</DialogTitle>
-          <DialogDescription className='text-left text-zinc-500'>
-            If you want to join private room{' '}
-            <span className='text-indigo-500 font-semibold'>{room?.name}</span>, you must provide
-            secret password
+          <DialogTitle className='text-2xl text-center font-bold'>
+            Join Room By Invite code
+          </DialogTitle>
+          <DialogDescription className='text-center text-zinc-500'>
+            Enter invite code to join room with your friends
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -99,21 +90,20 @@ const JoinPrivateRoomModal = () => {
             <div className='space-y-4 px-6'>
               <FormField
                 control={form.control}
-                name='roomPassword'
+                name='inviteCode'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
-                      Room password
+                      Invite code
                     </FormLabel>
-                    <FormDescription>Private room require a password</FormDescription>
                     <FormControl>
                       <Input
+                        {...field}
                         disabled={isLoading}
                         className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
-                        placeholder='Enter password for private room'
-                        {...field}
-                        type='password'
-                        autoComplete='current-password'
+                        placeholder='Enter your invite code here'
+                        type='text'
+                        autoComplete='off'
                       />
                     </FormControl>
                     <FormMessage />
@@ -133,4 +123,4 @@ const JoinPrivateRoomModal = () => {
   );
 };
 
-export default JoinPrivateRoomModal;
+export default JoinByInviteCodeModal;
