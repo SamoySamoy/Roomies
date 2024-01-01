@@ -1,23 +1,20 @@
 import {useRef, useState, useEffect} from "react";
 import { MicOff, Mic } from "lucide-react";
-interface VideoProps {
-    stream: MediaStream | null;
+import { vi } from "@faker-js/faker";
+export interface VideoProps {
+    stream: MediaStream;
     peerId: string;
     mute: boolean;
-
 }
 
 const Video = ({stream, peerId, mute}: VideoProps) => {
-    const vid: React.MutableRefObject<HTMLVideoElement | null> = useRef<HTMLVideoElement | null>(null);
-    const [id, setId] = useState('');
-    const [muteAudio, setMuteAudio] = useState(false);
-    useEffect( () =>{
-        if (vid.current != null) {
-            vid.current.srcObject = stream;
-            setId(peerId);
-            setMuteAudio(mute);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        if (videoRef.current && stream) {
+            videoRef.current.srcObject = stream;
         }
-    }, [])
+    }, [stream])
 
     let mic;
     if (mute) {
@@ -30,7 +27,7 @@ const Video = ({stream, peerId, mute}: VideoProps) => {
         <div className="relative">
             {mic}
             <span className="absolute bottom-1 left-10 text-base">{peerId}</span>
-            <video className="w-1/3 h-auto" ref={vid} autoPlay playsInline muted={mute}></video>
+            <video className="w-1/3 h-auto" ref={videoRef} autoPlay playsInline muted={mute}></video>
         </div>
     );
 }

@@ -1,55 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import Video from '@/components/ui/video';
 import { Button } from '@/components/ui/button';
-import Peer from 'peerjs';
+import Peer, { MediaConnection } from 'peerjs';
 import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
+import { fa, vi } from '@faker-js/faker';
+import { VideoProps } from '@/components/ui/video';
+
 const AudioPage = () => {
-  const [videoList, setVideoList] = useState<
-    { peerId: string; mute: boolean; stream: MediaStream }[]
-  >([]);
-  const [peerId, setPeerId] = useState<string>('');
+  const [videoList, setVideoList] = useState<VideoProps[]>([]);
   const [camera, setCamera] = useState('on');
   const myVideo = useRef<HTMLVideoElement>(null);
-  const { audioId } = useParams();
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [canShareScreen, setCanShareScreen] = useState(true);
-
+  const [localStream, setLocalStream] = useState<MediaStream>();
   const { auth } = useAuth();
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
+  let callList: Map<string, MediaConnection> = new Map<string, MediaConnection>();
   const origin: GroupOrigin = {
     groupId: groupId!,
     roomId: roomId!,
     profileId: auth.profileId!,
   };
   useEffect(() => {
-    const peer = new Peer(origin.profileId);
-    peer.on('open', id => {
-      setPeerId(id);
-      console.log(id);
-      socket.emit('client:group:join', origin, {
-        email: auth.email!,
-      });
-    });
-
-    peer.on('call', function (call) {
-      call.answer(localStream!);
-      call.on('stream', function (callerStream) {
-        addVideo(call.peer, false, callerStream);
-      });
-    });
-
-    socket.on('server:group:join:success', msg => {
-      const newProfileId = msg.split(' ')[1];
-      const call = peer.call(newProfileId, localStream!);
-      call.on('stream', function (otherStream) {
-        addVideo(call.peer, true, otherStream);
-      });
-      call.on('close', function () {
-        removeVideo(call.peer);
-      });
-    });
+    console.log('join room');
     navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (stream) {
       if (myVideo.current != null) {
         myVideo.current.srcObject = stream;
@@ -57,18 +31,84 @@ const AudioPage = () => {
         myVideo.current.play();
       }
       setLocalStream(stream);
-      addVideo('peerID', true, stream);
+      // myVid.current!.srcObject = stream;
+      console.log(stream);
+      console.log(localStream);
+      addVideo(auth.profileId!, true, stream);
+     
+      const peer = new Peer(origin.profileId, {
+        host: '/',
+        port: 3001
+      });
+
+      peer.on('call', function (call) {
+        console.log(call.peer + ' is calling');
+        call.answer(stream);
+        call.once('stream', function (callerStream) {
+          addVideo(call.peer, false, callerStream);
+          // otherVid.current!.srcObject=callerStream;
+        });
+        callList.set(call.peer, call);
+      });
+
+      socket.on('server:peer:init:success', id => {
+        if (peer.open) {
+          console.log(id + ' just joined, i will call him');
+          const call = peer.call(id, stream);
+          console.log(call);
+          call.once('stream', function(otherStream) {
+            console.log('the other responsed');
+            console.log(stream.id);
+            addVideo(call.peer, true, otherStream);
+          })
+          call.on('close', function() {
+            removeVideo(call.peer);
+            console.log('remove the id on close: ' + call.peer);
+          })
+          
+          callList.set(call.peer, call);
+        }
+      });
+      peer.on('open', id => {
+        console.log('peer opened');
+        socket.emit('client:peer:init:success', origin);
+        console.log(id);
+        console.log(peer); 
+      });
+    }).catch(function(err) {
+      console.log(err);
     });
+    socket.on('server:user-disconnected', function(id) {
+      console.log('received user disconnected: ' + id);
+      console.log(callList);
+      if (callList.has(id)) {
+        callList.get(id)!.close();
+        callList.delete(id);
+      }
+      console.log(videoList);
+      // removeVideo(id);
+    });
+    
+
+    
   }, []);
+
+  useEffect(() => {
+    console.log('list updated: ')
+    console.log(videoList);
+  },[videoList])
 
   function addVideo(peerId: string, mute: boolean, stream: MediaStream) {
     const newVid = { peerId: peerId, mute: mute, stream: stream };
-    setVideoList([...videoList, newVid]);
+    setVideoList((prevVideoList) => [...prevVideoList, newVid]);
   }
 
   function removeVideo(id: string) {
-    const newList = videoList.filter(item => item.peerId !== id);
-    setVideoList(newList);
+    console.log(videoList);
+    let newVidList = videoList.filter(video => video.peerId !== id);
+    console.log('After remove');
+    console.log(newVidList);
+    setVideoList(newVidList)
   }
 
   function clickCamera() {
@@ -98,18 +138,18 @@ const AudioPage = () => {
         Share Screen
       </Button>
       {/* <video ref={myVideo}></video> */}
-      <div className='grid-cols-3'>
+      <div>
         {/* {localStream && <Video mute={true} stream={localStream} peerId={peerId}/>} */}
         {videoList.map(function (video) {
-          return (
-            <Video
-              key={video.peerId}
-              mute={video.mute}
-              stream={video.stream}
-              peerId={video.peerId}
-            />
-          );
+          return <Video key={video.peerId} mute={video.mute} stream={video.stream} peerId={video.peerId}/>;
         })}
+        <span>{videoList.length}</span>
+
+        {/* <Video stream={localStream!} mute={true} peerId={origin.profileId}></Video> */}
+        {/* <video vidRef={myVid} muted={true} autoPlay></video> */}
+        {/* <Video vidRef={myVid} mute={true} peerId={origin.profileId} /> */}
+        {/* Other */}
+        {/* <video ref={otherVid} muted={true} autoPlay></video> */}
       </div>
     </div>
   );
