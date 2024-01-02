@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { AccessTokenPayload, RefreshTokenPayload, ResetTokenPayload } from './types';
 import { smtpTransporter } from './config';
 import { CLIENT_LOCATION, IMAGE_EXT_LIST, TRUTHY } from './constants';
+import { db } from '@/prisma/db';
 
 // export const getIp = (req: Request) =>
 //   (req.headers['x-forwarded-for'] || req.socket.remoteAddress)?.toString();
@@ -22,6 +23,55 @@ import { CLIENT_LOCATION, IMAGE_EXT_LIST, TRUTHY } from './constants';
 //     return null;
 //   }
 // };
+
+export const findConversation = async (memberOneId: string, memberTwoId: string) => {
+  try {
+    return await db.conversation.findFirst({
+      where: {
+        AND: [{ memberOneId: memberOneId }, { memberTwoId: memberTwoId }],
+      },
+      include: {
+        memberOne: {
+          include: {
+            profile: true,
+          },
+        },
+        memberTwo: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+  } catch {
+    return null;
+  }
+};
+
+export const createNewConversation = async (memberOneId: string, memberTwoId: string) => {
+  try {
+    return await db.conversation.create({
+      data: {
+        memberOneId,
+        memberTwoId,
+      },
+      include: {
+        memberOne: {
+          include: {
+            profile: true,
+          },
+        },
+        memberTwo: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+  } catch {
+    return null;
+  }
+};
 
 export const uuid: () => string | UUID = randomUUID;
 

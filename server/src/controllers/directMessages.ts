@@ -14,43 +14,44 @@ import {
 } from '@/lib/utils';
 import sharp from 'sharp';
 import { MESSAGES_BATCH } from '@/lib/constants';
+import { Member } from '@prisma/client';
 
 type QueryFilter = {
   cursor: string;
-  groupId: string;
+  conversationId: string;
 };
 
-type BodyCreateMessage = {
-  groupId: string;
+type BodyCreateDirectMessage = {
+  conversationId: string;
   roomId: string;
   content: string;
 };
 
-type BodyUpdateMessage = {
+type BodyUpdateDirectMessage = {
   content: string;
 };
 
-type ParamsWithMessageId = {
-  messageId: string;
+type ParamsWithDirectMessageId = {
+  directMessageId: string;
 };
 
-export const getMessages = async (
+export const getDirectMessages = async (
   req: AuthenticatedRequest<any, any, Partial<QueryFilter>>,
   res: Response,
 ) => {
   try {
-    const { cursor, groupId } = req.query;
-    if (!groupId) {
+    const { cursor, conversationId } = req.query;
+    if (!conversationId) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Require cursor and group id',
+          invalidMessage: 'Require cursor and conversation id',
         }),
       );
     }
-    const messages = await db.message.findMany({
+    const directMessages = await db.directMessage.findMany({
       where: {
-        groupId,
+        conversationId,
       },
       take: MESSAGES_BATCH,
       ...(cursor && {
@@ -72,12 +73,12 @@ export const getMessages = async (
     });
 
     let lastCursor = null;
-    if (messages.length === MESSAGES_BATCH) {
-      lastCursor = messages[MESSAGES_BATCH - 1].id;
+    if (directMessages.length === MESSAGES_BATCH) {
+      lastCursor = directMessages[MESSAGES_BATCH - 1].id;
     }
 
     return res.status(200).json({
-      messages,
+      messages: directMessages,
       lastCursor,
     });
   } catch (error) {
@@ -90,16 +91,15 @@ export const getMessages = async (
   }
 };
 
-// Get message by messageId
-export const getMessageByMessageId = async (
-  req: AuthenticatedRequest<ParamsWithMessageId, any, any>,
+export const getDirectMessageByDirectMessageId = async (
+  req: AuthenticatedRequest<ParamsWithDirectMessageId, any, any>,
   res: Response,
 ) => {
   try {
-    const messageId = req.params.messageId;
+    const directMessageId = req.params.directMessageId;
 
-    const message = await db.message.findUnique({
-      where: { id: messageId },
+    const directMessage = await db.directMessage.findUnique({
+      where: { id: directMessageId },
       include: {
         member: {
           include: {
@@ -109,16 +109,16 @@ export const getMessageByMessageId = async (
       },
     });
 
-    if (!message) {
+    if (!directMessage) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Message not found',
+          invalidMessage: 'Direct Message not found',
         }),
       );
     }
 
-    return res.status(200).json(message);
+    return res.status(200).json(directMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -130,56 +130,78 @@ export const getMessageByMessageId = async (
 };
 
 // create new message in channel
-export const createMessage = async (
-  req: AuthenticatedRequest<any, Partial<BodyCreateMessage>, any>,
+export const createDirectMessage = async (
+  req: AuthenticatedRequest<any, Partial<BodyCreateDirectMessage>, any>,
   res: Response,
 ) => {
   try {
-    const { groupId, roomId, content } = req.body;
+    const { conversationId, roomId, content } = req.body;
     const profileId = req.user?.profileId!;
 
-    if (!groupId || !roomId || !content) {
+    if (!conversationId || !roomId || !content) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Require group id, room id, content, missing',
+          invalidMessage: 'Require conversation id, room id, content, missing',
         }),
       );
     }
 
-    const [group, member] = await Promise.all([
-      db.group.findFirst({
-        where: {
-          id: groupId,
-          roomId,
+    const conversation = await db.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [
+          {
+            memberOne: {
+              profileId,
+            },
+          },
+          {
+            memberTwo: {
+              profileId,
+            },
+          },
+        ],
+      },
+      include: {
+        memberOne: {
+          include: {
+            profile: true,
+          },
         },
-      }),
-      db.member.findFirst({
-        where: {
-          profileId,
-          roomId,
+        memberTwo: {
+          include: {
+            profile: true,
+          },
         },
-      }),
-    ]);
-    if (!group) {
+      },
+    });
+    if (!conversation) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Group not exist',
+          invalidMessage: 'Conversation not exist',
         }),
       );
     }
-    if (!member) {
+    let currentMember: Member | undefined;
+    if (conversation.memberOne.profileId === profileId) {
+      currentMember = conversation.memberOne;
+    }
+    if (conversation.memberTwo.profileId === profileId) {
+      currentMember = conversation.memberOne;
+    }
+    if (!currentMember) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Can not create message. You are not member of this channel',
+          invalidMessage: 'Can not create message. You are not member of this conversation',
         }),
       );
     }
 
-    const newMessage = db.message.create({
-      data: { content, fileUrl: null, memberId: member.id, groupId: groupId },
+    const newDirectMessage = db.directMessage.create({
+      data: { content, fileUrl: null, memberId: currentMember.id, conversationId },
       include: {
         member: {
           include: {
@@ -188,7 +210,7 @@ export const createMessage = async (
         },
       },
     });
-    return res.status(200).json(newMessage);
+    return res.status(200).json(newDirectMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -199,56 +221,78 @@ export const createMessage = async (
   }
 };
 // create new message in channel
-export const uploadMessageFile = async (
-  req: AuthenticatedRequest<any, Partial<BodyCreateMessage>, any>,
+export const uploadDirectMessageFile = async (
+  req: AuthenticatedRequest<any, Partial<BodyCreateDirectMessage>, any>,
   res: Response,
 ) => {
   try {
-    const { groupId, roomId } = req.body;
+    const { conversationId, roomId } = req.body;
     const profileId = req.user?.profileId!;
 
-    if (!groupId || !roomId) {
+    if (!conversationId || !roomId) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Require group id, room id, missing',
+          invalidMessage: 'Require conversation id, room id, missing',
         }),
       );
     }
 
-    const [group, member] = await Promise.all([
-      db.group.findFirst({
-        where: {
-          id: groupId,
-          roomId,
+    const conversation = await db.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [
+          {
+            memberOne: {
+              profileId,
+            },
+          },
+          {
+            memberTwo: {
+              profileId,
+            },
+          },
+        ],
+      },
+      include: {
+        memberOne: {
+          include: {
+            profile: true,
+          },
         },
-      }),
-      db.member.findFirst({
-        where: {
-          profileId,
-          roomId,
+        memberTwo: {
+          include: {
+            profile: true,
+          },
         },
-      }),
-    ]);
-    if (!group) {
+      },
+    });
+    if (!conversation) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Group not exist',
+          invalidMessage: 'Conversation not exist',
         }),
       );
     }
-    if (!member) {
+    let currentMember: Member | undefined;
+    if (conversation.memberOne.profileId === profileId) {
+      currentMember = conversation.memberOne;
+    }
+    if (conversation.memberTwo.profileId === profileId) {
+      currentMember = conversation.memberOne;
+    }
+    if (!currentMember) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Can not create message. You are not member of this channel',
+          invalidMessage: 'Can not create message. You are not member of this conversation',
         }),
       );
     }
 
     const file = req.file!;
-    const relFolderPath = `/public/groups/${groupId}`;
+    const relFolderPath = `/public/conversations/${conversationId}`;
     const absFolderPath = path.join(__dirname, '..', '..', relFolderPath);
 
     let filename = file.originalname;
@@ -267,12 +311,12 @@ export const uploadMessageFile = async (
       await fsPromises.writeFile(absFilePath, file.buffer);
     }
 
-    const newMessage = db.message.create({
+    const newDirectMessage = db.directMessage.create({
       data: {
         content: 'This message is a file',
         fileUrl: relFilePath,
-        memberId: member.id,
-        groupId: group.id,
+        memberId: currentMember.id,
+        conversationId,
       },
       include: {
         member: {
@@ -282,7 +326,7 @@ export const uploadMessageFile = async (
         },
       },
     });
-    return res.status(200).json(newMessage);
+    return res.status(200).json(newDirectMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -294,35 +338,35 @@ export const uploadMessageFile = async (
 };
 
 // Update message by messageId
-export const updateMessage = async (
-  req: AuthenticatedRequest<ParamsWithMessageId, BodyUpdateMessage, any>,
+export const updateDirectMessage = async (
+  req: AuthenticatedRequest<ParamsWithDirectMessageId, BodyUpdateDirectMessage, any>,
   res: Response,
 ) => {
   try {
-    const messageId = req.params.messageId;
+    const directMessageId = req.params.directMessageId;
     const profileId = req.user?.profileId!;
     const { content } = req.body;
 
-    const message = await db.message.findUnique({
-      where: { id: messageId },
+    const directMessage = await db.directMessage.findUnique({
+      where: { id: directMessageId },
     });
-    if (!message) {
+    if (!directMessage) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Message not found',
+          invalidMessage: 'Direct message not found',
         }),
       );
     }
 
     const owner = await db.member.findUnique({
-      where: { id: message.memberId },
+      where: { id: directMessage.memberId },
     });
     if (!owner) {
       return res.status(404).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'The owner of this message was not found',
+          invalidMessage: 'The owner of this direct message was not found',
         }),
       );
     }
@@ -330,14 +374,14 @@ export const updateMessage = async (
       return res.status(403).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Only the author can edit his / her message',
+          invalidMessage: 'Only the author can edit his / her direct message',
         }),
       );
     }
 
-    const updatedMessage = await db.message.update({
+    const updatedDirectMessage = await db.directMessage.update({
       where: {
-        id: messageId,
+        id: directMessageId,
       },
       data: {
         content,
@@ -351,7 +395,7 @@ export const updateMessage = async (
       },
     });
 
-    return res.status(200).json(updatedMessage);
+    return res.status(200).json(updatedDirectMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -362,19 +406,18 @@ export const updateMessage = async (
   }
 };
 
-// Delete message by messageId
-export const deleteMessage = async (
-  req: AuthenticatedRequest<ParamsWithMessageId, any, any>,
+export const deleteDirectMessage = async (
+  req: AuthenticatedRequest<ParamsWithDirectMessageId, any, any>,
   res: Response,
 ) => {
   try {
-    const messageId = req.params.messageId;
+    const directMessageId = req.params.directMessageId;
     const profileId = req.user?.profileId!;
 
-    const message = await db.message.findUnique({
-      where: { id: messageId },
+    const directMessage = await db.directMessage.findUnique({
+      where: { id: directMessageId },
     });
-    if (!message) {
+    if (!directMessage) {
       return res.status(400).json(
         createMsg({
           type: 'invalid',
@@ -384,13 +427,13 @@ export const deleteMessage = async (
     }
 
     const owner = await db.member.findUnique({
-      where: { id: message.memberId },
+      where: { id: directMessage.memberId },
     });
     if (!owner) {
       return res.status(404).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'The owner of this message was not found',
+          invalidMessage: 'The owner of this direct message was not found',
         }),
       );
     }
@@ -398,14 +441,14 @@ export const deleteMessage = async (
       return res.status(403).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Only the author can edit his / her message',
+          invalidMessage: 'Only the author can edit his / her direct message',
         }),
       );
     }
 
-    const deletedMessage = await db.message.update({
+    const deletedDirectMessage = await db.directMessage.update({
       where: {
-        id: messageId,
+        id: directMessageId,
       },
       data: {
         fileUrl: null,
@@ -421,7 +464,7 @@ export const deleteMessage = async (
       },
     });
 
-    return res.status(200).send(deletedMessage);
+    return res.status(200).send(deletedDirectMessage);
   } catch (error) {
     console.error(error);
     return res.status(500).json(

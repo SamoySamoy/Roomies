@@ -1,6 +1,6 @@
 import { SERVER_SOCKET_API_PATH, SERVER_URL } from './constants';
 import { io, Socket } from 'socket.io-client';
-import { MemberRole, Message } from './types';
+import { DirectMessage, MemberRole, Message } from './types';
 
 export type ServerToClientEvents = {
   'server:room:join:success': (msg: string) => void;
@@ -27,6 +27,21 @@ export type ServerToClientEvents = {
   'server:group:message:delete:success': (messages: Message) => void;
   'server:group:message:delete:error': (msg: string) => void;
 
+  'server:conversation:join:success': (msg: string) => void;
+  'server:conversation:join:error': (msg: string) => void;
+  'server:conversation:leave:success': (msg: string) => void;
+  'server:conversation:leave:error': (msg: string) => void;
+  'server:conversation:typing:success': (msg: string) => void;
+  'server:conversation:typing:error': (msg: string) => void;
+  'server:conversation:message:post:success': (message: DirectMessage) => void;
+  'server:conversation:message:post:error': (msg: string) => void;
+  'server:conversation:message:upload:success': (message: DirectMessage) => void;
+  'server:conversation:message:upload:error': (msg: string) => void;
+  'server:conversation:message:update:success': (messages: DirectMessage) => void;
+  'server:conversation:message:update:error': (msg: string) => void;
+  'server:conversation:message:delete:success': (messages: DirectMessage) => void;
+  'server:conversation:message:delete:error': (msg: string) => void;
+
   'server:peer:init:success': (id: string) => void;
   'server:user-disconnected': (id: string) => void;
 };
@@ -39,7 +54,7 @@ export type GroupOrigin = RoomOrigin & {
   groupId: string;
 };
 export type ConversationOrigin = RoomOrigin & {
-  memberId: string;
+  conversationId: string;
 };
 
 export type RoomKick = {
@@ -75,6 +90,14 @@ export type ClientToServerEvents = {
   'client:group:message:upload': (origin: GroupOrigin, file: MessageUpload) => void;
   'client:group:message:update': (origin: GroupOrigin, arg: MessageUpdate) => void;
   'client:group:message:delete': (origin: GroupOrigin, arg: MessageDelete) => void;
+
+  'client:conversation:join': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:leave': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:typing': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:message:post': (origin: ConversationOrigin, arg: MessageCreate) => void;
+  'client:conversation:message:upload': (origin: ConversationOrigin, file: MessageUpload) => void;
+  'client:conversation:message:update': (origin: ConversationOrigin, arg: MessageUpdate) => void;
+  'client:conversation:message:delete': (origin: ConversationOrigin, arg: MessageDelete) => void;
 
   'client:peer:init:success': (origin: GroupOrigin) => void;
 };
