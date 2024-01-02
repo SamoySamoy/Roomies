@@ -7,6 +7,7 @@ import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
 import { fa, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/ui/video';
+import { CallTracker } from 'assert';
 
 const AudioPage = () => {
   const [videoList, setVideoList] = useState<VideoProps[]>([]);
@@ -23,6 +24,7 @@ const AudioPage = () => {
     profileId: auth.profileId!,
   };
   useEffect(() => {
+    let peer: Peer;
     console.log('join room');
     navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (stream) {
       if (myVideo.current != null) {
@@ -35,11 +37,12 @@ const AudioPage = () => {
       console.log(stream);
       console.log(localStream);
       addVideo(auth.profileId!, true, stream);
-     
-      const peer = new Peer(origin.profileId, {
+
+      peer = new Peer(origin.profileId, {
         host: '/',
         port: 3001
       });
+      
 
       peer.on('call', function (call) {
         console.log(call.peer + ' is calling');
@@ -67,6 +70,8 @@ const AudioPage = () => {
           })
           
           callList.set(call.peer, call);
+        } else {
+          console.log('Peer have not ready!');
         }
       });
       peer.on('open', id => {
@@ -88,8 +93,19 @@ const AudioPage = () => {
       console.log(videoList);
       // removeVideo(id);
     });
-    
 
+    socket.on('server:room:leave:success', function (msg) {
+      let leaveId = msg.split(' ')[1];
+      console.log(leaveId + ' just leave the room to get to the text');
+    })
+    ;
+    return function () {
+      socket.emit('client:room:leave', origin , {
+        email: auth.email!,
+      });
+      console.log('clean up group');
+      peer.destroy();
+    };
     
   }, []);
 
@@ -117,7 +133,7 @@ const AudioPage = () => {
     else setCamera('on');
     // socket.emit('camera-off', peerId);
     const videoTrack = localStream?.getTracks().find(track => track.kind === 'video');
-    if (videoTrack) videoTrack.enabled = false;
+    if (videoTrack) videoTrack.enabled = !videoTrack.enabled;
   }
   function shareScreen() {
     navigator.mediaDevices
