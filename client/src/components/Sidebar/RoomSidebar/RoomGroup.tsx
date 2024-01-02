@@ -4,7 +4,7 @@ import ActionTooltip from '@/components/ActionToolTip';
 import { useModal } from '@/hooks/useModal';
 import { ModalType } from '@/hooks/useModal';
 import { Group, GroupType, MemberRole, Room } from '@/lib/types';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 interface RoomGroupProps {
   group: Group;
@@ -18,7 +18,6 @@ const iconMap = {
   [GroupType.VIDEO]: Video,
 } as const;
 
-
 const groupMap = {
   [GroupType.TEXT]: 'groups',
   [GroupType.AUDIO]: 'audiogroups',
@@ -27,6 +26,7 @@ const groupMap = {
 
 const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
   const Icon = iconMap[group.type];
   const groups = groupMap[group.type];
@@ -41,6 +41,7 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
       },
     });
   };
+  const onNavigate = () => navigate(`/rooms/${room.id}/${groups}/${group.id}`);
 
   return (
     <button
@@ -50,8 +51,9 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
           'bg-zinc-700/20 dark:bg-zinc-700': groupId === group.id,
         },
       )}
+      onClick={onNavigate}
     >
-      <Link to={`/rooms/${room.id}/${groups}/${group.id}`} className='flex gap-x-2'>
+      <div className='flex gap-x-2'>
         <Icon className='flex-shrink-0 w-5 h-5 text-zinc-500 dark:text-zinc-400' />
         <p
           className={cn(
@@ -63,7 +65,7 @@ const RoomGroup = ({ group, room, role }: RoomGroupProps) => {
         >
           {group.name.length >= 12 ? group.name.slice(0, 12) + '...' : group.name}
         </p>
-      </Link>
+      </div>
 
       {group.name !== 'default' && role !== MemberRole.GUEST && (
         <div className='ml-auto flex items-center gap-x-2'>

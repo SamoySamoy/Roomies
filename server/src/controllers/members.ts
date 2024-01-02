@@ -168,10 +168,22 @@ export const updateMember = async (
 ) => {
   try {
     const profileId = req.user?.profileId!;
+    const memberId = req.params.memberId;
+    const { roomId } = req.query;
+    const { role } = req.body;
+
+    if (!role || !memberId || !roomId) {
+      return res.status(404).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Require room id, member id and role',
+        }),
+      );
+    }
+
     const profile = await db.profile.findUnique({
       where: { id: profileId },
     });
-
     if (!profile) {
       return res.status(400).json(
         createMsg({
@@ -180,18 +192,7 @@ export const updateMember = async (
         }),
       );
     }
-    const { roomId } = req.query;
-    const memberId = req.params.memberId;
-    const { role } = req.body;
 
-    if (!role || !memberId || !roomId) {
-      return res.status(404).json(
-        createMsg({
-          type: 'invalid',
-          invalidMessage: 'Require room id, role, member id',
-        }),
-      );
-    }
     const room = await db.room.findUnique({
       where: {
         id: roomId,
@@ -262,26 +263,26 @@ export const deleteMember = async (
 ) => {
   try {
     const profileId = req.user?.profileId!;
-    const profile = await db.profile.findUnique({
-      where: { id: profileId },
-    });
-
-    if (!profile) {
-      return res.status(400).json(
-        createMsg({
-          type: 'invalid',
-          invalidMessage: 'Profile not found',
-        }),
-      );
-    }
-    const { roomId } = req.query;
     const memberId = req.params.memberId;
+    const { roomId } = req.query;
 
     if (!memberId || !roomId) {
       return res.status(404).json(
         createMsg({
           type: 'invalid',
           invalidMessage: 'Require room id, member id',
+        }),
+      );
+    }
+
+    const profile = await db.profile.findUnique({
+      where: { id: profileId },
+    });
+    if (!profile) {
+      return res.status(400).json(
+        createMsg({
+          type: 'invalid',
+          invalidMessage: 'Profile not found',
         }),
       );
     }
@@ -301,7 +302,7 @@ export const deleteMember = async (
       return res.status(400).json(
         createMsg({
           type: 'invalid',
-          invalidMessage: 'Only admin can change role of other members',
+          invalidMessage: 'Only admin can kick other members',
         }),
       );
     }

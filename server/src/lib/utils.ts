@@ -81,19 +81,19 @@ export const tokenOptionsMap: Record<
   accessToken: {
     secret: process.env.ACCESS_TOKEN_SECRET as string,
     jwtOptions: {
-      expiresIn: '15m',
+      expiresIn: '30m',
     },
   },
   refreshToken: {
     secret: process.env.REFRESH_TOKEN_SECRET as string,
     jwtOptions: {
-      expiresIn: '1h',
+      expiresIn: '12h',
     },
   },
   resetToken: {
     secret: process.env.RESET_TOKEN_SECRET as string,
     jwtOptions: {
-      expiresIn: '30m',
+      expiresIn: '1h',
     },
   },
 };

@@ -29,12 +29,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import MemberAvatar from '@/components/MemberAvatar';
 import { Member, MemberRole } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { useMembersQuery } from '@/hooks/queries';
+import { cn, getFileUrl } from '@/lib/utils';
+import { queryKeyFactory, useMembersQuery } from '@/hooks/queries';
 import { Navigate } from 'react-router-dom';
 import { useChangeRoleMemberMutation, useKickMemberMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingBlock } from '@/components/Loading';
+import { useAuth } from '@/hooks/useAuth';
+import { RoomOrigin, ServerToClientEvents, socket } from '@/lib/socket';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 const roleIconMap: Record<MemberRole, React.ReactNode> = {
   [MemberRole.GUEST]: null,
@@ -49,18 +53,84 @@ const MembersModal = () => {
     closeModal,
     data: { room },
   } = useModal();
+
+  const { auth } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const origin: RoomOrigin = {
+    roomId: room?.id!,
+    profileId: auth.profileId!,
+  };
+
   const {
     data: members,
     isPending,
     isFetching,
     isError,
-  } = useMembersQuery(room?.id!, {
-    profile: true,
-  });
+  } = useMembersQuery(
+    room?.id!,
+    {
+      profile: true,
+    },
+    {
+      // refetchOnMount: true,
+    },
+  );
 
   if (isError) {
     return <Navigate to={'/error-page'} replace />;
   }
+
+  // Lắng nghe sự kiện kick và change role thành công
+  useEffect(() => {
+    const reloadData = () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.room(room?.id!, []),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.members(room?.id!, []),
+      });
+    };
+
+    const onKickSuccess: ServerToClientEvents['server:room:kick:success'] = () => {
+      reloadData();
+      toast({
+        title: 'Kick member OK',
+      });
+    };
+    const onKickError: ServerToClientEvents['server:room:kick:error'] = msg => {
+      toast({
+        title: 'Kick member Failed',
+        description: msg,
+      });
+    };
+
+    const onChangeRoleSuccess: ServerToClientEvents['server:room:role:success'] = () => {
+      reloadData();
+      toast({
+        title: 'Change role OK',
+      });
+    };
+    const onChangeRoleError: ServerToClientEvents['server:room:role:error'] = msg => {
+      toast({
+        title: 'Change role Failed',
+        description: msg,
+      });
+    };
+
+    socket.on('server:room:kick:success', onKickSuccess);
+    socket.on('server:room:kick:error', onKickError);
+    socket.on('server:room:role:success', onChangeRoleSuccess);
+    socket.on('server:room:role:error', onChangeRoleError);
+
+    return () => {
+      socket.off('server:room:kick:success', onKickSuccess);
+      socket.off('server:room:kick:error', onKickError);
+      socket.off('server:room:role:success', onChangeRoleSuccess);
+      socket.off('server:room:role:error', onChangeRoleError);
+    };
+  }, []);
 
   return (
     <Dialog open={isOpen && modalType === 'members'} onOpenChange={closeModal}>
@@ -75,14 +145,7 @@ const MembersModal = () => {
         </DialogHeader>
         <ScrollArea className='mt-8 max-h-[420px] pr-6'>
           {!isPending && !isFetching ? (
-            members.map(member => (
-              <MemberCard
-                key={member.id}
-                showMenu={room?.profileId !== member.profileId}
-                roomId={room?.id!}
-                member={member}
-              />
-            ))
+            members.map(member => <MemberCard key={member.id} origin={origin} member={member} />)
           ) : (
             <LoadingBlock />
           )}
@@ -94,68 +157,33 @@ const MembersModal = () => {
 
 export type MemberCardProps = {
   member: Member;
-  showMenu: boolean;
-  roomId: string;
+  origin: RoomOrigin;
 };
 
-export const MemberCard = ({ member, showMenu, roomId }: MemberCardProps) => {
-  const { toast } = useToast();
+export const MemberCard = ({ member, origin }: MemberCardProps) => {
   const kickMutation = useKickMemberMutation();
   const changeRoleMutation = useChangeRoleMemberMutation();
+  const isYourself = origin.profileId === member.profileId;
 
   const onKick = async (memberId: string) => {
-    kickMutation.mutate(
-      {
-        roomId,
-        memberId,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Kick member OK',
-          });
-        },
-        onError: err => {
-          toast({
-            title: 'Kick member Failed',
-          });
-        },
-        onSettled: () => {
-          kickMutation.reset();
-        },
-      },
-    );
+    socket.emit('client:room:kick', origin, {
+      memberId,
+    });
+    kickMutation.reset();
   };
 
   const onChangeRole = async (memberId: string, role: MemberRole) => {
-    changeRoleMutation.mutate(
-      {
-        roomId,
-        memberId,
-        role,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Change role OK',
-          });
-        },
-        onError: () => {
-          toast({
-            title: 'Change role Failed',
-          });
-        },
-        onSettled: () => {
-          changeRoleMutation.reset();
-        },
-      },
-    );
+    socket.emit('client:room:role', origin, {
+      memberId,
+      role,
+    });
+    changeRoleMutation.reset();
   };
 
   return (
     <div className='flex items-center gap-x-2 mb-6'>
       <MemberAvatar
-        src={member.profile.imageUrl}
+        src={getFileUrl(member.profile.imageUrl)}
         fallback={
           <p className='text-foreground'>{member.profile.email.split('@')[0].slice(0, 2)}</p>
         }
@@ -165,10 +193,13 @@ export const MemberCard = ({ member, showMenu, roomId }: MemberCardProps) => {
           {member.profile.email}
           {roleIconMap[member.role]}
         </div>
-        <p className='text-xs text-zinc-500 capitalize'>{member.role.toLowerCase()}</p>
+        <p className='text-xs text-zinc-500 capitalize'>
+          {member.role.toLowerCase()}
+          {isYourself && '- Yourself'}
+        </p>
       </div>
-      {/* Chỉ có thành viên không phải admin thì mới hiện menu */}
-      {showMenu && (
+      {/* Chỉ có admin mới bật được modal này và menu ở dưới chỉ hiện đối với thành viên không phải admin */}
+      {!isYourself && (
         <div className='ml-auto'>
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -189,10 +220,10 @@ export const MemberCard = ({ member, showMenu, roomId }: MemberCardProps) => {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => onChangeRole(member.id, MemberRole.MODERATOR)}
-                      className={cn({
-                        'bg-emerald-400/70 focus:bg-emerald-400/90':
-                          member.role === MemberRole.MODERATOR,
-                      })}
+                      // className={cn({
+                      //   'bg-emerald-400/70 focus:bg-emerald-400/90':
+                      //     member.role === MemberRole.MODERATOR,
+                      // })}
                     >
                       <ShieldCheck className='h-4 w-4 mr-2' />
                       Moderator

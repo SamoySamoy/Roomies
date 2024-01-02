@@ -138,8 +138,8 @@ const RoomSidebar = ({ room }: Props) => {
           <div className='mb-2'>
             <GroupListSection sectionType='members' role={role} label='Other Members' room={room} />
             <div className='space-y-[2px]'>
-              {otherMembers.map(member => (
-                <RoomMember key={member.id} member={member} room={room} />
+              {room.members.map(member => (
+                <RoomMember key={member.id} member={member} />
               ))}
             </div>
           </div>

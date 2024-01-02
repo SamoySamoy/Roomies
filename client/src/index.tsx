@@ -18,6 +18,7 @@ import {
   ForgotPage,
   ResetPage,
   InvitePage,
+  NotMemberPage,
 } from '@/pages';
 import {
   LandingLayout,
@@ -72,6 +73,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
           {/* Error */}
           <Route path='/error-page' Component={ErrorPage} />
+          <Route path='/not-member' Component={NotMemberPage} />
           <Route path='*' Component={ErrorPage} />
         </Routes>
         <ModalProvider />

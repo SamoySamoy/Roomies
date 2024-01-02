@@ -133,7 +133,6 @@ const ProfileModal = () => {
   };
 
   useEffect(() => {
-    console.log(auth.imageUrl);
     setProfileImage(auth.imageUrl ? { type: 'online', fileUrl: auth.imageUrl } : null);
   }, [auth.imageUrl]);
 

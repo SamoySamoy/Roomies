@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
-import { Group, Message } from '@prisma/client';
+import { Group, MemberRole, Message } from '@prisma/client';
 import { corsOptions } from './lib/config';
 import { IMAGE_SIZE_LIMIT_IN_MB } from './lib/constants';
 import { ValidationError } from './lib/types';
@@ -16,9 +16,17 @@ import {
   mkdirIfNotExist,
   uuid,
 } from './lib/utils';
-import { log } from 'console';
 
 export type ServerToClientEvents = {
+  'server:room:join:success': (msg: string) => void;
+  'server:room:join:error': (msg: string) => void;
+  'server:room:leave:success': (msg: string) => void;
+  'server:room:leave:error': (msg: string) => void;
+  'server:room:kick:success': (content: RoomKick) => void;
+  'server:room:kick:error': (msg: string) => void;
+  'server:room:role:success': (content: RoomRole) => void;
+  'server:room:role:error': (msg: string) => void;
+
   'server:group:join:success': (msg: string) => void;
   'server:group:join:error': (msg: string) => void;
   'server:group:leave:success': (msg: string) => void;
@@ -33,19 +41,28 @@ export type ServerToClientEvents = {
   'server:group:message:update:error': (msg: string) => void;
   'server:group:message:delete:success': (messages: Message) => void;
   'server:group:message:delete:error': (msg: string) => void;
-  'server:peer:init:success': (id: string) => void,
-  'server:user-disconnected': (id: string) => void,
+
+  'server:peer:init:success': (id: string) => void;
+  'server:user-disconnected': (id: string) => void;
 };
 
-export type Origin = {
+export type RoomOrigin = {
   roomId: string;
   profileId: string;
 };
-export type GroupOrigin = Origin & {
+export type GroupOrigin = RoomOrigin & {
   groupId: string;
 };
-export type ConversationOrigin = Origin & {
+export type ConversationOrigin = RoomOrigin & {
   memberId: string;
+};
+
+export type RoomKick = {
+  memberId: string;
+};
+export type RoomRole = {
+  memberId: string;
+  role: MemberRole;
 };
 
 export type MessageIdentity = { email: string };
@@ -61,7 +78,11 @@ export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
 export type ClientToServerEvents = {
-  'client:peer:init:success': (origin: GroupOrigin) => void;
+  'client:room:join': (origin: RoomOrigin, arg: MessageIdentity) => void;
+  'client:room:leave': (origin: RoomOrigin, arg: MessageIdentity) => void;
+  'client:room:kick': (origin: RoomOrigin, arg: RoomKick) => void;
+  'client:room:role': (origin: RoomOrigin, arg: RoomRole) => void;
+
   'client:group:join': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:leave': (origin: GroupOrigin, arg: MessageIdentity) => void;
   'client:group:typing': (origin: GroupOrigin, arg: MessageIdentity) => void;
@@ -69,6 +90,8 @@ export type ClientToServerEvents = {
   'client:group:message:upload': (origin: GroupOrigin, file: MessageUpload) => void;
   'client:group:message:update': (origin: GroupOrigin, arg: MessageUpdate) => void;
   'client:group:message:delete': (origin: GroupOrigin, arg: MessageDelete) => void;
+
+  'client:peer:init:success': (origin: GroupOrigin) => void;
 };
 
 export function setupWs(httpServer: HTTPServer) {
@@ -81,10 +104,98 @@ export function setupWs(httpServer: HTTPServer) {
   });
 
   io.on('connection', socket => {
+    // On user join room
+    socket.on('client:room:join', async (origin, arg) => {
+      socket.join(origin.roomId);
+
+      console.log(arg.email, 'join room', origin.roomId);
+
+      try {
+        // On user join room - to user only
+        socket.emit('server:room:join:success', `You just join room ${origin.roomId}`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:room:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:room:join:error', `Unexpected error. Something went wrong`);
+        }
+      }
+
+      // On user join room - to other user in room
+      try {
+        socket.broadcast
+          .to(origin.roomId)
+          .emit('server:room:join:success', `${arg.email} just join room ${origin.profileId}`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:room:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:room:join:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user leave room
+    socket.on('client:room:leave', async (origin, arg) => {
+      socket.leave(origin.roomId);
+
+      console.log(arg.email, 'leave room', origin.roomId);
+
+      try {
+        io.to(origin.roomId).emit('server:room:leave:success', `${arg.email} just leave room`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:room:leave:error', `${error.message}`);
+        } else {
+          socket.emit('server:room:leave:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user kick member
+    socket.on('client:room:kick', async (origin, arg) => {
+      try {
+        await kickMember(origin, arg);
+        // On user kick member - to the one whom have been kicked
+        socket.broadcast.to(origin.roomId).emit('server:room:kick:success', arg);
+
+        // To admin
+        socket.emit('server:room:kick:success', arg);
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:room:kick:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit('server:room:kick:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user change role member
+    socket.on('client:room:role', async (origin, arg) => {
+      try {
+        await changeRoleMember(origin, arg);
+        // On user kick member - to the one whom have been kicked
+        socket.broadcast.to(origin.roomId).emit('server:room:role:success', arg);
+
+        // To admin
+        socket.emit('server:room:role:success', arg);
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:room:role:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit('server:room:role:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
     // On user join group
     socket.on('client:group:join', async (origin, arg) => {
       socket.join(origin.groupId);
-      console.log(arg.email + ' join group: ' + origin.groupId);
 
       try {
         // On user join group - to user only
@@ -220,14 +331,14 @@ export function setupWs(httpServer: HTTPServer) {
         socket.join(origin.groupId);
         socket.broadcast.to(origin.groupId).emit('server:peer:init:success', origin.profileId);
         console.log('broad cast to the room');
-      } catch(err: any) {
+      } catch (err: any) {
         console.log(err);
       }
-      socket.on('disconnect', function() {
-        console.log('user disconnected: '+ origin.profileId);
+      socket.on('disconnect', function () {
+        console.log('user disconnected: ' + origin.profileId);
         socket.broadcast.to(origin.groupId).emit('server:user-disconnected', origin.profileId);
       });
-    })
+    });
   });
 
   // Handle errors on the socket IO instance
@@ -238,6 +349,132 @@ export function setupWs(httpServer: HTTPServer) {
 
   return io;
 }
+
+const kickMember = async (...args: Parameters<ClientToServerEvents['client:room:kick']>) => {
+  const [origin, arg] = args;
+  if (!origin.profileId || !origin.roomId) {
+    throw new ValidationError('Require profile id and room id');
+  }
+  if (!arg.memberId) {
+    throw new ValidationError('Require member id');
+  }
+
+  const profile = await db.profile.findUnique({
+    where: { id: origin.profileId },
+  });
+  if (!profile) {
+    throw new ValidationError('Profile not found');
+  }
+
+  const room = await db.room.findUnique({
+    where: {
+      id: origin.roomId,
+      members: {
+        some: {
+          profileId: origin.profileId,
+          role: MemberRole.ADMIN,
+        },
+      },
+    },
+  });
+  if (!room) {
+    throw new ValidationError('Only admin can kick other members');
+  }
+
+  const updatedRoom = await db.room.update({
+    where: {
+      id: origin.roomId,
+      profileId: origin.profileId,
+    },
+    data: {
+      members: {
+        deleteMany: {
+          id: arg.memberId,
+          profileId: {
+            not: origin.profileId,
+          },
+        },
+      },
+    },
+    include: {
+      members: {
+        include: {
+          profile: true,
+        },
+        orderBy: {
+          role: 'asc',
+        },
+      },
+    },
+  });
+
+  return updatedRoom;
+};
+
+const changeRoleMember = async (...args: Parameters<ClientToServerEvents['client:room:role']>) => {
+  const [origin, arg] = args;
+  if (!origin.profileId || !origin.roomId) {
+    throw new ValidationError('Require profile id and room id');
+  }
+  if (!arg.memberId || !arg.role) {
+    throw new ValidationError('Require member id and role');
+  }
+
+  const profile = await db.profile.findUnique({
+    where: { id: origin.profileId },
+  });
+  if (!profile) {
+    throw new ValidationError('Profile not found');
+  }
+
+  const room = await db.room.findUnique({
+    where: {
+      id: origin.roomId,
+      members: {
+        some: {
+          profileId: origin.profileId,
+          role: MemberRole.ADMIN,
+        },
+      },
+    },
+  });
+  if (!room) {
+    throw new ValidationError('Only admin can change role of other members');
+  }
+
+  const updatedRoom = await db.room.update({
+    where: {
+      id: origin.roomId,
+      profileId: origin.profileId,
+    },
+    data: {
+      members: {
+        update: {
+          where: {
+            id: arg.memberId,
+            profileId: {
+              not: origin.profileId,
+            },
+          },
+          data: {
+            role: arg.role,
+          },
+        },
+      },
+    },
+    include: {
+      members: {
+        include: {
+          profile: true,
+        },
+        orderBy: {
+          role: 'asc',
+        },
+      },
+    },
+  });
+  return updatedRoom;
+};
 
 const createMessage = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:post']>
