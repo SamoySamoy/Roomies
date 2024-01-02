@@ -14,7 +14,7 @@ const Ability = () => {
       name='ability'
       className={cn(
         'transform transition ease-in-out duration-700',
-        inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40',
+        inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40',
       )}
     >
       <div className='w-full py-20 px-20'>

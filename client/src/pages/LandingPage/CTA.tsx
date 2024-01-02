@@ -14,7 +14,7 @@ const CTA = () => {
       <Link to={isLogin ? '/explore' : '/register'}>
         <Button className='bg-emerald-500 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
           <div className='flex flex-row items-center justify-center gap-2'>
-            <span className='font-bold text-background'>Join now</span>
+            <span className='text-black font-bold text-background'>Join now</span>
             <HeartIcon className='text-red-400' />
           </div>
         </Button>

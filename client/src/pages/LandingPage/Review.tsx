@@ -140,7 +140,7 @@ const Review = () => {
   };
   
   return (
-    <Element name='server' className={`${inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'} transform transition ease-in-out duration-1000 `}>
+    <Element name='server' className={`${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'} transform transition ease-in-out duration-1000 `}>
       <div className='w-full pb-20 px-20'>
         <div className='md:max-w-[1480px] m-auto max-w-[600px] px-10 py-10 border border-zinc-600 bg-zinc-900 rounded-3xl'>
           <h2 className="md:leading-[72px] text-3xl font-bold text-center mb-8">User Reviews</h2>

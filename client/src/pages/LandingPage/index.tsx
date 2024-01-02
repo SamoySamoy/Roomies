@@ -26,12 +26,12 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className='relative bg-gray-950'>
+    <div className='relative bg-gray-950 text-white w-full'>
       <MainContent />
 
       <div className=''>
         <div className='py-20 px-20'>
-          <h1 className='py-2  text-3xl font-semibold'>
+          <h1 className='py-2 text-3xl font-semibold'>
             What's special about <span className='text-emerald-500'> Roomies </span> ?
           </h1>
         </div>
