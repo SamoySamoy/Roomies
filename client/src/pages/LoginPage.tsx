@@ -27,13 +27,15 @@ const LoginPage = () => {
     mutation.mutate(values, {
       onSuccess: data => {
         setAuth(data.accessToken);
-        // toast({
-        //   title: 'Login ok',
-        // });
+        toast({
+          title: 'Login ok',
+          variant: 'success',
+        });
       },
       onError: () => {
         toast({
           title: 'Login failed',
+          variant: 'error',
         });
       },
     });

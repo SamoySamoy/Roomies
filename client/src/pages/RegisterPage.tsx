@@ -25,14 +25,16 @@ const RegisterPage = () => {
   const onSubmit = async (values: LoginSchema) => {
     mutation.mutate(values, {
       onSuccess: () => {
-        // toast({
-        //   title: 'Register ok',
-        // });
+        toast({
+          title: 'Register ok',
+          variant: 'success',
+        });
         navigate('/login');
       },
       onError: () => {
         toast({
           title: 'Register failed',
+          variant: 'error',
         });
       },
     });
