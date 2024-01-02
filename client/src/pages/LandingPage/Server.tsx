@@ -12,7 +12,7 @@ const Categories = () => {
     <Element
       name='server'
       className={`${
-        inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-40'
+        inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'
       } transform transition ease-in-out duration-1000 `}
     >
       <div className='w-full pb-20'>
