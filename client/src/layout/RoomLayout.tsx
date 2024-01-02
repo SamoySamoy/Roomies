@@ -25,7 +25,6 @@ const RoomLayout = () => {
     data: room,
     isPending,
     isFetching,
-    isRefetching,
     isError,
   } = useRoomQuery(
     roomId!,
@@ -40,7 +39,7 @@ const RoomLayout = () => {
   );
   const isRoomMember = Boolean(room?.members.find(member => member.profileId === auth.profileId));
 
-  if (isPending || isFetching || isRefetching) {
+  if (isPending || isFetching) {
     return <LoadingPage />;
   }
 

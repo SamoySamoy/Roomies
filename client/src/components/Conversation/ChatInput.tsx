@@ -3,30 +3,30 @@ import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useModal } from '@/hooks/useModal';
 import EmojiPicker from '@/components/EmojiPicker';
-import { GroupOrigin, socket } from '@/lib/socket';
+import { ConversationOrigin, socket } from '@/lib/socket';
 import { ChatSchema, useChatForm } from '@/hooks/forms';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ChatInputProps {
   name: string;
   type: 'group' | 'conversation';
-  origin: GroupOrigin;
+  conversationOrigin: ConversationOrigin;
 }
 
-const ChatInput = ({ name, type, origin }: ChatInputProps) => {
+const ChatInput = ({ name, type, conversationOrigin: origin }: ChatInputProps) => {
   const { openModal } = useModal();
   const { auth } = useAuth();
   const form = useChatForm();
 
   const onMessage = (values: ChatSchema) => {
-    socket.emit('client:group:message:post', origin, {
+    socket.emit('client:conversation:message:post', origin, {
       content: values.content,
     });
     form.reset();
   };
 
   const onTyping = () => {
-    socket.emit('client:group:typing', origin, {
+    socket.emit('client:conversation:typing', origin, {
       email: auth.email!,
     });
   };
@@ -47,7 +47,7 @@ const ChatInput = ({ name, type, origin }: ChatInputProps) => {
                       openModal({
                         modalType: 'messageFile',
                         data: {
-                          groupOrigin: origin,
+                          conversationOrigin: origin,
                         },
                       })
                     }

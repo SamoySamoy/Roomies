@@ -28,7 +28,7 @@ const RoomMember = ({ member }: RoomMemberProps) => {
 
   const onNavigate = () => {
     if (isYourself) return;
-    navigate(`/rooms/${roomId}/converstations/${member.id}`);
+    navigate(`/rooms/${roomId}/conversations/${member.id}`);
   };
 
   const content = (

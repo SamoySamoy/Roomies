@@ -6,6 +6,7 @@ import { db } from '@/prisma/db';
 import { AuthenticatedRequest } from '@/lib/types';
 import {
   createMsg,
+  createResult,
   getExtName,
   getFileName,
   isImageFile,
@@ -77,10 +78,13 @@ export const getDirectMessages = async (
       lastCursor = directMessages[MESSAGES_BATCH - 1].id;
     }
 
-    return res.status(200).json({
-      messages: directMessages,
-      lastCursor,
-    });
+    return res.status(200).json(
+      createResult({
+        type: 'paging:cursor',
+        items: directMessages,
+        lastCursor,
+      }),
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json(
@@ -189,7 +193,7 @@ export const createDirectMessage = async (
       currentMember = conversation.memberOne;
     }
     if (conversation.memberTwo.profileId === profileId) {
-      currentMember = conversation.memberOne;
+      currentMember = conversation.memberTwo;
     }
     if (!currentMember) {
       return res.status(400).json(
@@ -280,7 +284,7 @@ export const uploadDirectMessageFile = async (
       currentMember = conversation.memberOne;
     }
     if (conversation.memberTwo.profileId === profileId) {
-      currentMember = conversation.memberOne;
+      currentMember = conversation.memberTwo;
     }
     if (!currentMember) {
       return res.status(400).json(

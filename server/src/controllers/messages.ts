@@ -6,6 +6,7 @@ import { db } from '@/prisma/db';
 import { AuthenticatedRequest } from '@/lib/types';
 import {
   createMsg,
+  createResult,
   getExtName,
   getFileName,
   isImageFile,
@@ -14,6 +15,7 @@ import {
 } from '@/lib/utils';
 import sharp from 'sharp';
 import { MESSAGES_BATCH } from '@/lib/constants';
+import { Message } from '@prisma/client';
 
 type QueryFilter = {
   cursor: string;
@@ -76,10 +78,13 @@ export const getMessages = async (
       lastCursor = messages[MESSAGES_BATCH - 1].id;
     }
 
-    return res.status(200).json({
-      messages,
-      lastCursor,
-    });
+    return res.status(200).json(
+      createResult({
+        type: 'paging:cursor',
+        items: messages,
+        lastCursor,
+      }),
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json(
