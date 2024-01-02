@@ -4,10 +4,10 @@ import sharp from 'sharp';
 import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
-import { Group, MemberRole, Message } from '@prisma/client';
-import { corsOptions } from './lib/config';
-import { IMAGE_SIZE_LIMIT_IN_MB } from './lib/constants';
-import { ValidationError } from './lib/types';
+import { DirectMessage, Message, MemberRole, Member } from '@prisma/client';
+import { corsOptions } from '@/lib/config';
+import { IMAGE_SIZE_LIMIT_IN_MB } from '@/lib/constants';
+import { ValidationError } from '@/lib/types';
 import {
   convertMbToBytes,
   getExtName,
@@ -15,7 +15,7 @@ import {
   isImageFile,
   mkdirIfNotExist,
   uuid,
-} from './lib/utils';
+} from '@/lib/utils';
 
 export type ServerToClientEvents = {
   'server:room:join:success': (msg: string) => void;
@@ -42,6 +42,21 @@ export type ServerToClientEvents = {
   'server:group:message:delete:success': (messages: Message) => void;
   'server:group:message:delete:error': (msg: string) => void;
 
+  'server:conversation:join:success': (msg: string) => void;
+  'server:conversation:join:error': (msg: string) => void;
+  'server:conversation:leave:success': (msg: string) => void;
+  'server:conversation:leave:error': (msg: string) => void;
+  'server:conversation:typing:success': (msg: string) => void;
+  'server:conversation:typing:error': (msg: string) => void;
+  'server:conversation:message:post:success': (message: DirectMessage) => void;
+  'server:conversation:message:post:error': (msg: string) => void;
+  'server:conversation:message:upload:success': (message: DirectMessage) => void;
+  'server:conversation:message:upload:error': (msg: string) => void;
+  'server:conversation:message:update:success': (messages: DirectMessage) => void;
+  'server:conversation:message:update:error': (msg: string) => void;
+  'server:conversation:message:delete:success': (messages: DirectMessage) => void;
+  'server:conversation:message:delete:error': (msg: string) => void;
+
   'server:peer:init:success': (id: string) => void;
   'server:user-disconnected': (id: string) => void;
 };
@@ -54,7 +69,7 @@ export type GroupOrigin = RoomOrigin & {
   groupId: string;
 };
 export type ConversationOrigin = RoomOrigin & {
-  memberId: string;
+  conversationId: string;
 };
 
 export type RoomKick = {
@@ -90,6 +105,14 @@ export type ClientToServerEvents = {
   'client:group:message:upload': (origin: GroupOrigin, file: MessageUpload) => void;
   'client:group:message:update': (origin: GroupOrigin, arg: MessageUpdate) => void;
   'client:group:message:delete': (origin: GroupOrigin, arg: MessageDelete) => void;
+
+  'client:conversation:join': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:leave': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:typing': (origin: ConversationOrigin, arg: MessageIdentity) => void;
+  'client:conversation:message:post': (origin: ConversationOrigin, arg: MessageCreate) => void;
+  'client:conversation:message:upload': (origin: ConversationOrigin, file: MessageUpload) => void;
+  'client:conversation:message:update': (origin: ConversationOrigin, arg: MessageUpdate) => void;
+  'client:conversation:message:delete': (origin: ConversationOrigin, arg: MessageDelete) => void;
 
   'client:peer:init:success': (origin: GroupOrigin) => void;
 };
@@ -274,7 +297,7 @@ export function setupWs(httpServer: HTTPServer) {
     // On user upload a file
     socket.on('client:group:message:upload', async (origin, arg) => {
       try {
-        const newMessage = await uploadFile(origin, arg);
+        const newMessage = await uploadMessageFile(origin, arg);
         io.to(origin.groupId).emit('server:group:message:upload:success', newMessage);
       } catch (error: any) {
         if (error instanceof ValidationError) {
@@ -319,6 +342,162 @@ export function setupWs(httpServer: HTTPServer) {
         } else {
           socket.emit(
             'server:group:message:delete:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
+      }
+    });
+
+    // On user join conversation
+    socket.on('client:conversation:join', async (origin, arg) => {
+      socket.join(origin.conversationId);
+
+      try {
+        // On user join conversation - to user only
+        socket.emit(
+          'server:conversation:join:success',
+          `You just join conversation ${origin.conversationId}`,
+        );
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:conversation:join:error', `Unexpected error. Something went wrong`);
+        }
+      }
+
+      // On user join conversation - to other user in conversation
+      try {
+        socket.broadcast
+          .to(origin.conversationId)
+          .emit(
+            'server:conversation:join:success',
+            `${arg.email} just join conversation ${origin.profileId}`,
+          );
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:conversation:join:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user leave conversation
+    socket.on('client:conversation:leave', async (origin, arg) => {
+      socket.leave(origin.conversationId);
+
+      try {
+        io.to(origin.conversationId).emit(
+          'server:conversation:leave:success',
+          `${arg.email} just leave conversation`,
+        );
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:leave:error', `${error.message}`);
+        } else {
+          socket.emit('server:conversation:leave:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user typing
+    socket.on('client:conversation:typing', async (origin, arg) => {
+      try {
+        socket.broadcast
+          .to(origin.conversationId)
+          .emit('server:conversation:typing:success', `${arg.email} is typing ...`);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:typing:error', `${error.message}`);
+        } else {
+          socket.emit('server:conversation:typing:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+
+    // On user create new message
+    socket.on('client:conversation:message:post', async (origin, arg) => {
+      try {
+        const newDirectMessage = await createDirectMessage(origin, arg);
+        io.to(origin.conversationId).emit(
+          'server:conversation:message:post:success',
+          newDirectMessage,
+        );
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:message:post:error', `${error.message}`);
+        } else {
+          socket.emit(
+            'server:conversation:message:post:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
+      }
+    });
+
+    // On user upload a file
+    socket.on('client:conversation:message:upload', async (origin, arg) => {
+      try {
+        const newDirectMessage = await uploadDirectMessageFile(origin, arg);
+        io.to(origin.conversationId).emit(
+          'server:conversation:message:upload:success',
+          newDirectMessage,
+        );
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:message:upload:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:conversation:message:upload:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
+      }
+    });
+
+    // On user update message
+    socket.on('client:conversation:message:update', async (origin, arg) => {
+      try {
+        const updatedDirectMessage = await updateDirectMessage(origin, arg);
+        io.to(origin.conversationId).emit(
+          'server:conversation:message:update:success',
+          updatedDirectMessage,
+        );
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:message:update:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:conversation:message:update:error',
+            `Unexpected error. Something went wrong`,
+          );
+        }
+      }
+    });
+
+    // On user delete message
+    socket.on('client:conversation:message:delete', async (origin, arg) => {
+      try {
+        const deletedDirectMessage = await deleteDirectMesage(origin, arg);
+        io.to(origin.conversationId).emit(
+          'server:conversation:message:delete:success',
+          deletedDirectMessage,
+        );
+      } catch (error: any) {
+        if (error instanceof ValidationError) {
+          socket.emit('server:conversation:message:delete:error', `${error.message}`);
+          console.log(error);
+        } else {
+          socket.emit(
+            'server:conversation:message:delete:error',
             `Unexpected error. Something went wrong`,
           );
         }
@@ -526,7 +705,7 @@ const createMessage = async (
   return newMessage;
 };
 
-const uploadFile = async (
+const uploadMessageFile = async (
   ...args: Parameters<ClientToServerEvents['client:group:message:upload']>
 ) => {
   const [origin, file] = args;
@@ -690,4 +869,266 @@ const deleteMesage = async (
     },
   });
   return deletedMessage;
+};
+
+const createDirectMessage = async (
+  ...args: Parameters<ClientToServerEvents['client:conversation:message:post']>
+) => {
+  const [origin, arg] = args;
+  if (!origin.profileId || !origin.conversationId || !origin.roomId) {
+    throw new ValidationError('Require conversation id, group id and room id');
+  }
+  if (!arg.content) {
+    throw new ValidationError('Require message content');
+  }
+
+  const conversation = await db.conversation.findFirst({
+    where: {
+      id: origin.conversationId,
+      OR: [
+        {
+          memberOne: {
+            profileId: origin.profileId,
+          },
+        },
+        {
+          memberTwo: {
+            profileId: origin.profileId,
+          },
+        },
+      ],
+    },
+    include: {
+      memberOne: {
+        include: {
+          profile: true,
+        },
+      },
+      memberTwo: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  if (!conversation) {
+    throw new ValidationError('Conversation not exist');
+  }
+  let currentMember: Member | undefined;
+  if (conversation.memberOne.profileId === origin.profileId) {
+    currentMember = conversation.memberOne;
+  }
+  if (conversation.memberTwo.profileId === origin.profileId) {
+    currentMember = conversation.memberOne;
+  }
+  if (!currentMember) {
+    throw new ValidationError('Can not create message. You are not member of this conversation');
+  }
+
+  const newDirectMessage = db.directMessage.create({
+    data: {
+      content: arg.content,
+      fileUrl: null,
+      memberId: currentMember.id,
+      conversationId: origin.conversationId,
+    },
+    include: {
+      member: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  return newDirectMessage;
+};
+
+const uploadDirectMessageFile = async (
+  ...args: Parameters<ClientToServerEvents['client:conversation:message:upload']>
+) => {
+  const [origin, file] = args;
+  if (!origin.profileId || !origin.conversationId || !origin.roomId) {
+    throw new ValidationError('Require conversation id, group id and room id');
+  }
+
+  if (file.filesize > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
+    throw new ValidationError('File size not over 5 MB');
+  }
+
+  const conversation = await db.conversation.findFirst({
+    where: {
+      id: origin.conversationId,
+      OR: [
+        {
+          memberOne: {
+            profileId: origin.profileId,
+          },
+        },
+        {
+          memberTwo: {
+            profileId: origin.profileId,
+          },
+        },
+      ],
+    },
+    include: {
+      memberOne: {
+        include: {
+          profile: true,
+        },
+      },
+      memberTwo: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  if (!conversation) {
+    throw new ValidationError('Conversation not exist');
+  }
+  let currentMember: Member | undefined;
+  if (conversation.memberOne.profileId === origin.profileId) {
+    currentMember = conversation.memberOne;
+  }
+  if (conversation.memberTwo.profileId === origin.profileId) {
+    currentMember = conversation.memberOne;
+  }
+  if (!currentMember) {
+    throw new ValidationError('Can not create message. You are not member of this conversation');
+  }
+
+  const relFolderPath = `/public/conversations/${origin.conversationId}`;
+  const absFolderPath = path.join(__dirname, '..', relFolderPath);
+  let filename = file.filename;
+  if (isImageFile(filename)) {
+    filename = `${getFileName(filename)}_${uuid()}.webp`;
+  } else {
+    filename = `${getFileName(filename)}_${uuid()}.${getExtName(filename)}`;
+  }
+  const relFilePath = path.join(relFolderPath, filename);
+  const absFilePath = path.join(absFolderPath, filename);
+
+  await mkdirIfNotExist(absFolderPath);
+  if (isImageFile(filename)) {
+    await sharp(file.buffer as Buffer)
+      .resize(350, 200)
+      .webp()
+      .toFile(absFilePath);
+  } else {
+    await fsPromises.writeFile(absFilePath, file.buffer as Buffer);
+  }
+
+  const newDirectMessage = db.directMessage.create({
+    data: {
+      content: 'This message is a file',
+      fileUrl: relFilePath,
+      memberId: currentMember.id,
+      conversationId: origin.conversationId,
+    },
+    include: {
+      member: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  return newDirectMessage;
+};
+
+const updateDirectMessage = async (
+  ...args: Parameters<ClientToServerEvents['client:conversation:message:update']>
+) => {
+  const [origin, arg] = args;
+  if (!origin.profileId || !origin.conversationId || !origin.roomId) {
+    throw new ValidationError('Require conversation id, group id and room id');
+  }
+  const directMessageId = arg.messageId;
+  if (!arg.content || !directMessageId) {
+    throw new ValidationError('Require direct message id and message content');
+  }
+
+  const directMessage = await db.directMessage.findUnique({
+    where: { id: directMessageId },
+  });
+  if (!directMessage) {
+    throw new ValidationError(`Direct message ${directMessageId} not found`);
+  }
+
+  const owner = await db.member.findUnique({
+    where: { id: directMessage.memberId },
+  });
+  if (!owner) {
+    throw new ValidationError('The owner of this message was not found');
+  }
+  if (owner.profileId !== origin.profileId) {
+    throw new ValidationError('Only the author can edit his / her direct message');
+  }
+
+  const updatedDirectMessage = await db.directMessage.update({
+    where: {
+      id: directMessageId,
+    },
+    data: {
+      content: arg.content,
+    },
+    include: {
+      member: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  return updatedDirectMessage;
+};
+
+const deleteDirectMesage = async (
+  ...args: Parameters<ClientToServerEvents['client:conversation:message:delete']>
+) => {
+  const [origin, arg] = args;
+  if (!origin.profileId || !origin.conversationId || !origin.roomId) {
+    throw new ValidationError('Require conversation id, group id and room id');
+  }
+  const directMessageId = arg.messageId;
+  if (!directMessageId) {
+    throw new ValidationError('Require direct message id');
+  }
+
+  const directMessage = await db.directMessage.findUnique({
+    where: { id: directMessageId },
+  });
+  if (!directMessage) {
+    throw new ValidationError(`Direct message ${directMessageId} not found`);
+  }
+
+  const owner = await db.member.findUnique({
+    where: { id: directMessage.memberId },
+  });
+  if (!owner) {
+    throw new ValidationError('The owner of this message was not found');
+  }
+  if (owner.profileId !== origin.profileId) {
+    throw new ValidationError('Only the author can edit his / her direct message');
+  }
+
+  const deletedDirectMessage = await db.directMessage.update({
+    where: {
+      id: directMessageId,
+    },
+    data: {
+      fileUrl: null,
+      content: 'This message has been deleted.',
+      deleted: true,
+    },
+    include: {
+      member: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+  });
+  return deletedDirectMessage;
 };
