@@ -113,12 +113,14 @@ export const LogoutButton = () => {
       onSuccess: () => {
         toast({
           title: 'Logout ok',
+          variant: 'success',
         });
         navigate('/');
       },
       onError: () => {
         toast({
           title: 'Logout failed',
+          variant: 'error',
         });
       },
     });

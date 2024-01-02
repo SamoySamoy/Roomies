@@ -30,12 +30,14 @@ const DeleteGroupModal = () => {
         onSuccess: () => {
           toast({
             title: 'Delete group ok',
+            variant: 'success',
           });
           closeModal();
         },
         onError: () => {
           toast({
             title: 'Delete group failed',
+            variant: 'error',
           });
         },
         onSettled: () => {

@@ -38,12 +38,14 @@ const ForgotPage = () => {
       onSuccess: () => {
         toast({
           title: 'An reset password mail already sent to your email address room OK',
+          variant: 'success',
         });
         navigate('/my-rooms');
       },
       onError: () => {
         toast({
           title: 'Forgot password failed',
+          variant: 'error',
         });
       },
       onSettled: () => {

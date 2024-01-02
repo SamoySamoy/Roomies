@@ -56,6 +56,7 @@ const MessageFileModal = () => {
       return toast({
         title: 'Invalid',
         description: 'File size not over 5 MB',
+        variant: 'warning',
       });
     }
 

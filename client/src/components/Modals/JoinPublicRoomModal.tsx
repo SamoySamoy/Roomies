@@ -35,6 +35,7 @@ const JoinPublicRoomModal = () => {
           if (typeof data === 'boolean') {
             toast({
               title: 'You have already joined this room',
+              variant: 'warning',
             });
             closeModal();
             return;
@@ -42,6 +43,7 @@ const JoinPublicRoomModal = () => {
 
           toast({
             title: 'Join public room ok',
+            variant: 'success',
           });
           closeModal();
           navigate(`/rooms/${data.id}`);
@@ -49,6 +51,7 @@ const JoinPublicRoomModal = () => {
         onError: () => {
           toast({
             title: 'Join public room failed',
+            variant: 'error',
           });
           closeModal();
         },

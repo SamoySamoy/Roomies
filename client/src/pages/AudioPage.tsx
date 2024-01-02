@@ -26,64 +26,67 @@ const AudioPage = () => {
   useEffect(() => {
     let peer: Peer;
     console.log('join room');
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (stream) {
-      if (myVideo.current != null) {
-        myVideo.current.srcObject = stream;
-        myVideo.current.muted = true;
-        myVideo.current.play();
-      }
-      setLocalStream(stream);
-      // myVid.current!.srcObject = stream;
-      console.log(stream);
-      console.log(localStream);
-      addVideo(auth.profileId!, true, stream);
-
-      peer = new Peer(origin.profileId, {
-        host: '/',
-        port: 3001
-      });
-      
-
-      peer.on('call', function (call) {
-        console.log(call.peer + ' is calling');
-        call.answer(stream);
-        call.once('stream', function (callerStream) {
-          addVideo(call.peer, false, callerStream);
-          // otherVid.current!.srcObject=callerStream;
-        });
-        callList.set(call.peer, call);
-      });
-
-      socket.on('server:peer:init:success', id => {
-        if (peer.open) {
-          console.log(id + ' just joined, i will call him');
-          const call = peer.call(id, stream);
-          console.log(call);
-          call.once('stream', function(otherStream) {
-            console.log('the other responsed');
-            console.log(stream.id);
-            addVideo(call.peer, true, otherStream);
-          })
-          call.on('close', function() {
-            removeVideo(call.peer);
-            console.log('remove the id on close: ' + call.peer);
-          })
-          
-          callList.set(call.peer, call);
-        } else {
-          console.log('Peer have not ready!');
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: true })
+      .then(function (stream) {
+        if (myVideo.current != null) {
+          myVideo.current.srcObject = stream;
+          myVideo.current.muted = true;
+          myVideo.current.play();
         }
+        setLocalStream(stream);
+        // myVid.current!.srcObject = stream;
+        console.log(stream);
+        console.log(localStream);
+        addVideo(auth.profileId!, true, stream);
+
+        // peer = new Peer(origin.profileId, {
+        //   host: '/',
+        //   port: 3001
+        // });
+        peer = new Peer(origin.profileId);
+
+        peer.on('call', function (call) {
+          console.log(call.peer + ' is calling');
+          call.answer(stream);
+          call.once('stream', function (callerStream) {
+            addVideo(call.peer, false, callerStream);
+            // otherVid.current!.srcObject=callerStream;
+          });
+          callList.set(call.peer, call);
+        });
+
+        socket.on('server:peer:init:success', id => {
+          if (peer.open) {
+            console.log(id + ' just joined, i will call him');
+            const call = peer.call(id, stream);
+            console.log(call);
+            call.once('stream', function (otherStream) {
+              console.log('the other responsed');
+              console.log(stream.id);
+              addVideo(call.peer, true, otherStream);
+            });
+            call.on('close', function () {
+              removeVideo(call.peer);
+              console.log('remove the id on close: ' + call.peer);
+            });
+
+            callList.set(call.peer, call);
+          } else {
+            console.log('Peer have not ready!');
+          }
+        });
+        peer.on('open', id => {
+          console.log('peer opened');
+          socket.emit('client:peer:init:success', origin);
+          console.log(id);
+          console.log(peer);
+        });
+      })
+      .catch(function (err) {
+        console.log(err);
       });
-      peer.on('open', id => {
-        console.log('peer opened');
-        socket.emit('client:peer:init:success', origin);
-        console.log(id);
-        console.log(peer); 
-      });
-    }).catch(function(err) {
-      console.log(err);
-    });
-    socket.on('server:user-disconnected', function(id) {
+    socket.on('server:user-disconnected', function (id) {
       console.log('received user disconnected: ' + id);
       console.log(callList);
       if (callList.has(id)) {
@@ -97,26 +100,24 @@ const AudioPage = () => {
     socket.on('server:room:leave:success', function (msg) {
       let leaveId = msg.split(' ')[1];
       console.log(leaveId + ' just leave the room to get to the text');
-    })
-    ;
+    });
     return function () {
-      socket.emit('client:room:leave', origin , {
+      socket.emit('client:room:leave', origin, {
         email: auth.email!,
       });
       console.log('clean up group');
       peer.destroy();
     };
-    
   }, []);
 
   useEffect(() => {
-    console.log('list updated: ')
+    console.log('list updated: ');
     console.log(videoList);
-  },[videoList])
+  }, [videoList]);
 
   function addVideo(peerId: string, mute: boolean, stream: MediaStream) {
     const newVid = { peerId: peerId, mute: mute, stream: stream };
-    setVideoList((prevVideoList) => [...prevVideoList, newVid]);
+    setVideoList(prevVideoList => [...prevVideoList, newVid]);
   }
 
   function removeVideo(id: string) {
@@ -125,7 +126,7 @@ const AudioPage = () => {
     // console.log('After remove');
     // console.log(newVidList);
     // setVideoList(newVidList)
-    setVideoList(prev => prev.filter(video => video.peerId !== id ));
+    setVideoList(prev => prev.filter(video => video.peerId !== id));
   }
 
   function clickCamera() {
@@ -156,7 +157,14 @@ const AudioPage = () => {
       </Button>
       <div className='flex flex-row flex-wrap gap-1 m-1'>
         {videoList.map(function (video) {
-          return <Video key={video.peerId} mute={video.mute} stream={video.stream} peerId={video.peerId}/>;
+          return (
+            <Video
+              key={video.peerId}
+              mute={video.mute}
+              stream={video.stream}
+              peerId={video.peerId}
+            />
+          );
         })}
       </div>
       <span>{videoList.length}</span>

@@ -168,6 +168,7 @@ const ChatMessages = ({
       toast({
         title: 'Error',
         description: msg,
+        variant: 'error',
       });
     };
     socket.on('server:conversation:join:error', onError);

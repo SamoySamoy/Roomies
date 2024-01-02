@@ -52,12 +52,14 @@ const EditGroupModal = () => {
         onSuccess: () => {
           toast({
             title: 'Edit group ok',
+            variant: 'success',
           });
           handleClose();
         },
         onError: () => {
           toast({
             title: 'Edit group failed',
+            variant: 'error',
           });
         },
         onSettled: () => {

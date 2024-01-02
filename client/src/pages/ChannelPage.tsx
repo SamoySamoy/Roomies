@@ -68,6 +68,7 @@ const ChannelPage = () => {
       toast({
         title: 'Notification',
         description: `You have been kicked out of room ${room.name} by Admin`,
+        variant: 'warning',
       });
       navigate('/my-rooms');
     };
@@ -118,6 +119,7 @@ const ChannelPage = () => {
             <span className='capitalize'>{content.role.toLowerCase()}</span>
           </span>
         ),
+        variant: 'warning',
       });
     };
 
@@ -128,6 +130,7 @@ const ChannelPage = () => {
       toast({
         title: 'Error',
         description: msg,
+        variant: 'error',
       });
     };
     socket.on('server:room:join:error', onError);

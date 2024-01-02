@@ -63,12 +63,14 @@ const CreateRoomModal = () => {
       onSuccess: () => {
         toast({
           title: 'Create room OK',
+          variant: 'success',
         });
         closeModal();
       },
       onError: () => {
         toast({
           title: 'Create room Failed',
+          variant: 'error',
         });
       },
       onSettled: () => {

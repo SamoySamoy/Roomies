@@ -68,12 +68,14 @@ const FirstRoomPage = () => {
       onSuccess: () => {
         toast({
           title: 'Create room OK',
+          variant: 'success',
         });
         navigate('/my-rooms');
       },
       onError: () => {
         toast({
           title: 'Create room Failed',
+          variant: 'error',
         });
       },
       onSettled: () => {

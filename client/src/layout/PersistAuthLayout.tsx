@@ -22,6 +22,7 @@ const PersistAuthLayout = () => {
         if (location.pathname.startsWith('/invite')) {
           toast({
             description: 'You need login first to join a room by invite code',
+            variant: 'warning',
           });
         }
         // Close any modal if open

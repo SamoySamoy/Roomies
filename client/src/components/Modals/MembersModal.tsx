@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import MemberAvatar from '@/components/MemberAvatar';
 import { Member, MemberRole } from '@/lib/types';
-import { cn, getFileUrl } from '@/lib/utils';
+import { getFileUrl } from '@/lib/utils';
 import { queryKeyFactory, useMembersQuery } from '@/hooks/queries';
 import { Navigate } from 'react-router-dom';
 import { useChangeRoleMemberMutation, useKickMemberMutation } from '@/hooks/mutations';
@@ -97,12 +97,14 @@ const MembersModal = () => {
       reloadData();
       toast({
         title: 'Kick member OK',
+        variant: 'success',
       });
     };
     const onKickError: ServerToClientEvents['server:room:kick:error'] = msg => {
       toast({
         title: 'Kick member Failed',
         description: msg,
+        variant: 'error',
       });
     };
 
@@ -110,12 +112,14 @@ const MembersModal = () => {
       reloadData();
       toast({
         title: 'Change role OK',
+        variant: 'success',
       });
     };
     const onChangeRoleError: ServerToClientEvents['server:room:role:error'] = msg => {
       toast({
         title: 'Change role Failed',
         description: msg,
+        variant: 'error',
       });
     };
 

@@ -157,6 +157,7 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
       toast({
         title: 'Error',
         description: msg,
+        variant: 'error',
       });
     };
     socket.on('server:group:join:error', onError);

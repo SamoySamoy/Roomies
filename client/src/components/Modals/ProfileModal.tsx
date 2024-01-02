@@ -78,12 +78,14 @@ const ProfileModal = () => {
       onSuccess: () => {
         toast({
           title: 'Change password ok',
+          variant: 'success',
         });
         setIsChangingPassword(false);
       },
       onError: () => {
         toast({
           title: 'Change password failed',
+          variant: 'error',
         });
       },
       onSettled: () => {
@@ -98,11 +100,13 @@ const ProfileModal = () => {
         onSuccess: () => {
           toast({
             title: 'Delete profile image ok',
+            variant: 'success',
           });
         },
         onError: () => {
           toast({
             title: 'Delete profile image failed',
+            variant: 'error',
           });
         },
         onSettled: () => {
@@ -119,11 +123,13 @@ const ProfileModal = () => {
       onSuccess: () => {
         toast({
           title: 'Change profile image ok',
+          variant: 'success',
         });
       },
       onError: () => {
         toast({
           title: 'Change profile image failed',
+          variant: 'error',
         });
       },
       onSettled: () => {
