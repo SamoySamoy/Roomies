@@ -10,7 +10,6 @@ import { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Room } from '@/lib/types';
-import { members } from '@/lib/fakeData';
 import { getQueryString } from '@/lib/utils';
 
 const ChannelPage = () => {
@@ -29,17 +28,11 @@ const ChannelPage = () => {
     members: true,
     profilesOfMembers: true,
   } as const;
-  const {
-    data: room,
-    isPending,
-    isFetching,
-    isRefetching,
-    isError,
-  } = useRoomQuery(roomId!, queryObj);
+  const { data: room, isPending, isFetching, isError } = useRoomQuery(roomId!, queryObj);
   const currentGroup = room?.groups.find(group => group.id === groupId);
   const currentMember = room?.members.find(member => member.profileId === auth.profileId);
 
-  if (isPending || isFetching || isRefetching) {
+  if (isPending || isFetching) {
     return <LoadingPage />;
   }
   if (isError || !room) {

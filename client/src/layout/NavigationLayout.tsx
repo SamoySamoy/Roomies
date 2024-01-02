@@ -8,7 +8,6 @@ const NavigationLayout = () => {
     data: rooms,
     isPending,
     isFetching,
-    isRefetching,
     isError,
   } = useRoomsQuery(
     {
@@ -22,7 +21,7 @@ const NavigationLayout = () => {
 
   console.log('In navigation layout');
 
-  if (isPending || isFetching || isRefetching) {
+  if (isPending || isFetching) {
     return <LoadingPage />;
   }
 

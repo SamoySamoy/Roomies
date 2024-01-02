@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { ServerToClientEvents, socket } from '@/lib/socket';
 import { Fragment, useRef, ElementRef, useEffect } from 'react';
 import { Loader2, ServerCrash } from 'lucide-react';
-import { Group, Member } from '@/lib/types';
+import { Group, Member, Message } from '@/lib/types';
 
 import ChatWelcome from './ChatWelcome';
 import { useChatScroll } from '@/hooks/useChatScroll';
 import ChatItem from './ChatItem';
 import { GroupOrigin } from '@/lib/socket';
-import { CursorResult, queryKeyFactory, useMessagesInfiniteQuery } from '@/hooks/queries';
+import { PagingCursorResult, queryKeyFactory, useMessagesInfiniteQuery } from '@/hooks/queries';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,7 +42,7 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
     bottomRef,
     loadMore: fetchNextPage,
     shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
-    count: data?.pages?.[0]?.messages?.length ?? 0,
+    count: data?.pages?.[0]?.items?.length ?? 0,
   });
 
   /* Listening chat event */
@@ -66,15 +66,15 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
         setTyping('');
       }, 1500);
     };
-    const onNewMessage: ServerToClientEvents['server:group:message:post:success'] = message => {
+    const onNewMessage: ServerToClientEvents['server:group:message:post:success'] = newMessage => {
       queryClient.setQueryData(
         queryKeyFactory.messages(currentGroup.id),
-        (oldData: InfiniteData<CursorResult, unknown>) => {
+        (oldData: InfiniteData<PagingCursorResult<Message>, unknown>) => {
           if (!oldData || !oldData.pages || oldData.pages.length === 0) {
             return {
               pages: [
                 {
-                  messages: [message],
+                  items: [newMessage],
                 },
               ],
             };
@@ -82,7 +82,7 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
           const newData = [...oldData.pages];
           newData[0] = {
             ...newData[0],
-            messages: [message, ...newData[0].messages],
+            items: [newMessage, ...newData[0].items],
           };
           return {
             ...oldData,
@@ -95,14 +95,14 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
       updatedMessage => {
         queryClient.setQueryData(
           queryKeyFactory.messages(currentGroup.id),
-          (oldData: InfiniteData<CursorResult, unknown>) => {
+          (oldData: InfiniteData<PagingCursorResult<Message>, unknown>) => {
             if (!oldData || !oldData.pages || oldData.pages.length === 0) {
               return oldData;
             }
             const newData = oldData.pages.map(page => {
               return {
                 ...page,
-                messages: page.messages.map(message => {
+                items: page.items.map(message => {
                   if (message.id === updatedMessage.id) {
                     return updatedMessage;
                   }
@@ -122,14 +122,14 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
       updatedMessage => {
         queryClient.setQueryData(
           queryKeyFactory.messages(currentGroup.id),
-          (oldData: InfiniteData<CursorResult, unknown>) => {
+          (oldData: InfiniteData<PagingCursorResult<Message>, unknown>) => {
             if (!oldData || !oldData.pages || oldData.pages.length === 0) {
               return oldData;
             }
             const newData = oldData.pages.map(page => {
               return {
                 ...page,
-                messages: page.messages.map(message => {
+                items: page.items.map(message => {
                   if (message.id === updatedMessage.id) {
                     return updatedMessage;
                   }
@@ -229,7 +229,7 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
       <div className='flex flex-col-reverse'>
         {data.pages.map((page, i) => (
           <Fragment key={i}>
-            {page.messages.map(message => (
+            {page.items.map(message => (
               <ChatItem
                 key={message.id}
                 message={message}

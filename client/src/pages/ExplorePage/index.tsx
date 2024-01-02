@@ -9,7 +9,6 @@ const ExplorePage = () => {
     data: rooms,
     isPending,
     isFetching,
-    isRefetching,
     isError,
   } = useRoomsQuery(
     {
@@ -25,7 +24,7 @@ const ExplorePage = () => {
     },
   );
 
-  if (isPending || isFetching || isRefetching) {
+  if (isPending || isFetching) {
     return <LoadingPage />;
   }
 

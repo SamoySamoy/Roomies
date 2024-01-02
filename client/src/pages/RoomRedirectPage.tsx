@@ -8,7 +8,6 @@ const RoomRedirectPage = () => {
     data: room,
     isPending,
     isFetching,
-    isRefetching,
     isError,
   } = useRoomQuery(roomId!, {
     groups: true,
@@ -18,7 +17,7 @@ const RoomRedirectPage = () => {
 
   console.log('In room redirect page');
 
-  if (isPending || isFetching || isRefetching) {
+  if (isPending || isFetching) {
     return <LoadingPage />;
   }
 

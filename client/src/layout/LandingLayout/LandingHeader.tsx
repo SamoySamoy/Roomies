@@ -1,8 +1,11 @@
 import { Button } from '@/components/ui/button';
 import ActionTooltip from '@/components/ActionToolTip';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const LandingHeader = () => {
+  const isLogin = Boolean(useAuth().auth.accessToken);
+
   return (
     <div className='flex w-full items-center justify-between border-b border-solid border-slate-400/30 bg-background px-10 py-5 shadow-[0_0_2rem_-0.5rem_#fff8] bg-black'>
       <div className='text-3xl font-bold text-foreground'>
@@ -53,7 +56,9 @@ const LandingHeader = () => {
           </Link>
         </ActionTooltip>
 
-        <div className='h-8 border-l border-gray-400/30'></div>
+        {!isLogin && (
+          <>
+            <div className='h-8 border-l border-gray-400/30'></div>
 
         <ActionTooltip label='Login to connect with your friends'>
           <Link

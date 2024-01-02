@@ -1,6 +1,5 @@
-import { Member, MemberRole, Message } from '@/lib/types';
-import { Edit, FileIcon, ShieldAlert, ShieldCheck, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Edit, FileIcon, ShieldAlert, ShieldCheck, Trash } from 'lucide-react';
 
 import MemberAvatar from '@/components/MemberAvatar';
 import ActionTooltip from '@/components/ActionToolTip';
@@ -11,12 +10,13 @@ import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 import { ChatSchema, useChatForm } from '@/hooks/forms';
 import { useNavigate, useParams } from 'react-router-dom';
-import { GroupOrigin, socket } from '@/lib/socket';
+import { ConversationOrigin, socket } from '@/lib/socket';
+import { DirectMessage, Member, MemberRole } from '@/lib/types';
 
 type ChatItemProps = {
-  message: Message;
+  directMessage: DirectMessage;
   currentMember: Member;
-  origin: GroupOrigin;
+  conversationOrigin: ConversationOrigin;
 };
 
 const roleIconMap = {
@@ -25,36 +25,39 @@ const roleIconMap = {
   [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 ml-2 text-rose-500' />,
 } as const;
 
-const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
+const ChatItem = ({ directMessage, currentMember, conversationOrigin }: ChatItemProps) => {
   const { openModal } = useModal();
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
   const [isEditing, setIsEditing] = useState(false);
   const form = useChatForm({
-    content: message.content,
+    content: directMessage.content,
   });
 
   const isAdmin = currentMember.role === MemberRole.ADMIN;
   const isModerator = currentMember.role === MemberRole.MODERATOR;
-  const isMessageOwner = currentMember.id === message.memberId;
-  const isFile = Boolean(message.fileUrl);
-  const isImage = isFile && isImageFile(message.fileUrl);
+  const isMessageOwner = currentMember.id === directMessage.memberId;
+  const isFile = Boolean(directMessage.fileUrl);
+  const isImage = isFile && isImageFile(directMessage.fileUrl);
   const isOtherFileType = isFile && !isImage;
-  const isUpdated = message.createdAt !== message.updatedAt;
-  // const canDeleteMessage = !message.deleted && (isAdmin || isModerator || isMessageOwner);
-  const canEditMessage = !message.deleted && isMessageOwner && !isFile;
-  const canDeleteMessage = !message.deleted && isMessageOwner;
+  const isUpdated = directMessage.createdAt !== directMessage.updatedAt;
+  // const canDeleteMessage = !directMessage.deleted && (isAdmin || isModerator || isMessageOwner);
+  const canEditMessage = !directMessage.deleted && isMessageOwner && !isFile;
+  const canDeleteMessage = !directMessage.deleted && isMessageOwner;
+
+  console.log(currentMember);
+  console.log(directMessage.member);
 
   const onMemberClick = () => {
-    if (currentMember.id !== message.memberId) {
+    if (currentMember.id !== directMessage.memberId) {
     }
-    navigate(`/rooms/${roomId}/conversations/${message.memberId}`);
+    navigate(`/rooms/${roomId}/conversations/${directMessage.memberId}`);
   };
 
   const onEdit = async (values: ChatSchema) => {
-    socket.emit('client:group:message:update', origin, {
+    socket.emit('client:conversation:message:update', conversationOrigin, {
       content: values.content,
-      messageId: message.id,
+      messageId: directMessage.id,
     });
     form.reset();
     setIsEditing(false);
@@ -78,9 +81,11 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
       <div className='group flex gap-x-2 items-start w-full'>
         <div onClick={onMemberClick} className='cursor-pointer hover:drop-shadow-md transition'>
           <MemberAvatar
-            src={getFileUrl(message.member.profile.imageUrl)}
+            src={getFileUrl(directMessage.member.profile.imageUrl)}
             fallback={
-              <p className='text-lg'>{message.member.profile.email.split('@')[0].slice(0, 2)}</p>
+              <p className='text-lg'>
+                {directMessage.member.profile.email.split('@')[0].slice(0, 2)}
+              </p>
             }
           />
         </div>
@@ -91,26 +96,26 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
                 onClick={onMemberClick}
                 className='font-semibold text-sm hover:underline cursor-pointer'
               >
-                {message.member.profile.email}
+                {directMessage.member.profile.email}
               </p>
-              <ActionTooltip label={message.member.role}>
-                {roleIconMap[message.member.role]}
+              <ActionTooltip label={directMessage.member.role}>
+                {roleIconMap[directMessage.member.role]}
               </ActionTooltip>
             </div>
             <span className='text-xs text-zinc-500 dark:text-zinc-400'>
-              {dt.format(new Date(message.createdAt))}
+              {dt.format(new Date(directMessage.createdAt))}
             </span>
           </div>
           {isImage && (
             <a
-              href={getFileUrl(message.fileUrl)}
+              href={getFileUrl(directMessage.fileUrl)}
               target='_blank'
               rel='noopener noreferrer'
               className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[200px] w-[350px]'
             >
               <img
-                src={getFileUrl(message.fileUrl)}
-                alt={message.content}
+                src={getFileUrl(directMessage.fileUrl)}
+                alt={directMessage.content}
                 className='object-cover'
               />
             </a>
@@ -119,7 +124,7 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
             <div className='relative flex items-center p-2 mt-2 rounded-md bg-background/10'>
               <FileIcon className='h-10 w-10 fill-indigo-200 stroke-indigo-400' />
               <a
-                href={getFileUrl(message.fileUrl)}
+                href={getFileUrl(directMessage.fileUrl)}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='ml-2 text-sm text-indigo-500 dark:text-indigo-400 hover:underline'
@@ -131,11 +136,11 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
           {!isFile && !isEditing && (
             <p
               className={cn('text-sm text-zinc-600 dark:text-zinc-300', {
-                'italic text-zinc-500 dark:text-zinc-400 text-xs mt-1': message.deleted,
+                'italic text-zinc-500 dark:text-zinc-400 text-xs mt-1': directMessage.deleted,
               })}
             >
-              {message.content}
-              {isUpdated && !message.deleted && (
+              {directMessage.content}
+              {isUpdated && !directMessage.deleted && (
                 <span className='text-[10px] mx-2 text-zinc-500 dark:text-zinc-400'>(edited)</span>
               )}
             </p>
@@ -196,8 +201,8 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
                 openModal({
                   modalType: 'deleteMessage',
                   data: {
-                    groupOrigin: origin,
-                    messageId: message.id,
+                    conversationOrigin,
+                    messageId: directMessage.id,
                   },
                 })
               }

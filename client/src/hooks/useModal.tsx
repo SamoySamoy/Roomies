@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Group, Room } from '@/lib/types';
 import { GroupType } from '@/lib/types';
-import { GroupOrigin } from '@/lib/socket';
+import { ConversationOrigin, GroupOrigin } from '@/lib/socket';
 
 export type ModalType =
   | 'createRoom'
@@ -24,7 +24,8 @@ export type ModalData = {
   room?: Room;
   group?: Group;
   groupType?: GroupType;
-  origin?: GroupOrigin;
+  groupOrigin?: GroupOrigin;
+  conversationOrigin?: ConversationOrigin;
   messageId?: string;
 };
 

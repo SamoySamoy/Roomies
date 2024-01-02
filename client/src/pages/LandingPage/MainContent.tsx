@@ -1,8 +1,11 @@
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { TypeAnimation } from 'react-type-animation';
 
 const MainContent = () => {
+  const isLogin = Boolean(useAuth().auth.accessToken);
+
   return (
     <div className='max-w-[800px] w-full mx-auto text-center flex flex-col justify-center py-10 mb-10'>
       <h1 className='text-emerald-500 md:text-7xl sm:text-6xl text-4xl font-bold md:py-6'>
@@ -35,7 +38,7 @@ const MainContent = () => {
       </p>
 
       <div className=''>
-        <Link to={'/register'}>
+        <Link to={isLogin ? '/explore' : '/register'}>
           <Button className='w-[200px] rounded-full py-3 bg-emerald-500 transition duration-300 ease-in-out transform hover:scale-110 hover:text-accent-foreground dark:hover:shadow-[0_0_2rem_-0.5rem_#fff8]'>
             <span className='text-black font-bold text-background'>Get Started</span>
           </Button>
