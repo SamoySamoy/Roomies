@@ -919,7 +919,7 @@ const createDirectMessage = async (
     currentMember = conversation.memberOne;
   }
   if (conversation.memberTwo.profileId === origin.profileId) {
-    currentMember = conversation.memberOne;
+    currentMember = conversation.memberTwo;
   }
   if (!currentMember) {
     throw new ValidationError('Can not create message. You are not member of this conversation');
@@ -992,7 +992,7 @@ const uploadDirectMessageFile = async (
     currentMember = conversation.memberOne;
   }
   if (conversation.memberTwo.profileId === origin.profileId) {
-    currentMember = conversation.memberOne;
+    currentMember = conversation.memberTwo;
   }
   if (!currentMember) {
     throw new ValidationError('Can not create message. You are not member of this conversation');

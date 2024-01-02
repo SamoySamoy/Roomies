@@ -1,71 +1,90 @@
-import { useRef, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
-import ChatHeader from '@/components/Chat/ChatHeader';
-import ChatInput from '@/components/Chat/ChatInput';
-import ChatMessages from '@/components/Chat/ChatMessages';
-import { useEffect } from 'react';
-import { GroupOrigin, socket } from '@/lib/socket';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useGroupQuery } from '@/hooks/queries';
+import { useConversationQuery, useRoomQuery } from '@/hooks/queries';
 import { LoadingPage } from '@/components/Loading';
-import { Message } from '@/lib/types';
+import { useToast } from '@/components/ui/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import ChatHeader from '@/components/Conversation/ChatHeader';
+import ChatInput from '@/components/Conversation/ChatInput';
+import ChatMessages from '@/components/Conversation/ChatMessages';
+import { ConversationOrigin } from '@/lib/socket';
 
-const ChannelPage = () => {
+const ConversationPage = () => {
   const { auth } = useAuth();
-  const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
+  const { memberId: otherMemberId, roomId } = useParams<{ memberId: string; roomId: string }>();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const queryObj = {
+    groups: true,
+    members: true,
+    profilesOfMembers: true,
+  } as const;
   const {
-    data: group,
-    isPending,
-    isError,
-  } = useGroupQuery(groupId!, {
-    // messages: true,
-    profile: true,
-  });
+    data: room,
+    isPending: isRoomPending,
+    isFetching: isRoomFetching,
+    isError: isRoomError,
+  } = useRoomQuery(roomId!, queryObj);
+  const currentMember = room?.members.find(member => member.profileId === auth.profileId);
+  const {
+    data: conversation,
+    isPending: isConversationPending,
+    isFetching: isConversationFetching,
+    isError: isConversationError,
+  } = useConversationQuery(
+    {
+      memberOneId: currentMember?.id!,
+      memberTwoId: otherMemberId!,
+      createIfNotExist: true,
+    },
+    {
+      enabled: Boolean(currentMember),
+    },
+  );
 
-  const origin: GroupOrigin = {
-    groupId: groupId!,
-    roomId: roomId!,
+  const origin: ConversationOrigin = {
+    conversationId: conversation?.id!,
     profileId: auth.profileId!,
+    roomId: roomId!,
   };
 
-  if (isPending) {
+  if (isRoomPending || isRoomFetching || isConversationPending || isConversationFetching) {
     return <LoadingPage />;
   }
-  if (isError) {
+  if (isRoomError || !room || isConversationError || !conversation) {
     return <Navigate to={'/error-page'} replace />;
   }
 
+  if (!Boolean(currentMember)) {
+    return <Navigate to={'/not-member'} replace />;
+  }
+
+  if (currentMember?.id === otherMemberId) {
+    return <Navigate to={'/my-rooms'} replace />;
+  }
+
+  const { memberOne, memberTwo } = conversation;
+  const otherMember = memberOne.profileId === auth.profileId ? memberTwo : memberOne;
+
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>
-      <ChatHeader name={group.name} type='group' />
-      {/* <div className='flex-1'>
-        {messages.map((m, i) => (
-          <p key={i}>{m.content}</p>
-        ))}
-        {typing && <p>{typing}</p>}
-        {join && <p>{join}</p>}
-        {leave && <p>{leave}</p>}
-      </div> */}
-      <ChatMessages origin={origin} />
-      {/* <ChatMessages
-        group={group}
-        room={currentRoom!}
-        member={me as any}
-        name={group.name}
-        chatId={group.id}
-        type='group'
-        apiUrl='/api/messages'
-        socketUrl='/api/socket/messages'
-        socketQuery={{
-          groupId: group.id,
-          roomId: group.roomId,
-        }}
-        paramKey='groupId'
-        paramValue={group.id}
-      /> */}
-      <ChatInput name={group.name} type='group' origin={origin} />
+      <ChatHeader
+        imageUrl={otherMember.profile.imageUrl}
+        email={otherMember.profile.email}
+        type='conversation'
+      />
+      <ChatMessages
+        key={conversation.id}
+        name={otherMember.profile.email}
+        type='conversation'
+        conversationOrigin={origin}
+        currentConversation={conversation}
+        currentMember={currentMember!}
+      />
+      <ChatInput name={otherMember.profile.email} type='conversation' conversationOrigin={origin} />
     </div>
   );
 };
 
-export default ChannelPage;
+export default ConversationPage;

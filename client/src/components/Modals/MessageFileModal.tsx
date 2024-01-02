@@ -33,7 +33,7 @@ const MessageFileModal = () => {
     isOpen,
     modalType,
     closeModal,
-    data: { origin },
+    data: { groupOrigin: origin },
   } = useModal();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),

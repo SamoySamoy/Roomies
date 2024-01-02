@@ -211,3 +211,26 @@ export const createMsg = (arg: ReturnMessage) => {
       };
   }
 };
+
+export type ReturnResult<T> =
+  | {
+      type: 'one';
+      item: T;
+    }
+  | {
+      type: 'paging:cursor';
+      items: T;
+      lastCursor: string | number | null | undefined;
+    };
+
+export const createResult = <T>(arg: ReturnResult<T>) => {
+  switch (arg.type) {
+    case 'one':
+      return arg.item;
+    case 'paging:cursor':
+      return {
+        items: arg.items,
+        lastCursor: arg.lastCursor,
+      };
+  }
+};

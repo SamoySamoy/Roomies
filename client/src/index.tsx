@@ -55,7 +55,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     <Route index Component={RoomRedirectPage} />
                     <Route path='groups/:groupId' Component={ChannelPage} />
                     <Route path='audiogroups/:groupId' Component={AudioPage} />
-                    {/* <Route path='conversations/:memberId' Component={ConversationPage} /> */}
+                    <Route path='conversations/:memberId' Component={ConversationPage} />
                   </Route>
                 </Route>
                 <Route path='invite/:inviteCode' Component={InvitePage} />

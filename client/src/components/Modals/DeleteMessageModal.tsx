@@ -16,7 +16,7 @@ const DeleteMessageModal = () => {
     isOpen,
     modalType,
     closeModal,
-    data: { origin, messageId },
+    data: { groupOrigin: origin, messageId },
   } = useModal();
   const [isLoading, setIsLoading] = useState(false);
 
