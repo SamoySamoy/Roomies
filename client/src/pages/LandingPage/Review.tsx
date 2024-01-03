@@ -140,10 +140,10 @@ const Review = () => {
   };
   
   return (
-    <Element name='server' className={`${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'} transform transition ease-in-out duration-1000 `}>
-      <div className='w-full pb-20 px-20'>
-        <div className='md:max-w-[1480px] m-auto max-w-[600px] px-10 py-10 border border-zinc-600 bg-zinc-900 rounded-3xl'>
-          <h2 className="md:leading-[72px] text-3xl font-bold text-center mb-8">User Reviews</h2>
+    <Element name='review' className={`${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-28'} transform transition ease-in-out duration-1000 `}>
+      <div className='w-full py-20 px-20'>
+        <div className='md:max-w-[1480px] m-auto max-w-[600px] px-10 py-20 border border-zinc-600 bg-zinc-900 rounded-3xl'>
+          <h2 className="md:leading-[72px] text-3xl font-bold text-center mb-8 text-emerald-500">User Reviews</h2>
           <div ref={ref}>
             <div className='relative focus:outline-none'>
               <div className="p-10 grid grid-cols-1 gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-3 overflow-hidden">
@@ -164,11 +164,16 @@ const Review = () => {
                 </ul>                 
               </div>
               {visibleReviews < reviews_4.length && (
-                <div className='inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-white pt-32 pb-8 pointer-events-none dark:from-slate-900 absolute'>
+                <div className='inset-x-0 bottom-0 flex justify-center bg-gradient-to-t pt-32 pb-8 pointer-events-none from-slate-900 dark:from-slate-900 absolute border-b border-slate-900 rounded-2xl'>
                   <button 
                     type='button' 
                     onClick={showMoreReviews}
-                    className='relative bg-slate-900 hover:bg-slate-700:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-sm text-white font-semibold h-12 px-6 rounded-lg flex items-center dark:bg-slate-700 dark:hover:bg-slate-600 pointer-events-auto'>
+                    className='relative text-sm font-semibold h-12 px-6 rounded-lg flex items-center pointer-events-auto
+                    text-white bg-slate-700 
+                    dark:bg-slate-700
+                    dark:hover:bg-slate-600 hover:bg-slate-600:outline-none
+                    transition duration-300 ease-in-out transform hover:scale-110
+                    focus:ring-2 focus:ring-slate-400 focus:ring-offset-2'>
                     Show more...
                   </button>
                 </div>
