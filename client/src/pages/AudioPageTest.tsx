@@ -8,68 +8,68 @@ import { VideoProps } from '@/components/ui/video';
 import ChatVideoButton from '@/components/Chat/ChatVideoButton';
 import MicButton from '@/components/MicButton';
 import ShareScreenButton from '@/components/ShareScreenButton';
+import { VideoOff } from 'lucide-react';
 
 /* 
 
-Lưu redis (1 biến): lưu được có bao nhiều thằng đang online ở cái group này
-(profleId, email, imageUrl, cameraOn: true, micOn, screenOn)
+Lưu redis (1 biến): Lưu trạng thái có bao nhiêu người dùng có trong meeting, trạng thái của họ
+
+MeetingState: type: "camera", profleId, email, imageUrl, cameraOn: true, micOn, screenOn
+MeetingState: type: "screen", profleId, email, imageUrl
 
 const fakeRedis = {
-  "groupId": [{
-    type: "camera" profleId, email, imageUrl, cameraOn: true, micOn, screenOn
-    type: "screen" profleId, email, imageUrl, cameraOn: true, micOn, screenOn
-  }]
+  "groupId": {
+    `profileId-type`: {...MeetingState}
+  }
 }
 
 Mới join:
-  Client nhìn thấy UI:
-    - Vào là tắt hết: 
-    - Vẫn nhìn list nguiowf dùng khác
-  useEffect(): chạy coonnect peer hết
-  Cái thằng mới vào lần đầu -> tắt hết
-  Sau đấy sẽ socket lên server trạng thái của nó (client:join) -> sau đấy server cập nhật redis ->
-  emit thằng vừa mới join, redis mới cập nhật
-  Broad cast những thằng trong room
-  Thằng mới join call những thằng không trùng -> Những thằng không trùng nhận call và dò khớp với trong danh sách call in group -> Accpect thành công -> cập nhật video list và render
-
+  Client nhìn thấy (UI):
+    - Mới join là tắt hết cam, mic, share screen: 
+    - Vẫn nhìn list người dùng khác, nhìn được camera mic của người dùng còn lại nếu họ bật
+  useEffect(): chạy ngầm để connect các peer còn lại
+  
+  B1: Người dùng mới join sẽ socket trạng thái lên server (client:meeting:join)
+  B2: Server cập nhật trạng thái redis
+  B3: Emit toàn bộ danh sách trạng thái cho người mới join
+  B4: Emit 1 trạng thái mới (hoặc toàn bộ danh sách trạng thái mới) join cho phần còn lại
+  B5: Người mới join sau khi nhận được toàn bộ trạng thái. Thực hiện call cho phần còn lại
+  B6: Phần còn lại nhận call từ người mới vào -> Accpect thành công -> cập nhật video list và render
+  
 Leave:
-  1 thằng leave -> client:leave -> lên server, server cập nhật danh sách -> broadcast danh sách mới  -> những thằng còn lại so sánh danh sách mới và video prop -> Cái nào thừa thì cắt
+  B1: 1 người dùng leave (client:meeting:leave) sẽ socket trạng thái lên server
+  B2: server cập nhật trạng thái redis
+  B3: Broadcast toàn bộ danh sách mới cho phần còn lại
+  B4: Phần còn lại nhận được danh sách mới, thực hiện so sánh danh sách mới và videoList. Cái nào thừa thì cắt và render
 
-Camera, mic: socket lên server -> server cập nhật danh sách -> broadcast danh sách mới
+Camera, mic:
+  B1: Người dùng bật / tắt camera /mic socket lên server (client:meeting:camera / client:meeting:mic)
+  B2: Server cập nhật danh sách
+  B3: Gửi lại toàn bộ danh sách mới cho toàn group (kể cả người thực hiện hành động)
 
-Share screen: Tạo thằng peer mới -> socket cập nhật redis ->
-  emit thằng vừa mới share, redis mới cập nhật
-  Broad cast những thằng trong room
-  -> Render share screen của mình
-  -> Call tới những thằng trong danh sách không trùng profileId
-  -> Accpect thành công -> Những thằng còn lại nó sẽ khớp type screen và profileId với danh sách vừa cập nhật -> Render
+Turn on share screen:
+  B1: Tạo thằng peer mới
+  B2: socket cập nhật trạng thái redis
+  B3: Gửi lại danh sách mới cho toàn bộ (kể cả người share)
+  B4: Render share screen của mình
+  B5: Call tới phần còn lại trong danh sách
+  B6: Phần còn lại accept thành công. Khớp danh sách vừa cập nhật và (videoProps + call.peer) -> render
 
+Turn off share screen:
+  B1: socket cập nhật redis
+  B2: Gửi lại danh sách mới cho toàn bộ (kể cả người share)
+  B3: Phần còn lại sẽ xóa render (nhưng vẫn còn call)
+  B4: Mình xóa render, Peer.destroy, kill stream
+  B5: Bên phía phần còn lại sẽ nhận được sử kiện call.on("close"). Khớp danh sách vừa cập nhật và (call.peer list) -> render
 
+2 stream:
+  1 stream mic cả video  - luôn duy trì
+  1 stream share màn -> Ngắt được
 
-Những thằng còn lại nhận call (server list mới)
-
-Các thằng còn lại lấy danh sách từ sever
-
-Quyền
-1. Sửa các state ở client
-2. useEffect(): chạy coonnect peer hết
-
-
-Khi 1 thằng sahre camera -> socket server -> socket những thằng còn lại
-Vì ở bên duows connect (ready), video.mute = true
-
-2 steam: 1 stream mic cả video  - luôn duy trì
-        1 stream share màn -> Ngắt được
-
-2 steam: 1 stream mic cả video  - Ngắt được
-        1 stream share màn -> Ngắt được video.stop(); nếu tạo peer mới 
-
-
-share, mic, camera , join , leave -> socket
-
-join -> nhận được danh sách trạng thái
-
-Mới vào gọi trong room
+Có thể sử dụng 3 state là 3 array:
+  - meetingStates: Đây là danh sách trạng thái nhận được từ phía server
+  - peerInCall: Đây là danh sách peer thực sự có kết nối (VD: peerInCall = [{ peerId(profileId): string, stream: MediaStream}])
+  - videoList là khớp giữa meetingStates và peerInCall. meetingState được cập nhật từ server socket nên có thể được cập nhật nhanh hơn. peerInCall là danh sách các peer thực sự đang có kết nối nên cập nhật chậm hơn. Chỉ thực hiện render các peer có trong cả meetingState và  peerInCall. videoList.length = min(peerInCall.length, meetingStates.length)
 
 */
 
@@ -101,8 +101,37 @@ const AudioPage = () => {
   const [micOn, setMicOn] = useState(false);
   const [shareScreenOn, setShareScreenOn] = useState(false);
 
-  const [peopleInMeeting, setPeopleInMeeting] = useState<PeopleInMeeting[]>([]);
+  const [peerOnConnect, setPeerOnConnect] = useState<{ peerId: string; stream: MediaStream }[]>([]);
+  // Bị gọi thì thêm stream của thằng gọi
+  // Thằng gọi được trả lời, thì cũng thêm vào đây
+  const [meetingStates, setMeetingStates] = useState<PeopleInMeeting[]>([]);
+  // State có bao nhiêu thằng trong phòng
+
   const [videoList, setVideoList] = useState<VideoProps[][]>([]);
+
+  // Tìm kiếm xem thằng nào có cả 2
+  // meetingState: type, email, imageUrl
+  // peer: stream
+
+  // Camera - profileId
+  // Share screen - uuid
+
+  /* 
+  
+  "profileId": {
+    "profileId"
+
+  }
+
+  "uuid": {
+    profileId:
+    type: screen
+  }
+  */
+
+  /* 
+  meetn
+  */
 
   /* 
   videoList = [][]
@@ -157,7 +186,7 @@ const AudioPage = () => {
       return track.kind === 'video';
     });
     if (videoTrack) {
-      // videoTrack.stop();
+      // Tắt mic hay tắt video đều dùng videoTrack.enabled = true / false
       videoTrack.enabled = !videoTrack.enabled;
     }
   };
@@ -169,6 +198,8 @@ const AudioPage = () => {
       .getDisplayMedia({
         audio: {
           noiseSuppression: true,
+          echoCancellation: true,
+          sampleRate: 44100,
         },
         video: true,
       })
@@ -213,6 +244,8 @@ const AudioPage = () => {
           console.log(peer);
         });
 
+        // A va B
+
         peer.on('call', function (call) {
           console.log(call.peer + ' is calling');
           call.answer(stream);
@@ -221,6 +254,7 @@ const AudioPage = () => {
             // otherVid.current!.srcObject=callerStream;
           });
           callList.set(call.peer, call);
+          call.on('close', () => {});
         });
 
         socket.on('server:peer:init:success', id => {

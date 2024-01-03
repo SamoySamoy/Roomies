@@ -17,7 +17,7 @@ import {
   uuid,
 } from '@/lib/utils';
 
-type PeopleInMeeting = {
+type MeetingState = {
   profileId: string;
   email: string;
   imageUrl: string;
@@ -32,7 +32,95 @@ type PeopleInMeeting = {
     }
 );
 
-const fakeRedis: Record<string, PeopleInMeeting[]> = {};
+type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
+
+/* 
+fakeRedis = {
+  `groupdId`: {
+    `profileId`: {...MeetingState}
+  }
+}
+*/
+const fakeRedis: Record<string, Record<string, MeetingState>> = {};
+const getMeetingStates = (groupId: string) => {
+  if (!fakeRedis[groupId]) return [];
+  return Array.from(Object.values(fakeRedis[groupId]));
+};
+const createMeetingState = (groupId: string, newState: MeetingState) => {
+  if (!fakeRedis[groupId]) {
+    fakeRedis[groupId] = {};
+  }
+  fakeRedis[groupId][`${newState.profileId}`] = newState;
+};
+const updateMeetingState = (
+  groupId: string,
+  identity: MeetingStateIdentity,
+  toggle: 'camera' | 'mic',
+) => {
+  if (!fakeRedis[groupId] || !fakeRedis[groupId][`${identity.profileId}`]) {
+    return;
+  }
+  const oldState = fakeRedis[groupId][`${identity.profileId}`];
+  if (oldState.type !== 'camera') {
+    return;
+  }
+
+  let newState: MeetingState;
+  switch (toggle) {
+    case 'camera':
+      newState = {
+        ...oldState,
+        cameraOn: !oldState.cameraOn,
+      };
+    case 'mic':
+      newState = {
+        ...oldState,
+        micOn: !oldState.micOn,
+      };
+  }
+  fakeRedis[groupId][`${identity.profileId}`] = newState;
+};
+const deleteMeetingState = (groupId: string, identity: MeetingStateIdentity) => {
+  if (!fakeRedis[groupId] || !fakeRedis[groupId][`${identity.profileId}`]) {
+    return;
+  }
+  delete fakeRedis[groupId][`${identity.profileId}`];
+
+  if (Array.from(Object.keys(fakeRedis[groupId])).length === 0) {
+    delete fakeRedis[groupId];
+  }
+};
+
+export type RoomOrigin = {
+  roomId: string;
+  profileId: string;
+};
+export type GroupOrigin = RoomOrigin & {
+  groupId: string;
+};
+export type ConversationOrigin = RoomOrigin & {
+  conversationId: string;
+};
+
+export type RoomKick = {
+  memberId: string;
+};
+export type RoomRole = {
+  memberId: string;
+  role: MemberRole;
+};
+
+export type MessageIdentity = { email: string };
+export type MessageCreate = { content: string };
+export type MessageUpload = {
+  filename: string;
+  filesize: number;
+  filetype: string;
+  buffer: Buffer | ArrayBuffer | ReadableStream<Uint8Array> | Blob;
+};
+
+export type MessageUpdate = { messageId: string; content: string };
+export type MessageDelete = { messageId: string };
 
 export type ServerToClientEvents = {
   'server:room:join:success': (msg: string) => void;
@@ -74,48 +162,20 @@ export type ServerToClientEvents = {
   'server:conversation:message:delete:success': (messages: DirectMessage) => void;
   'server:conversation:message:delete:error': (msg: string) => void;
 
-  'server:meeting:join:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:join:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:join:error': (msg: string) => void;
-  'server:meeting:leave:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:leave:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:leave:error': (msg: string) => void;
-  'server:meeting:camera:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:camera:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:camera:error': (msg: string) => void;
-  'server:meeting:mic:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:mic:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:mic:error': (msg: string) => void;
-  'server:meeting:screen:success': (meetingState: PeopleInMeeting[]) => void;
-  'server:meeting:screen:error': (msg: string) => void;
+  'server:meeting:screen:on:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:on:error': (msg: string) => void;
+  'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:off:error': (msg: string) => void;
+  'server:meeting:state': (messtingStates: MeetingState[]) => void;
 };
-
-export type RoomOrigin = {
-  roomId: string;
-  profileId: string;
-};
-export type GroupOrigin = RoomOrigin & {
-  groupId: string;
-};
-export type ConversationOrigin = RoomOrigin & {
-  conversationId: string;
-};
-
-export type RoomKick = {
-  memberId: string;
-};
-export type RoomRole = {
-  memberId: string;
-  role: MemberRole;
-};
-
-export type MessageIdentity = { email: string };
-export type MessageCreate = { content: string };
-export type MessageUpload = {
-  filename: string;
-  filesize: number;
-  filetype: string;
-  buffer: Buffer | ArrayBuffer | ReadableStream<Uint8Array> | Blob;
-};
-
-export type MessageUpdate = { messageId: string; content: string };
-export type MessageDelete = { messageId: string };
 
 export type ClientToServerEvents = {
   'client:room:join': (origin: RoomOrigin, arg: MessageIdentity) => void;
@@ -139,11 +199,12 @@ export type ClientToServerEvents = {
   'client:conversation:message:update': (origin: ConversationOrigin, arg: MessageUpdate) => void;
   'client:conversation:message:delete': (origin: ConversationOrigin, arg: MessageDelete) => void;
 
-  'client:meeting:join': (origin: GroupOrigin) => void;
-  'client:meeting:leave': (origin: GroupOrigin) => void;
-  'client:meeting:camera': (origin: GroupOrigin) => void;
-  'client:meeting:mic': (origin: GroupOrigin) => void;
-  'client:meeting:screen': (origin: GroupOrigin) => void;
+  'client:meeting:join': (origin: GroupOrigin, arg: MeetingState) => void;
+  'client:meeting:leave': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:camera': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:mic': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:screen:on': (origin: GroupOrigin, arg: MeetingState) => void;
+  'client:meeting:screen:off': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
 };
 
 export function setupWs(httpServer: HTTPServer) {
@@ -159,8 +220,6 @@ export function setupWs(httpServer: HTTPServer) {
     // On user join room
     socket.on('client:room:join', async (origin, arg) => {
       socket.join(origin.roomId);
-
-      console.log(arg.email, 'join room', origin.roomId);
 
       try {
         // On user join room - to user only
@@ -192,8 +251,6 @@ export function setupWs(httpServer: HTTPServer) {
     // On user leave room
     socket.on('client:room:leave', async (origin, arg) => {
       socket.leave(origin.roomId);
-
-      console.log(arg.email, 'leave room', origin.roomId);
 
       try {
         io.to(origin.roomId).emit(
@@ -536,20 +593,119 @@ export function setupWs(httpServer: HTTPServer) {
       }
     });
 
-    // socket.on('client:peer:init:success', function (origin) {
-    //   console.log(origin.profileId + 'join the audio: ' + origin.groupId);
-    //   try {
-    //     socket.join(origin.groupId);
-    //     socket.broadcast.to(origin.groupId).emit('server:peer:init:success', origin.profileId);
-    //     console.log('broad cast to the room');
-    //   } catch (err: any) {
-    //     console.log(err);
-    //   }
-    //   socket.on('disconnect', function () {
-    //     console.log('user disconnected: ' + origin.profileId);
-    //     socket.broadcast.to(origin.groupId).emit('server:user-disconnected', origin.profileId);
-    //   });
-    // });
+    // On user join meeting
+    socket.on('client:meeting:join', (origin, arg) => {
+      socket.join(origin.groupId);
+
+      try {
+        createMeetingState(origin.groupId, arg);
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        // Gửi danh sách trạng thái về người join
+        socket.emit('server:meeting:join:success', updatedStates);
+        // Broad cast cập nhật trạng thái
+        socket.broadcast.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:join:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:join:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+    // On user leave meeting
+    socket.on('client:meeting:leave', (origin, arg) => {
+      socket.leave(origin.groupId);
+
+      try {
+        deleteMeetingState(origin.groupId, arg);
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        // Broad cast cập nhật trạng thái
+        io.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:leave:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:leave:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+    // On user toggle camera
+    socket.on('client:meeting:camera', (origin, arg) => {
+      try {
+        updateMeetingState(origin.groupId, arg, 'camera');
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        // Cập nhật trạng thái cho tất cả
+        io.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:camera:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:camera:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+    // On user toggle mic
+    socket.on('client:meeting:mic', (origin, arg) => {
+      try {
+        updateMeetingState(origin.groupId, arg, 'mic');
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        // Cập nhật trạng thái cho tất cả
+        io.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:mic:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:mic:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+    // On user turn on share screen
+    socket.on('client:meeting:screen:on', (origin, arg) => {
+      socket.join(origin.groupId);
+
+      try {
+        createMeetingState(origin.groupId, arg);
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        // Gửi danh sách trạng thái về người join
+        socket.emit('server:meeting:screen:on:success', updatedStates);
+        // Broad cast cập nhật trạng thái
+        socket.broadcast.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:screen:on:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:screen:on:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
+    // On user turn off share screen
+    socket.on('client:meeting:screen:off', (origin, arg) => {
+      try {
+        deleteMeetingState(origin.groupId, arg);
+
+        const updatedStates = getMeetingStates(origin.groupId);
+        socket.emit('server:meeting:screen:off:success', updatedStates);
+        // Broad cast cập nhật trạng thái
+        socket.broadcast.to(origin.groupId).emit('server:meeting:state', updatedStates);
+      } catch (error: any) {
+        console.log(error);
+        if (error instanceof ValidationError) {
+          socket.emit('server:meeting:screen:off:error', `${error.message}`);
+        } else {
+          socket.emit('server:meeting:screen:off:error', `Unexpected error. Something went wrong`);
+        }
+      }
+    });
   });
 
   // Handle errors on the socket IO instance
