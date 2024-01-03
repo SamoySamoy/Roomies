@@ -4,7 +4,7 @@ import { Facebook, Linkedin, Instagram, Twitch, Github } from 'lucide-react';
 const Footer = () => {
   return (
     <div className='w-full py-20 px-20'>
-      <div className='md:max-w-[1480px] m-auto grid md:grid-cols-5 max-[780px]:grid-cols-2 gap-8 max-w-[600px] py-10 md:px-0 border-y-2'>
+      <div className='md:max-w-[1480px] m-auto grid md:grid-cols-5 max-[780px]:grid-cols-2 gap-8 max-w-[600px] py-10 md:px-0 border-y-2 border-zinc-800'>
         <div className='col-span-2'>
           <div className='text-4xl font-bold text-foreground'>
             <Link to={'/'}>

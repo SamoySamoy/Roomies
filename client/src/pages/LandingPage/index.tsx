@@ -78,7 +78,7 @@ const LandingPage = () => {
           </ScrollLink>
 
           <ScrollLink
-            to='footer'
+            to='review'
             smooth={true}
             className={`text-white transition duration-300 ease-in-out transform hover:scale-110 cursor-pointer ${
               isTop
