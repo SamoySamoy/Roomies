@@ -17,6 +17,23 @@ import {
   uuid,
 } from '@/lib/utils';
 
+type PeopleInMeeting = {
+  profileId: string;
+  email: string;
+  imageUrl: string;
+} & (
+  | {
+      type: 'camera';
+      cameraOn: boolean;
+      micOn: boolean;
+    }
+  | {
+      type: 'screen';
+    }
+);
+
+const fakeRedis: Record<string, PeopleInMeeting[]> = {};
+
 export type ServerToClientEvents = {
   'server:room:join:success': (msg: string) => void;
   'server:room:join:error': (msg: string) => void;
@@ -57,8 +74,16 @@ export type ServerToClientEvents = {
   'server:conversation:message:delete:success': (messages: DirectMessage) => void;
   'server:conversation:message:delete:error': (msg: string) => void;
 
-  'server:peer:init:success': (id: string) => void;
-  'server:user-disconnected': (id: string) => void;
+  'server:meeting:join:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:join:error': (msg: string) => void;
+  'server:meeting:leave:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:leave:error': (msg: string) => void;
+  'server:meeting:camera:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:camera:error': (msg: string) => void;
+  'server:meeting:mic:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:mic:error': (msg: string) => void;
+  'server:meeting:screen:success': (meetingState: PeopleInMeeting[]) => void;
+  'server:meeting:screen:error': (msg: string) => void;
 };
 
 export type RoomOrigin = {
@@ -114,7 +139,11 @@ export type ClientToServerEvents = {
   'client:conversation:message:update': (origin: ConversationOrigin, arg: MessageUpdate) => void;
   'client:conversation:message:delete': (origin: ConversationOrigin, arg: MessageDelete) => void;
 
-  'client:peer:init:success': (origin: GroupOrigin) => void;
+  'client:meeting:join': (origin: GroupOrigin) => void;
+  'client:meeting:leave': (origin: GroupOrigin) => void;
+  'client:meeting:camera': (origin: GroupOrigin) => void;
+  'client:meeting:mic': (origin: GroupOrigin) => void;
+  'client:meeting:screen': (origin: GroupOrigin) => void;
 };
 
 export function setupWs(httpServer: HTTPServer) {
@@ -507,20 +536,20 @@ export function setupWs(httpServer: HTTPServer) {
       }
     });
 
-    socket.on('client:peer:init:success', function (origin) {
-      console.log(origin.profileId + 'join the audio: ' + origin.groupId);
-      try {
-        socket.join(origin.groupId);
-        socket.broadcast.to(origin.groupId).emit('server:peer:init:success', origin.profileId);
-        console.log('broad cast to the room');
-      } catch (err: any) {
-        console.log(err);
-      }
-      socket.on('disconnect', function () {
-        console.log('user disconnected: ' + origin.profileId);
-        socket.broadcast.to(origin.groupId).emit('server:user-disconnected', origin.profileId);
-      });
-    });
+    // socket.on('client:peer:init:success', function (origin) {
+    //   console.log(origin.profileId + 'join the audio: ' + origin.groupId);
+    //   try {
+    //     socket.join(origin.groupId);
+    //     socket.broadcast.to(origin.groupId).emit('server:peer:init:success', origin.profileId);
+    //     console.log('broad cast to the room');
+    //   } catch (err: any) {
+    //     console.log(err);
+    //   }
+    //   socket.on('disconnect', function () {
+    //     console.log('user disconnected: ' + origin.profileId);
+    //     socket.broadcast.to(origin.groupId).emit('server:user-disconnected', origin.profileId);
+    //   });
+    // });
   });
 
   // Handle errors on the socket IO instance

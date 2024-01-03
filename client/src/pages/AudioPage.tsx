@@ -140,9 +140,7 @@ const AudioPage = () => {
     const videoTrack = localStream?.getTracks().find(track => track.kind === 'video');
     if (videoTrack) videoTrack.enabled = !videoTrack.enabled;
   }
-  function clickMic() {
-
-  }
+  function clickMic() {}
   function shareScreen() {
     navigator.mediaDevices
       .getDisplayMedia({
@@ -156,7 +154,6 @@ const AudioPage = () => {
   }
   return (
     <div className='grid-cols-3 auto-rows-auto bg-slate-500 h-lvh min-w-fit'>
-      
       {/* <Button className='bg-lime-600 mx-1'>
         Camera is {camera}
       </Button>
@@ -170,13 +167,13 @@ const AudioPage = () => {
               key={video.peerId}
               mute={video.mute}
               stream={video.stream}
-              peerId={video.peerId}
+              profileId={video.peerId}
             />
           );
         })}
       </div>
       <span>{videoList.length}</span>
-      <div className="flex items-center justify-center space-x-4">
+      <div className='flex items-center justify-center space-x-4'>
         <span onClick={clickCamera} className='inline-block'>
           <ChatVideoButton />
         </span>
@@ -188,7 +185,7 @@ const AudioPage = () => {
         </span>
       </div>
     </div>
-  ); 
+  );
 };
 
 export default AudioPage;

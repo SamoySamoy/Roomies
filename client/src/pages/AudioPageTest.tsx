@@ -21,11 +21,39 @@ const fakeRedis = {
   }]
 }
 
-Client nhìn thấy UI:
-  - Vào là tắt hết: 
-  - Vẫn nhìn list nguiowf dùng khác
+Mới join:
+  Client nhìn thấy UI:
+    - Vào là tắt hết: 
+    - Vẫn nhìn list nguiowf dùng khác
+  useEffect(): chạy coonnect peer hết
+  Cái thằng mới vào lần đầu -> tắt hết
+  Sau đấy sẽ socket lên server trạng thái của nó (client:join) -> sau đấy server cập nhật redis ->
+  emit thằng vừa mới join, redis mới cập nhật
+  Broad cast những thằng trong room
+  Thằng mới join call những thằng không trùng -> Những thằng không trùng nhận call và dò khớp với trong danh sách call in group -> Accpect thành công -> cập nhật video list và render
 
-useEffect(): chạy coonnect peer hết
+Leave:
+  1 thằng leave -> client:leave -> lên server, server cập nhật danh sách -> broadcast danh sách mới  -> những thằng còn lại so sánh danh sách mới và video prop -> Cái nào thừa thì cắt
+
+Camera, mic: socket lên server -> server cập nhật danh sách -> broadcast danh sách mới
+
+Share screen: Tạo thằng peer mới -> socket cập nhật redis ->
+  emit thằng vừa mới share, redis mới cập nhật
+  Broad cast những thằng trong room
+  -> Render share screen của mình
+  -> Call tới những thằng trong danh sách không trùng profileId
+  -> Accpect thành công -> Những thằng còn lại nó sẽ khớp type screen và profileId với danh sách vừa cập nhật -> Render
+
+
+
+Những thằng còn lại nhận call (server list mới)
+
+Các thằng còn lại lấy danh sách từ sever
+
+Quyền
+1. Sửa các state ở client
+2. useEffect(): chạy coonnect peer hết
+
 
 Khi 1 thằng sahre camera -> socket server -> socket những thằng còn lại
 Vì ở bên duows connect (ready), video.mute = true
@@ -45,6 +73,21 @@ Mới vào gọi trong room
 
 */
 
+type PeopleInMeeting = {
+  profileId: string;
+  email: string;
+  imageUrl: string;
+} & (
+  | {
+      type: 'camera';
+      cameraOn: boolean;
+      micOn: boolean;
+    }
+  | {
+      type: 'screen';
+    }
+);
+
 const AudioPage = () => {
   const { auth } = useAuth();
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
@@ -58,9 +101,8 @@ const AudioPage = () => {
   const [micOn, setMicOn] = useState(false);
   const [shareScreenOn, setShareScreenOn] = useState(false);
 
-  const [peopleInGroup] = useState('Danh sachs trn server');
-
-  const [videoList, setVideoList] = useState<VideoProps[]>([]);
+  const [peopleInMeeting, setPeopleInMeeting] = useState<PeopleInMeeting[]>([]);
+  const [videoList, setVideoList] = useState<VideoProps[][]>([]);
 
   /* 
   videoList = [][]
@@ -244,7 +286,7 @@ const AudioPage = () => {
               key={video.peerId}
               mute={video.mute}
               stream={video.stream}
-              peerId={video.peerId}
+              profileId={video.peerId}
             />
           );
         })}

@@ -1,12 +1,16 @@
 import { useRef, useState, useEffect } from 'react';
 import { MicOff, Mic } from 'lucide-react';
-export interface VideoProps {
-  stream: MediaStream;
-  peerId: string;
-  mute: boolean;
-}
 
-const Video = ({ stream, peerId, mute }: VideoProps) => {
+type VideoProps = {
+  stream: MediaStream;
+  profileId: string;
+  imageUrl: string;
+  email: string;
+  mic: boolean;
+  camera: boolean;
+};
+
+const Video = ({ stream, profileId, mute }: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -26,7 +30,7 @@ const Video = ({ stream, peerId, mute }: VideoProps) => {
     <div className='flex-1 basis-1/4'>
       <div className='relative'>
         {mic}
-        <span className='absolute bottom-1 left-10 text-base'>{peerId}</span>
+        <span className='absolute bottom-1 left-10 text-base'>{profileId}</span>
         <video
           className='w-full h-full rounded-md'
           ref={videoRef}
