@@ -8,6 +8,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { fa, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/ui/video';
 import { CallTracker } from 'assert';
+import ActionTooltip from '@/components/ActionToolTip';
+import ChatVideoButton from '@/components/Chat/ChatVideoButton';
+import MicButton from '@/components/MicButton';
+import ShareScreenButton from '@/components/ShareScreenButton';
 
 const AudioPage = () => {
   const [videoList, setVideoList] = useState<VideoProps[]>([]);
@@ -136,6 +140,9 @@ const AudioPage = () => {
     const videoTrack = localStream?.getTracks().find(track => track.kind === 'video');
     if (videoTrack) videoTrack.enabled = !videoTrack.enabled;
   }
+  function clickMic() {
+
+  }
   function shareScreen() {
     navigator.mediaDevices
       .getDisplayMedia({
@@ -149,12 +156,13 @@ const AudioPage = () => {
   }
   return (
     <div className='grid-cols-3 auto-rows-auto bg-slate-500 h-lvh min-w-fit'>
-      <Button className='bg-lime-600 mx-1' onClick={clickCamera}>
+      
+      {/* <Button className='bg-lime-600 mx-1'>
         Camera is {camera}
       </Button>
       <Button className='bg-lime-600' onClick={shareScreen} disabled={!canShareScreen}>
         Share Screen
-      </Button>
+      </Button> */}
       <div className='flex flex-row flex-wrap gap-1 m-1'>
         {videoList.map(function (video) {
           return (
@@ -168,8 +176,19 @@ const AudioPage = () => {
         })}
       </div>
       <span>{videoList.length}</span>
+      <div className="flex items-center justify-center space-x-4">
+        <span onClick={clickCamera} className='inline-block'>
+          <ChatVideoButton />
+        </span>
+        <span onClick={clickMic} className='inline-block'>
+          <MicButton />
+        </span>
+        <span onClick={shareScreen} className='inline-block'>
+          <ShareScreenButton />
+        </span>
+      </div>
     </div>
-  );
+  ); 
 };
 
 export default AudioPage;
