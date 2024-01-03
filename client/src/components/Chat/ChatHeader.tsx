@@ -3,7 +3,7 @@ import { Hash } from 'lucide-react';
 import MobileToggle from '@/components/MobileToggle';
 import MemberAvatar from '@/components/MemberAvatar';
 import SocketIndicator from '@/components/SocketIndicator';
-import ChatVideoButton from './ChatVideoButton';
+import VideoButton from '../CameraButton';
 import { getFileUrl } from '@/lib/utils';
 
 interface ChatHeaderProps {
@@ -26,7 +26,7 @@ const ChatHeader = ({ name, type, imageUrl }: ChatHeaderProps) => {
       )}
       <p className='font-semibold text-md text-black dark:text-white'>{name}</p>
       <div className='ml-auto flex items-center'>
-        {type === 'conversation' && <ChatVideoButton />}
+        {/* {type === 'conversation' && <ChatVideoButton />} */}
         <SocketIndicator />
       </div>
     </div>

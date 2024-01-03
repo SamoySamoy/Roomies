@@ -31,7 +31,7 @@ const LeaveRoomModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Leave room ok',
+            title: 'Leave room successfully',
             variant: 'success',
           });
           closeModal();

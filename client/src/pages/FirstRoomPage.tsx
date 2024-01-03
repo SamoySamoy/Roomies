@@ -67,14 +67,14 @@ const FirstRoomPage = () => {
     mutation.mutate(formData, {
       onSuccess: () => {
         toast({
-          title: 'Create room OK',
+          title: 'Create room successfully',
           variant: 'success',
         });
         navigate('/my-rooms');
       },
       onError: () => {
         toast({
-          title: 'Create room Failed',
+          title: 'Create room failed',
           variant: 'error',
         });
       },

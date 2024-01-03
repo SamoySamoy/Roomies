@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import Video from '@/components/ui/video';
+import Video from '@/components/VideoCard';
 import { Button } from '@/components/ui/button';
 import Peer, { MediaConnection } from 'peerjs';
 import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
 import { fa, vi } from '@faker-js/faker';
-import { VideoProps } from '@/components/ui/video';
+import { VideoProps } from '@/components/VideoCard';
 import { CallTracker } from 'assert';
 import ActionTooltip from '@/components/ActionToolTip';
-import ChatVideoButton from '@/components/Chat/ChatVideoButton';
+// import ChatVideoButton from '@/components/ChatVideoButton';
 import MicButton from '@/components/MicButton';
 import ShareScreenButton from '@/components/ShareScreenButton';
 

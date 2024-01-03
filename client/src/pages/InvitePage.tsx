@@ -30,7 +30,7 @@ const InvitePage = () => {
 
           setNextLocation(`/rooms/${data.id}`);
           toast({
-            title: 'Join room by invite code ok',
+            title: 'Join room by invite code successfully',
             variant: 'success',
           });
         },

@@ -28,7 +28,7 @@ const LoginPage = () => {
       onSuccess: data => {
         setAuth(data.accessToken);
         toast({
-          title: 'Login ok',
+          title: 'Login successfully',
           variant: 'success',
         });
       },

@@ -26,7 +26,7 @@ const ChatHeader = ({ email, type, imageUrl }: ChatHeaderProps) => {
       )}
       <p className='font-semibold text-md text-black dark:text-white'>{email}</p>
       <div className='ml-auto flex items-center'>
-        {type === 'conversation' && <ChatVideoButton />}
+        {/* {type === 'conversation' && <ChatVideoButton />} */}
         <SocketIndicator />
       </div>
     </div>

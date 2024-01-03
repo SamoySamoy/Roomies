@@ -50,14 +50,14 @@ const CreateGroupModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Create group OK',
+            title: 'Create group successfully',
             variant: 'success',
           });
           closeModal();
         },
         onError: () => {
           toast({
-            title: 'Create group Failed',
+            title: 'Create group failed',
             variant: 'error',
           });
         },

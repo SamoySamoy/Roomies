@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useResetMutation } from '@/hooks/mutations';
 import { ResetSchema, useResetForm } from '@/hooks/forms';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const ResetPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -130,7 +130,19 @@ const ResetPage = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 px-6 py-4 flex sm:items-center sm:justify-between'>
+              <div className='flex items-center justify-between sm:justify-start'>
+                <Link to={'/'}>
+                  <Button type='button' variant='link'>
+                    To landing page
+                  </Button>
+                </Link>
+                <Link to={'/login'}>
+                  <Button type='button' variant='link'>
+                    To login page
+                  </Button>
+                </Link>
+              </div>
               <Button type='submit' variant='primary' disabled={isLoading}>
                 Submit
               </Button>

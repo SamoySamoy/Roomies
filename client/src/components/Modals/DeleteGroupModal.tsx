@@ -29,7 +29,7 @@ const DeleteGroupModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Delete group ok',
+            title: 'Delete group successfully',
             variant: 'success',
           });
           closeModal();

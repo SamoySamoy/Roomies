@@ -42,7 +42,7 @@ const JoinPublicRoomModal = () => {
           }
 
           toast({
-            title: 'Join public room ok',
+            title: 'Join public room successfully',
             variant: 'success',
           });
           closeModal();

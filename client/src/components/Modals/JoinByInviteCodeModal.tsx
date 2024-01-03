@@ -52,7 +52,7 @@ const JoinByInviteCodeModal = () => {
         }
 
         toast({
-          title: 'Join room by invite code ok',
+          title: 'Join room by invite code successfully',
           variant: 'success',
         });
         closeModal();

@@ -26,7 +26,7 @@ const RegisterPage = () => {
     mutation.mutate(values, {
       onSuccess: () => {
         toast({
-          title: 'Register ok',
+          title: 'Register successfully',
           variant: 'success',
         });
         navigate('/login');

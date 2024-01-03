@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Peer, { MediaConnection } from 'peerjs';
-import Video from '@/components/ui/video';
+import Video from '@/components/VideoCard';
 import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
-import { VideoProps } from '@/components/ui/video';
-import ChatVideoButton from '@/components/Chat/ChatVideoButton';
+import { VideoProps } from '@/components/VideoCard';
+import ChatVideoButton from '@/components/ChatVideoButton';
 import MicButton from '@/components/MicButton';
 import ShareScreenButton from '@/components/ShareScreenButton';
 import { VideoOff } from 'lucide-react';

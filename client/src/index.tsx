@@ -19,6 +19,7 @@ import {
   ResetPage,
   InvitePage,
   NotMemberPage,
+  MeetingPageUI,
 } from '@/pages';
 import {
   LandingLayout,
@@ -55,7 +56,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   <Route path=':roomId' Component={RoomLayout}>
                     <Route index Component={RoomRedirectPage} />
                     <Route path='groups/:groupId' Component={ChannelPage} />
-                    {/* <Route path='audiogroups/:groupId' Component={AudioPageTest} /> */}
+                    <Route path='audiogroups/:groupId' Component={MeetingPageUI} />
                     <Route path='conversations/:memberId' Component={ConversationPage} />
                   </Route>
                 </Route>

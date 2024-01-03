@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useForgotMutation } from '@/hooks/mutations';
 import { ForgotSchema, useForgotForm } from '@/hooks/forms';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ForgotPage = () => {
   const { toast } = useToast();
@@ -37,7 +37,7 @@ const ForgotPage = () => {
     mutation.mutate(values, {
       onSuccess: () => {
         toast({
-          title: 'An reset password mail already sent to your email address room OK',
+          title: 'An reset password mail already sent to your email address room successfully',
           variant: 'success',
         });
         navigate('/my-rooms');
@@ -95,9 +95,21 @@ const ForgotPage = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 px-6 py-4 flex sm:items-center sm:justify-between'>
+              <div className='flex items-center justify-between sm:justify-start'>
+                <Link to={'/'}>
+                  <Button type='button' variant='link'>
+                    To landing page
+                  </Button>
+                </Link>
+                <Link to={'/login'}>
+                  <Button type='button' variant='link'>
+                    To login page
+                  </Button>
+                </Link>
+              </div>
               <Button type='submit' variant='primary' disabled={isLoading}>
-                Send
+                Submit
               </Button>
             </DialogFooter>
           </form>

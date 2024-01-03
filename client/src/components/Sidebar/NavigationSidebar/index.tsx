@@ -5,6 +5,7 @@ import { Room } from '@/lib/types';
 import {
   CreateRoomButton,
   ExploreButton,
+  HomeButton,
   InviteButton,
   LogoutButton,
   ProfileButton,
@@ -18,6 +19,7 @@ type Props = {
 const NavigationSidebar = ({ rooms }: Props) => {
   return (
     <div className='flex h-full w-full flex-col items-center space-y-4 bg-[#E3E5E8] py-3 text-primary dark:bg-[#1E1F22]'>
+      <HomeButton />
       <ExploreButton />
       <CreateRoomButton />
       <InviteButton />

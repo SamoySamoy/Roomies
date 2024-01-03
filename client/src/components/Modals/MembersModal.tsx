@@ -96,13 +96,13 @@ const MembersModal = () => {
     const onKickSuccess: ServerToClientEvents['server:room:kick:success'] = () => {
       reloadData();
       toast({
-        title: 'Kick member OK',
+        title: 'Kick member successfully',
         variant: 'success',
       });
     };
     const onKickError: ServerToClientEvents['server:room:kick:error'] = msg => {
       toast({
-        title: 'Kick member Failed',
+        title: 'Kick member failed',
         description: msg,
         variant: 'error',
       });
@@ -111,13 +111,13 @@ const MembersModal = () => {
     const onChangeRoleSuccess: ServerToClientEvents['server:room:role:success'] = () => {
       reloadData();
       toast({
-        title: 'Change role OK',
+        title: 'Change role successfully',
         variant: 'success',
       });
     };
     const onChangeRoleError: ServerToClientEvents['server:room:role:error'] = msg => {
       toast({
-        title: 'Change role Failed',
+        title: 'Change role failed',
         description: msg,
         variant: 'error',
       });

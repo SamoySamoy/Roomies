@@ -61,7 +61,7 @@ const JoinPrivateRoomModal = () => {
         }
 
         toast({
-          title: 'Join private room ok',
+          title: 'Join private room successfully',
           variant: 'success',
         });
         closeModal();

@@ -51,7 +51,7 @@ const EditGroupModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Edit group ok',
+            title: 'Edit group successfully',
             variant: 'success',
           });
           handleClose();

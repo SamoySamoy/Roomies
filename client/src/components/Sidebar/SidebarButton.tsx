@@ -1,14 +1,32 @@
-import { Plus, Compass, LogOut, Mail, Users } from 'lucide-react';
+import { Plus, Compass, LogOut, Home, Users, LinkIcon } from 'lucide-react';
 import ActionTooltip from '@/components/ActionToolTip';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
-import { useState } from 'react';
 import { useModal } from '@/hooks/useModal';
-import ProfileModal from '@/components/Modals/ProfileModalOld';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getFileUrl } from '@/lib/utils';
+
+export const HomeButton = () => {
+  return (
+    <div>
+      <ActionTooltip
+        side='right'
+        align='center'
+        label={<p className='text-sm font-bold'>To Landing page</p>}
+      >
+        <Link to={'/'}>
+          <button className='group flex items-center'>
+            <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
+              <Home className='text-emerald-500 transition group-hover:text-white' size={25} />
+            </div>
+          </button>
+        </Link>
+      </ActionTooltip>
+    </div>
+  );
+};
 
 export const MyRoomsButton = () => {
   return (
@@ -20,8 +38,8 @@ export const MyRoomsButton = () => {
       >
         <Link to={'/my-rooms'}>
           <button className='group flex items-center'>
-            <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
-              <Users className='text-emerald-500 transition group-hover:text-white' size={25} />
+            <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-blue-500 dark:bg-neutral-700'>
+              <Users className='text-blue-500 transition group-hover:text-white' size={25} />
             </div>
           </button>
         </Link>
@@ -68,8 +86,8 @@ export const CreateRoomButton = () => {
           }
           className='group flex items-center'
         >
-          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
-            <Plus className='text-emerald-500 transition group-hover:text-white' size={25} />
+          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-lime-600 dark:bg-neutral-700'>
+            <Plus className='text-lime-600 transition group-hover:text-white' size={25} />
           </div>
         </button>
       </ActionTooltip>
@@ -96,7 +114,7 @@ export const InviteButton = () => {
           className='group flex items-center'
         >
           <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-amber-500 dark:bg-neutral-700'>
-            <Mail className='text-amber-500 transition group-hover:text-white' size={25} />
+            <LinkIcon className='text-amber-500 transition group-hover:text-white' size={25} />
           </div>
         </button>
       </ActionTooltip>
@@ -112,7 +130,7 @@ export const LogoutButton = () => {
     mutation.mutate(undefined, {
       onSuccess: () => {
         toast({
-          title: 'Logout ok',
+          title: 'Logout successfully',
           variant: 'success',
         });
         navigate('/');
