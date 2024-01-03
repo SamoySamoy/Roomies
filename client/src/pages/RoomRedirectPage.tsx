@@ -15,7 +15,7 @@ const RoomRedirectPage = () => {
     profilesOfMembers: true,
   });
 
-  console.log('In room redirect page');
+  // console.log('In room redirect page');
 
   if (isPending || isFetching) {
     return <LoadingPage />;

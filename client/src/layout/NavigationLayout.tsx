@@ -19,7 +19,7 @@ const NavigationLayout = () => {
     },
   );
 
-  console.log('In navigation layout');
+  // console.log('In navigation layout');
 
   if (isPending || isFetching) {
     return <LoadingPage />;

@@ -74,7 +74,7 @@ const ChannelPage = () => {
     };
 
     const onChangeRole: ServerToClientEvents['server:room:role:success'] = content => {
-      console.log('Role Change');
+      // console.log('Role Change');
 
       // Nếu người được cập nhật nằm trong danh sách, và có cùng profileId với auth.profileId => người được cập nhật là mình
       if (
@@ -90,11 +90,11 @@ const ChannelPage = () => {
       queryClient.setQueryData(
         queryKeyFactory.room(roomId!, queryValues),
         (oldData: Room | undefined) => {
-          console.log('In query client');
+          // console.log('In query client');
 
           if (!oldData) return oldData;
 
-          console.log('Have data');
+          // console.log('Have data');
 
           const newMemberData = oldData.members.map(member => {
             if (member.id === content.memberId) {
@@ -103,7 +103,7 @@ const ChannelPage = () => {
             return member;
           });
 
-          console.log(newMemberData);
+          // console.log(newMemberData);
 
           return {
             ...oldData,

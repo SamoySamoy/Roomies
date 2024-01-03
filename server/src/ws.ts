@@ -167,7 +167,10 @@ export function setupWs(httpServer: HTTPServer) {
       console.log(arg.email, 'leave room', origin.roomId);
 
       try {
-        io.to(origin.roomId).emit('server:room:leave:success', `${arg.email} ${origin.profileId} just leave room`);
+        io.to(origin.roomId).emit(
+          'server:room:leave:success',
+          `${arg.email} ${origin.profileId} just leave room`,
+        );
       } catch (error: any) {
         console.log(error);
         if (error instanceof ValidationError) {

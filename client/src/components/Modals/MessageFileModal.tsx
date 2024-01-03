@@ -33,7 +33,7 @@ const MessageFileModal = () => {
     isOpen,
     modalType,
     closeModal,
-    data: { groupOrigin: origin },
+    data: { groupOrigin, conversationOrigin },
   } = useModal();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -49,7 +49,7 @@ const MessageFileModal = () => {
   };
 
   const onSubmit = async (_: FormSchema) => {
-    console.log(uploadedFile);
+    // console.log(uploadedFile);
     if (!uploadedFile || uploadedFile?.type === 'online') return;
 
     if (uploadedFile.file.size > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
@@ -60,12 +60,24 @@ const MessageFileModal = () => {
       });
     }
 
-    socket.emit('client:group:message:upload', origin!, {
-      filename: uploadedFile.file.name,
-      filesize: uploadedFile.file.size,
-      filetype: uploadedFile.file.type,
-      buffer: uploadedFile.file.slice(),
-    });
+    // console.log('Group origin', groupOrigin);
+    // console.log('Conversation origin', conversationOrigin);
+
+    if (groupOrigin) {
+      socket.emit('client:group:message:upload', groupOrigin!, {
+        filename: uploadedFile.file.name,
+        filesize: uploadedFile.file.size,
+        filetype: uploadedFile.file.type,
+        buffer: uploadedFile.file.slice(),
+      });
+    } else {
+      socket.emit('client:conversation:message:upload', conversationOrigin!, {
+        filename: uploadedFile.file.name,
+        filesize: uploadedFile.file.size,
+        filetype: uploadedFile.file.type,
+        buffer: uploadedFile.file.slice(),
+      });
+    }
 
     clearForm();
     closeModal();

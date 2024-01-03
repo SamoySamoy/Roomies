@@ -45,9 +45,6 @@ const ChatItem = ({ directMessage, currentMember, conversationOrigin }: ChatItem
   const canEditMessage = !directMessage.deleted && isMessageOwner && !isFile;
   const canDeleteMessage = !directMessage.deleted && isMessageOwner;
 
-  console.log(currentMember);
-  console.log(directMessage.member);
-
   const onMemberClick = () => {
     if (currentMember.id !== directMessage.memberId) {
     }
