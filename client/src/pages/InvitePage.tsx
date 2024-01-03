@@ -22,7 +22,7 @@ const InvitePage = () => {
         onSuccess: data => {
           if (typeof data === 'boolean') {
             toast({
-              title: 'You have already joined this room',
+              description: 'You have already joined this room',
               variant: 'warning',
             });
             return;
@@ -30,13 +30,13 @@ const InvitePage = () => {
 
           setNextLocation(`/rooms/${data.id}`);
           toast({
-            title: 'Join room by invite code successfully',
+            description: 'Join room by invite code successfully',
             variant: 'success',
           });
         },
         onError: () => {
           toast({
-            title: 'Join room by invite code failed',
+            description: 'Join room by invite code failed',
             variant: 'error',
           });
         },

@@ -30,7 +30,7 @@ const DeleteRoomModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Delete room successfully',
+            description: 'Delete room successfully',
             variant: 'success',
           });
           closeModal();
@@ -38,7 +38,7 @@ const DeleteRoomModal = () => {
         },
         onError: () => {
           toast({
-            title: 'Delete room failed',
+            description: 'Delete room failed',
             variant: 'error',
           });
         },

@@ -47,14 +47,14 @@ const ResetPage = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Reset password success',
+            description: 'Reset password success',
             variant: 'success',
           });
           navigate('/login');
         },
         onError: () => {
           toast({
-            title: 'Reset password failed',
+            description: 'Reset password failed',
             variant: 'error',
           });
         },

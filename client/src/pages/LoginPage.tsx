@@ -28,13 +28,13 @@ const LoginPage = () => {
       onSuccess: data => {
         setAuth(data.accessToken);
         toast({
-          title: 'Login successfully',
+          description: 'Login successfully',
           variant: 'success',
         });
       },
       onError: () => {
         toast({
-          title: 'Login failed',
+          description: 'Login failed',
           variant: 'error',
         });
       },

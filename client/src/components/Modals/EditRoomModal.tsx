@@ -95,13 +95,13 @@ const EditRoomModal = () => {
       {
         onSuccess: () => {
           toast({
-            title: 'Create room successfully',
+            description: 'Create room successfully',
             variant: 'success',
           });
         },
         onError: () => {
           toast({
-            title: 'Create room failed',
+            description: 'Create room failed',
             variant: 'error',
           });
         },

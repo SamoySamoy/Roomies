@@ -130,14 +130,14 @@ export const LogoutButton = () => {
     mutation.mutate(undefined, {
       onSuccess: () => {
         toast({
-          title: 'Logout successfully',
+          description: 'Logout successfully',
           variant: 'success',
         });
         navigate('/');
       },
       onError: () => {
         toast({
-          title: 'Logout failed',
+          description: 'Logout failed',
           variant: 'error',
         });
       },

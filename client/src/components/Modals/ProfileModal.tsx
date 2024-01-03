@@ -77,14 +77,14 @@ const ProfileModal = () => {
     passwordMutation.mutate(values, {
       onSuccess: () => {
         toast({
-          title: 'Change password successfully',
+          description: 'Change password successfully',
           variant: 'success',
         });
         setIsChangingPassword(false);
       },
       onError: () => {
         toast({
-          title: 'Change password failed',
+          description: 'Change password failed',
           variant: 'error',
         });
       },
@@ -99,13 +99,13 @@ const ProfileModal = () => {
       deleteImageMutation.mutate(undefined, {
         onSuccess: () => {
           toast({
-            title: 'Delete profile image successfully',
+            description: 'Delete profile image successfully',
             variant: 'success',
           });
         },
         onError: () => {
           toast({
-            title: 'Delete profile image failed',
+            description: 'Delete profile image failed',
             variant: 'error',
           });
         },
@@ -122,13 +122,13 @@ const ProfileModal = () => {
     imageMutation.mutate(formData, {
       onSuccess: () => {
         toast({
-          title: 'Change profile image successfully',
+          description: 'Change profile image successfully',
           variant: 'success',
         });
       },
       onError: () => {
         toast({
-          title: 'Change profile image failed',
+          description: 'Change profile image failed',
           variant: 'error',
         });
       },

@@ -62,14 +62,14 @@ const CreateRoomModal = () => {
     mutation.mutate(formData, {
       onSuccess: () => {
         toast({
-          title: 'Create room successfully',
+          description: 'Create room successfully',
           variant: 'success',
         });
         closeModal();
       },
       onError: () => {
         toast({
-          title: 'Create room failed',
+          description: 'Create room failed',
           variant: 'error',
         });
       },
@@ -89,7 +89,7 @@ const CreateRoomModal = () => {
     >
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
-          <DialogTitle className='text-center text-2xl font-bold'>Customize your room</DialogTitle>
+          <DialogTitle className='text-center text-2xl font-bold'>Create your room</DialogTitle>
           <DialogDescription className='text-left text-zinc-500'>
             Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>

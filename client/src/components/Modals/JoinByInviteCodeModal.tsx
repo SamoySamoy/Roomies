@@ -44,7 +44,7 @@ const JoinByInviteCodeModal = () => {
       onSuccess: data => {
         if (typeof data === 'boolean') {
           toast({
-            title: 'You have already joined this room',
+            description: 'You have already joined this room',
             variant: 'warning',
           });
           closeModal();
@@ -52,7 +52,7 @@ const JoinByInviteCodeModal = () => {
         }
 
         toast({
-          title: 'Join room by invite code successfully',
+          description: 'Join room by invite code successfully',
           variant: 'success',
         });
         closeModal();
@@ -60,7 +60,7 @@ const JoinByInviteCodeModal = () => {
       },
       onError: () => {
         toast({
-          title: 'Join room by invite code failed',
+          description: 'Join room by invite code failed',
           variant: 'error',
         });
         closeModal();

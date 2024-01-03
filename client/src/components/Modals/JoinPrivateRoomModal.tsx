@@ -53,7 +53,7 @@ const JoinPrivateRoomModal = () => {
       onSuccess: data => {
         if (typeof data === 'boolean') {
           toast({
-            title: 'You have already joined this room',
+            description: 'You have already joined this room',
             variant: 'warning',
           });
           closeModal();
@@ -61,7 +61,7 @@ const JoinPrivateRoomModal = () => {
         }
 
         toast({
-          title: 'Join private room successfully',
+          description: 'Join private room successfully',
           variant: 'success',
         });
         closeModal();
@@ -69,7 +69,7 @@ const JoinPrivateRoomModal = () => {
       },
       onError: () => {
         toast({
-          title: 'Join private room failed',
+          description: 'Join private room failed',
           variant: 'error',
         });
         closeModal();

@@ -37,14 +37,15 @@ const ForgotPage = () => {
     mutation.mutate(values, {
       onSuccess: () => {
         toast({
-          title: 'An reset password mail already sent to your email address room successfully',
+          description:
+            'An reset password mail already sent to your email address room successfully',
           variant: 'success',
         });
         navigate('/my-rooms');
       },
       onError: () => {
         toast({
-          title: 'Forgot password failed',
+          description: 'Forgot password failed',
           variant: 'error',
         });
       },

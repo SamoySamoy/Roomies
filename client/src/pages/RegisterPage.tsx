@@ -26,14 +26,14 @@ const RegisterPage = () => {
     mutation.mutate(values, {
       onSuccess: () => {
         toast({
-          title: 'Register successfully',
+          description: 'Register successfully',
           variant: 'success',
         });
         navigate('/login');
       },
       onError: () => {
         toast({
-          title: 'Register failed',
+          description: 'Register failed',
           variant: 'error',
         });
       },
