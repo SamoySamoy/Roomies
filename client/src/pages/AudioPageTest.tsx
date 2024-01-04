@@ -73,6 +73,11 @@ Có thể sử dụng 3 state là 3 array:
 
 */
 
+//Share screen sử dụng uuid thì vẫn cần phải có 1 cách map giữa uuid với profileId, vì lúc khi người dùng tắt tab, bên server
+//broad cast về cho những user trong rooom, server chỉ lấy được profileID, không lấy được uuid => user còn lại không tắt được
+//video share màn hình của user mới tắt tab.
+//Bug, nhấn nút camera hay mic thì server chỉ toogle trạng thái của mic.
+
 type PeopleInMeeting = {
   profileId: string;
   email: string;

@@ -5,7 +5,7 @@ import Peer, { MediaConnection } from 'peerjs';
 import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
-import { fa, vi } from '@faker-js/faker';
+import { fa, id_ID, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/VideoCard';
 import { CallTracker } from 'assert';
 import ActionTooltip from '@/components/ActionToolTip';
@@ -14,6 +14,10 @@ import MicButton from '@/components/MicButton';
 import ShareScreenButton from '@/components/ShareScreenButton';
 // import { PeopleInMeeting } from '@/lib/socket';
 import { flushSync } from 'react-dom';
+import VideoButton from '@/components/CameraButton';
+import PhoneButton from '@/components/PhoneButton';
+import { v4 as uuidv4 } from 'uuid';
+import { R } from 'node_modules/@tanstack/react-query-devtools/build/modern/devtools-0Hr18ibL';
 
 type MeetingState = {
   profileId: string;
@@ -32,16 +36,21 @@ type MeetingState = {
 
 type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
 
+const MAX_VIDEO_PER_ROW = 4;
+const ITEM_LIMIT = 27;
+
+
+
 const AudioPage = () => {
   const { auth } = useAuth();
   // const [meetingStates, setMeetingStates] = useState<PeopleInMeeting[]>([]);
-  let localMeetingStates: MeetingState[] = [];
+  const localMeetingStates = useRef<MeetingState[]>([]);
   // const [peerOnConnect, setPeerOnConnect] = useState<Map<string, MediaConnection>>(new Map());
-  let peerOnConnect: Map<string, MediaConnection> = new Map();
-  const [videoList, setVideoList] = useState<VideoProps[]>([]);
+  const peerOnConnect = useRef(new Map<string, MediaConnection>());
+  const [videoGrid, setVideoGrid] = useState<VideoProps[][]>([]);
   const [cameraOn, setCameraOn] = useState<boolean>(false);
   const [micOn, setMicOn] = useState<boolean>(false);
-  const [shareScreen, setShareSceen] = useState<boolean>(false);
+  const [shareScreenOn, setShareScreenOn] = useState<boolean>(false);
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
   const origin: GroupOrigin = {
     groupId: groupId!,
@@ -50,173 +59,145 @@ const AudioPage = () => {
   };
   // const myVideo = useRef<HTMLVideoElement>(null);
 
-  let localStream: MediaStream;
-
-
+  const localStream = useRef<MediaStream>();
+  const peer = useRef<Peer>();
+  const screenPeer = useRef<Peer>();
+  const localScreenStream = useRef<MediaStream>();
+  const screenId = useRef<string>();
+  
   // let callList: Map<string, MediaConnection> = new Map<string, MediaConnection>();
 
   useEffect(() => {
-    let peer: Peer = new Peer(origin.profileId);
-    peer.on('open', () => {
-      let meetingState: MeetingState = {
-        profileId: origin.profileId,
-        email: auth.email!,
-        imageUrl: auth.imageUrl!,
-        type: 'camera',
-        micOn: false,
-        cameraOn: false
-      }
-      socket.emit('client:meeting:join', origin, meetingState);
-      console.log(peer.connections);
-    });
-
-    function syncVideoListState(videoList: VideoProps[], meetingStates: MeetingState[]) {
-      console.log(videoList);
-      let newVideoList = [];
-      for (let i = 0; i < videoList.length; i++) {
-        //Find  the state
-        let profileId = videoList[i].profileId;
-        let stateIndex = -1;
-        for (let j = 0; j < meetingStates.length; j++) {
-          if (meetingStates[i].profileId === profileId) {
-            stateIndex = j;
-            break;
-          }
-        }
-
-        //Sync the state to vidList
-        let meetingState = meetingStates[stateIndex];
-        if (meetingState.type === 'camera') {
-          let newVideoProps: VideoProps = {
-            stream: videoList[i].stream,
-            profileId: profileId,
-            email: meetingState.email,
-            imageUrl: meetingState.imageUrl,
-            cameraOn: meetingState.cameraOn,
-            micOn: meetingState.micOn
-          }
-          newVideoList.push(newVideoProps);
-        }
-
-        if (newVideoList.length !== videoList.length) console.log('Sync video list problem');
-
-        setVideoList(newVideoList);
-      }
-    }
-
-    socket.on('server:meeting:state', (meetingStates) => {
-      // setMeetingStates(meetingStates);
-      console.log('update');
-      localMeetingStates = meetingStates;
-      console.log(meetingStates);
-      console.log(peerOnConnect);
-      console.log(videoList);
-      
-      // let newVideoList = videoList.filter((video) => {
-      //   peerOnConnect.has(video.profileId) || video.profileId === origin.profileId;
-      // });
-      let newVideoList = videoList.filter((video) => {
-        for (let i = 0; i < meetingStates.length; i++) {
-          if (meetingStates[i].profileId === video.profileId) {
-            return true;
-          }
-        }
-        return false;
-      });
-      // let myState = meetingStates.filter(state => state.profileId === auth.profileId)[0];
-      // // const myVideoProp: VideoProps ={
-      // //   email: auth.email!,
-      // //   cameraOn: cameraOn,
-      // //   micOn: micOn,
-      // //   imageUrl: auth.imageUrl!,
-      // //   stream: myState.
-      // // }
-      // newVideoList.push(videoList.filter(video => video.profileId === auth.profileId!)[0]);
-      console.log('New video length:' + newVideoList.length);
-      syncVideoListState(newVideoList, meetingStates);
-    });
-
 
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
       .then(function (stream) {
+
+        peer.current = new Peer(origin.profileId);
+        peer.current.on('open', () => {
+          let meetingState: MeetingState = {
+            profileId: origin.profileId,
+            email: auth.email!,
+            imageUrl: auth.imageUrl!,
+            type: 'camera',
+            micOn: false,
+            cameraOn: false 
+          }
+          socket.emit('client:meeting:join', origin, meetingState);
+          console.log(peer.current!.connections);
+        });
+
+
         // stream.getTracks().forEach(track => track.enabled = !track.enabled);
-        localStream = stream;
-        
+        localStream.current = stream;
+
         console.log(stream);
         console.log(localStream);
 
-        addVideo(localStream, auth.profileId!, auth.imageUrl!, auth.email!, false, false);
+        addVideo({
+          stream: localStream.current!,
+          profileId: auth.profileId!,
+          imageUrl: auth.imageUrl!,
+          email: auth.email!,
+          micOn: false,
+          cameraOn: false,
+          type: 'camera'
+        });
 
         socket.on('server:meeting:join:success', (meetingStates) => {
           // setMeetingStates(meetingStates);
-          localMeetingStates = meetingStates;
+          localMeetingStates.current = meetingStates;
           //Call những thằng nằm trong meetingStates mới nhận được.
+          console.log("Da nhan meeting state, bat dau goi: ");
           console.log(meetingStates);
           meetingStates.forEach((meetingState) => {
             if (meetingState.profileId !== origin.profileId) {
               let otherId = meetingState.profileId;
               try {
-                let call = peer.call(otherId, stream);
-                console.log('Calling: ' + otherId);
-              call.once('stream', (otherStream) => {
-                addPeerOnConnect(otherId, call);
-                console.log('Receive answer from: ' + otherId);
-                let otherIndexState = 0;
-                for (let i = 0; i < localMeetingStates.length; i++) {
-                  if (localMeetingStates[i].profileId === otherId) {
-                    otherIndexState = i;
-                    break;
+                let call = peer.current!.call(otherId, localStream.current!);
+                console.log('Calling: ' + otherId + ' with ');
+                console.log(localStream);
+                call.once('stream', (otherStream) => {
+                  addPeerOnConnect(otherId, call);
+                  console.log('Receive answer from: ' + otherId);
+                  let otherIndexState = 0;
+                  for (let i = 0; i < localMeetingStates.current.length; i++) {
+                    if (localMeetingStates.current[i].profileId === otherId) {
+                      otherIndexState = i;
+                      break;
+                    }
                   }
-                }
-                console.log(localMeetingStates);
-                let callerState = localMeetingStates[otherIndexState];
-                if (callerState.type === 'camera') addVideo(otherStream, callerState.profileId, 
-                  callerState.imageUrl, callerState.email, callerState.micOn, callerState.cameraOn);
-
-                  call.on('close', () => {
-                    console.log('second user removing: ' + otherId);
-                    removeVideo(otherId);
-                    removePeerOnConnect(otherId);
-                  });
-              });
+                  console.log(localMeetingStates);
+                  let otherState = localMeetingStates.current[otherIndexState];
+                  if (otherState.type === 'camera') {
+                    let newVideoProps: VideoProps = {
+                      stream: otherStream,
+                      profileId: otherState.profileId,
+                      imageUrl: otherState.imageUrl,
+                      email: otherState.email,
+                      micOn: otherState.micOn,
+                      cameraOn: otherState.cameraOn,
+                      type: 'camera'
+                    }
+                    addVideo(newVideoProps);
+                  }
+                });
+                call.on('close', () => {
+                  console.log('second user removing: ' + otherId);
+                  removeVideo(otherId);
+                  removePeerOnConnect(otherId);
+                });
               } catch (err) {
                 console.log(err);
               }
-              
-
-              
             }
-
-
-          })
+          });
         });
 
-        peer.on('call', (call) => {
+
+        peer.current.on('call', (call) => {
           let callerId = call.peer;
           call.answer(stream);
           call.once('stream', (callerStream) => {
             console.log('Receive stream from caller:' + callerId);
-
+            console.log(localMeetingStates.current);
             let callerStateIndex = 0;
-            for (let i = 0; i < localMeetingStates.length; i++) {
-              if (localMeetingStates[i].profileId === callerId) {
+            for (let i = 0; i < localMeetingStates.current.length; i++) {
+              if (localMeetingStates.current[i].profileId === callerId) {
                 callerStateIndex = i;
                 break;
               }
             }
             console.log(localMeetingStates);
-            let callerState = localMeetingStates[callerStateIndex];
+            let callerState = localMeetingStates.current[callerStateIndex];
 
             addPeerOnConnect(callerId, call);
-            if (callerState.type === 'camera') addVideo(callerStream, callerState.profileId, callerState.imageUrl, callerState.email, callerState.micOn, callerState.cameraOn);
+            if (callerState.type === 'camera') {
+              let newVideoProps: VideoProps = {
+                stream: callerStream,
+                profileId: callerState.profileId,
+                imageUrl: callerState.imageUrl,
+                email: callerState.email,
+                micOn: callerState.micOn,
+                cameraOn: callerState.cameraOn,
+                type: 'camera'
+              }
+              addVideo(newVideoProps);
+            }
           });
           call.on('close', () => {
             console.log('the first user remove: ' + callerId);
             removePeerOnConnect(callerId);
             removeVideo(callerId);
-            console.log( peerOnConnect);
+            console.log(peerOnConnect);
           })
+
+
+        });
+
+        socket.on('server:meeting:disconnect', (id) => {
+          peerOnConnect.current.get(id)?.close();
+          removePeerOnConnect(id);
         });
 
 
@@ -262,6 +243,7 @@ const AudioPage = () => {
       .catch(function (err) {
         console.log(err);
       });
+
     // socket.on('server:user-disconnected', function (id) {
     //   console.log('received user disconnected: ' + id);
     //   console.log(callList);
@@ -273,6 +255,92 @@ const AudioPage = () => {
     //   // removeVideo(id);
     // });
 
+    function syncVideoListState(videoList: VideoProps[], meetingStates: MeetingState[]) {
+      console.log(videoList);
+      let newVideoList = [];
+      for (let i = 0; i < videoList.length; i++) {
+        //Find  the state
+        let profileId = videoList[i].profileId;
+        let stateIndex = -1;
+        for (let j = 0; j < meetingStates.length; j++) {
+          if (meetingStates[i].profileId === profileId) {
+            stateIndex = j;
+            break;
+          }
+        }
+
+        //Sync the state to vidList
+        // let meetingState = meetingStates[stateIndex];
+        // if (meetingState.type === 'camera') {
+        //   let newVideoProps: VideoProps = {
+        //     stream: videoList[i].stream,
+        //     profileId: profileId,
+        //     email: meetingState.email,
+        //     imageUrl: meetingState.imageUrl,
+        //     cameraOn: meetingState.cameraOn,
+        //     micOn: meetingState.micOn
+        //   }
+        //   newVideoList.push(newVideoProps);
+        // }
+
+        // if (newVideoList.length !== videoList.length) console.log('Sync video list problem');
+
+        // setVideoList(newVideoList);
+      }
+    }
+
+    socket.on('server:meeting:state', (meetingStates) => {
+      // setMeetingStates(meetingStates);
+      console.log('update');
+      console.log(meetingStates);
+      console.log(peerOnConnect);
+      console.log(videoGrid);
+
+      // if (localMeetingStates.current.length > meetingStates.length) {
+      //   let leaverState = localMeetingStates.current.filter((state) => {
+      //     let exist = false;
+      //     for (let i = 0; i < meetingStates.length; i++) {
+      //       if (meetingStates[i].profileId === state.profileId) {
+      //         exist = true;
+      //         break;
+      //       }
+      //     }
+      //     return !exist;
+      //   })[0];
+      //   if (leaverState.type === 'screen') {
+          
+      //   }
+      // }
+
+
+
+      localMeetingStates.current = meetingStates;
+      
+
+      // let newVideoList = videoList.filter((video) => {
+      //   peerOnConnect.has(video.profileId) || video.profileId === origin.profileId;
+      // });
+      // let newVideoList = videoList.filter((video) => {
+      //   for (let i = 0; i < meetingStates.length; i++) {
+      //     if (meetingStates[i].profileId === video.profileId) {
+      //       return true;
+      //     }
+      //   }
+      //   return false;
+      // });
+      // let myState = meetingStates.filter(state => state.profileId === auth.profileId)[0];
+      // // const myVideoProp: VideoProps ={
+      // //   email: auth.email!,
+      // //   cameraOn: cameraOn,
+      // //   micOn: micOn,
+      // //   imageUrl: auth.imageUrl!,
+      // //   stream: myState.
+      // // }
+      // newVideoList.push(videoList.filter(video => video.profileId === auth.profileId!)[0]);
+      // console.log('New video length:' + newVideoList.length);
+      // syncVideoListState(newVideoList, meetingStates);
+    });
+
     socket.on('server:room:leave:success', function (msg) {
       let leaveId = msg.split(' ')[1];
       console.log(leaveId + ' just leave the room to get to the text');
@@ -281,107 +349,281 @@ const AudioPage = () => {
       let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
       socket.emit('client:meeting:leave', origin, identity);
       console.log('clean up group');
-      peerOnConnect.forEach((call) => {
-        call.close();
-      });
-      localStream.getTracks().forEach(track => track.stop());
-      peer.destroy();
+      // peerOnConnect.current.forEach((call) => {
+      //   call.close();
+      // });
+      localStream.current!.getTracks().forEach(track => track.stop());
+      peer.current!.destroy();
+      peer.current = undefined;
     };
   }, []);
 
   useEffect(() => {
     console.log('list updated: ');
-    console.log(videoList);
-  }, [videoList]);
+    console.log(videoGrid);
+  }, [videoGrid]);
 
-  function addVideo(stream: MediaStream, profileId: string, imageUrl: string, email: string, mic: boolean, camera: boolean) {
-    const newVid: VideoProps = { profileId: profileId, email: email, cameraOn: camera, micOn: mic, imageUrl: imageUrl, stream: stream };
-    setVideoList(prevVideoList => [...prevVideoList, newVid]);
+  function addVideo(newVideoProps: VideoProps) {
+    // const lastRow = videoGrid.length;
+    // if (videoGrid.length === 0 || videoGrid[videoGrid.length - 1].length % MAX_VIDEO_PER_ROW === 0) {
+    //   setVideoGrid(prevVideoGrid => [...prevVideoGrid, [newVideoProps]]);
+    // } else {
+    //   setVideoGrid(prevVideoGrid => {
+    //     const newGrid = [...prevVideoGrid];
+    //     // newGrid[newGrid.length - 1] = [...newGrid[newGrid.length - 1], newVideoProps];
+    //     newGrid[newGrid.length - 1].push(newVideoProps);
+    //     return newGrid;
+    //   })
+    // }
+
+    // let newGrid = [...videoGrid];
+    // if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
+    //   newGrid.push([newVideoProps]);
+    // } else {
+    //   newGrid[newGrid.length - 1].push(newVideoProps);
+    // }
+    // setVideoGrid(newGrid);
+
+    setVideoGrid((prevVideoGrid) => {
+      const newGrid = [...prevVideoGrid];
+  
+      // Check if the last row is empty or full
+      const lastRow = newGrid.length - 1;
+      if (newGrid.length === 0 || newGrid[lastRow].length === MAX_VIDEO_PER_ROW) {
+        // If empty or full, add a new row
+        newGrid.push([newVideoProps]);
+      } else {
+        // Otherwise, add the video to the last row
+        newGrid[lastRow].push(newVideoProps);
+      }
+  
+      return newGrid;
+    });
   }
 
   function removeVideo(id: string) {
-    setVideoList(prev => prev.filter(video => video.profileId !== id));
-  }
+    // // Create a new grid without the video with the specified profileId
+    // console.log(videoGrid);
+    // let newGrid: VideoProps[][] = [];
+
+    // let i = 0;
+    // let j = 0;
+
+    // let numOfVid = (videoGrid.length - 1) * MAX_VIDEO_PER_ROW + videoGrid[videoGrid.length - 1].length;
+
+    // while (i < numOfVid) {
+    //   let row = Math.floor(numOfVid / MAX_VIDEO_PER_ROW);
+    //   let col = numOfVid % MAX_VIDEO_PER_ROW;
+
+    //   let currentVideoProps = videoGrid[row][col];
+
+    //   if (currentVideoProps.profileId !== id) {
+    //     if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
+    //       newGrid.push([currentVideoProps]);
+    //     } else {
+    //       newGrid[newGrid.length - 1].push(currentVideoProps);
+    //     }
+    //     j++;
+    //   }
+    //   i++;
+    // }
+    // // const newGrid = videoGrid.map(row =>
+    // //   row.filter(video => video.profileId !== id)
+    // // );
+    // setVideoGrid(newGrid);
+    
+    setVideoGrid((prevGrid) => {
+      // Find the position of the value in the 2D array
+      let numberOfItem = (prevGrid.length - 1) * MAX_VIDEO_PER_ROW + prevGrid[prevGrid.length - 1].length;
+      let rowIndex = -1;
+      let columnIndex = -1;
+
+      for (let i = 0; i < prevGrid.length; i++) {
+        // const indexInRow = prevGrid[i].findIndex((video) => video.profileId === id);
+        // if (indexInRow !== -1) {
+        //   rowIndex = i;
+        //   columnIndex = indexInRow;
+        //   break;
+        // }
+        for (let j = 0; j < prevGrid[i].length; j++) {
+          if (prevGrid[i][j].profileId === id) {
+            rowIndex = i;
+            columnIndex = j;
+          }
+        }
+      }
+
+
+
+      // If the value is not found, return the original array
+      if (rowIndex === -1 || columnIndex === -1) {
+        return prevGrid;
+      }
+
+      // Create a new array to avoid mutating the previous state
+      const newGrid = prevGrid.map((row) => [...row]);
+
+      // Remove the item at the specified row and column
+      // newGrid[rowIndex].splice(columnIndex, 1);
+
+      // Shift the remaining elements to the left and up
+      // for (let i = rowIndex; i < newGrid.length; i++) {
+      //   for (let j = columnIndex; j < newGrid[i].length - 1; j++) {
+      //     // Shift elements to the left
+      //     newGrid[i][j] = newGrid[i][j + 1];
+      //   }
+
+      //   // If it's not the last row, shift the element up
+      //   if (i < newGrid.length - 1) {
+      //     newGrid[i][newGrid[i].length - 1] = newGrid[i + 1][0];
+      //   }
+      // }
+      for (let i = rowIndex * MAX_VIDEO_PER_ROW + columnIndex; i < numberOfItem - 1; i++) {
+        let oldRow = Math.floor(i / MAX_VIDEO_PER_ROW);
+        let newRow = Math.floor((i + 1) / MAX_VIDEO_PER_ROW);
+        let oldCol = i % MAX_VIDEO_PER_ROW;
+        let newCol = (i + 1) % MAX_VIDEO_PER_ROW;
+
+        newGrid[oldRow][oldCol] = newGrid[newRow][newCol];
+      }
+      // Remove the last element in the last row
+      newGrid[newGrid.length - 1].pop();
+      if (newGrid[newGrid.length - 1].length === 0) newGrid.pop();
+      return newGrid;
+    });
+  };
 
   function addPeerOnConnect(id: string, call: MediaConnection) {
     // let newPeerOnConnect = new Map(peerOnConnect);
     // newPeerOnConnect.set(id, call);
     // setPeerOnConnect(newPeerOnConnect);
-    peerOnConnect.set(id, call);
+    peerOnConnect.current.set(id, call);
   }
 
   function removePeerOnConnect(id: string) {
     // let newPeerOnConnect = new Map(peerOnConnect);
     // newPeerOnConnect.delete(id);
     // setPeerOnConnect(newPeerOnConnect);
-    peerOnConnect.delete(id);
+    peerOnConnect.current.delete(id);
   }
 
-  function clickCamera() {
-    // const videoTracks = localStream.getVideoTracks();
-    // videoTracks.forEach(videoTrack => videoTrack.enabled = !cameraOn);
-    if (cameraOn) setCameraOn(false);
-    else setCameraOn(true);
-    // socket.emit('camera-off', peerId);
+  const clickCamera = () => {
+    setCameraOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:camera', origin, identity);
-    
-  }
-  function clickMic() {
-    console.log(localStream);
-    // const audioTracks = localStream.getAudioTracks();
-    // audioTracks.forEach(audioTrack => audioTrack.enabled = !micOn);
-    if (micOn) setMicOn(false);
-    else setMicOn(true);
+  };
+
+  const clickMic = () => {
+    setMicOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:mic', origin, identity);
+  };
 
-   }
-  // function shareScreen() {
-  //   navigator.mediaDevices
-  //     .getDisplayMedia({
-  //       audio: true,
-  //       video: true,
-  //     })
-  //     .then(function (stream) {
-  //       addVideo('screen', true, stream);
-  //     });
-  //   setCanShareScreen(false);
-  // }
+  const clickShareScreen = () => {
+    console.log(shareScreenOn);
+    
+    if (!shareScreenOn) {
+      navigator.mediaDevices
+        .getDisplayMedia({ audio: true, video: true })
+        .then((screenStream) => {
+          setShareScreenOn(true);
+          screenStream.getVideoTracks()[0].onended = () => {
+            setShareScreenOn(false);
+            let screenState: MeetingState = {
+              profileId: screenId.current!,
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              type: 'screen',
+            }
+            screenPeer.current?.destroy();
+            socket.emit('client:meeting:screen:off', origin, screenState);
+            removeVideo(screenId.current!);
+          }
+          localScreenStream.current = screenStream;
+          screenPeer.current = new Peer(uuidv4());
+          screenId.current = screenPeer.current.id;
+          screenPeer.current.on('call', (call) => {
+            console.log('Screen received call from user: ' + call.peer);
+            call.answer(localStream.current!);
+
+          })
+          screenPeer.current.on('open', (screenId) => {
+            let screenState: MeetingState = {
+              profileId: screenId,
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              type: 'screen',
+            }
+            
+            let screenProps: VideoProps = {
+              stream: screenStream,
+              type: 'screen',
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              profileId: screenId,
+            }
+            addVideo(screenProps);
+
+            socket.on('server:meeting:screen:on:success', (meetingStates) => {
+              meetingStates.forEach((meetingState) => {
+                if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
+                  let otherId = meetingState.profileId;
+                  try {
+                    //Gửi stream screen cho các người dùng
+                    let call = screenPeer.current!.call(otherId, localScreenStream.current!);
+                    console.log('Calling: ' + otherId + ' with ');
+                    console.log(localStream);
+                  } catch (err) {
+                    console.log(err);
+                  }
+                }
+              });
+            });
+            socket.emit('client:meeting:screen:on', origin, screenState);
+          });
+        });
+    } else {
+      // dung share man
+      setShareScreenOn(false);
+      localScreenStream.current!.getTracks().forEach(track => track.stop());
+      let screenState: MeetingState = {
+        profileId: screenId.current!,
+        email: auth.email!,
+        imageUrl: auth.imageUrl!,
+        type: 'screen',
+      }
+      screenPeer.current?.destroy();
+      socket.emit('client:meeting:screen:off', origin, screenState);
+      
+      removeVideo(screenId.current!);
+      
+    }
+    // setShareScreenOn(prev => !prev);
+
+  };
+
+  const onEndCall = () => {
+    
+   };
+
   return (
-    <div className='grid-cols-3 auto-rows-auto bg-slate-500 h-lvh min-w-fit'>
-      {/* <Button className='bg-lime-600 mx-1'>
-        Camera is {camera}
-      </Button>
-      <Button className='bg-lime-600' onClick={shareScreen} disabled={!canShareScreen}>
-        Share Screen
-      </Button> */}
-      <div className='flex flex-row flex-wrap gap-1 m-1'>
-        {videoList.map(function (video) {
+    <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
+      <div className='flex-1 flex flex-col gap-y-4 overflow-y-auto'>
+        {videoGrid.map((row, i) => {
           return (
-            <Video
-              key={video.profileId}
-              micOn={video.micOn}
-              stream={video.stream}
-              profileId={video.profileId}
-              imageUrl={video.imageUrl}
-              cameraOn={video.cameraOn}
-              email={video.email}
-            />
+            <div className='flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center' key={i}>
+              {row.map(col => (
+                <Video key={col.profileId} {...col} />
+              ))}
+            </div>
           );
         })}
       </div>
-      <span>{videoList.length}</span>
-      <div className='flex items-center justify-center space-x-4'>
-        <span onClick={clickCamera} className='inline-block'>
-          <ChatVideoButton />
-        </span>
-        <span onClick={clickMic} className='inline-block'>
-          <MicButton />
-        </span>
-        <span className='inline-block'>
-          <ShareScreenButton />
-        </span>
+      <div className='absolute inset-x-0 mx-auto bottom-10 opacity-0 flex translate-y-[100px] group-hover:translate-y-0 group-hover:opacity-1 group-hover:opacity-100 item-center justify-center gap-x-6 transition-all duration-500'>
+        <VideoButton on={cameraOn} onClick={clickCamera} />
+        <MicButton on={micOn} onClick={clickMic} />
+        <ShareScreenButton on={shareScreenOn} onClick={clickShareScreen} />
+        <PhoneButton on={false} onClick={onEndCall} />
       </div>
     </div>
   );

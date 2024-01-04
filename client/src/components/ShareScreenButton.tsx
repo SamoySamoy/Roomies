@@ -17,7 +17,7 @@ const ShareScreenButton = ({ on, onClick }: Props) => {
         )}
         onClick={onClick}
       >
-        {on ? (
+        {!on ? (
           <MonitorUp className='text-white w-6 h-6' />
         ) : (
           <MonitorX className='text-white w-6 h-6' />

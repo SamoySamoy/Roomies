@@ -75,6 +75,7 @@ export type ServerToClientEvents = {
   'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:screen:off:error': (msg: string) => void;
   'server:meeting:state': (messtingStates: MeetingState[]) => void;
+  'server:meeting:disconnect': (id: string) => void;
 };
 
 export type RoomOrigin = {

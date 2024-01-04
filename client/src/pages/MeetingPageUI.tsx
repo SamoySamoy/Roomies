@@ -34,7 +34,7 @@ const genFakeScreenData = (): VideoProps => ({
 });
 
 const MAX_VIDEO_PER_ROW = 4;
-const ITEM_LIMIT = 27;
+const ITEM_LIMIT = 15;
 
 const genFakeVideoProps = () => {
   const videoProps: VideoProps[][] = [];

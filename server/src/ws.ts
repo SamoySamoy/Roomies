@@ -175,6 +175,7 @@ export type ServerToClientEvents = {
   'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
   'server:meeting:screen:off:error': (msg: string) => void;
   'server:meeting:state': (messtingStates: MeetingState[]) => void;
+  'server:meeting:disconnect': (id: string) => void;
 };
 
 export type ClientToServerEvents = {
@@ -596,7 +597,9 @@ export function setupWs(httpServer: HTTPServer) {
     // On user join meeting
     socket.on('client:meeting:join', (origin, arg) => {
       socket.join(origin.groupId);
-
+      socket.on('disconnect', () => {
+        socket.broadcast.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
+      });
       try {
         createMeetingState(origin.groupId, arg);
         console.log(arg.email + ' join the meeting');
@@ -697,7 +700,8 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:meeting:screen:off', (origin, arg) => {
       try {
         deleteMeetingState(origin.groupId, arg);
-
+        console.log('remove screen: ' + arg.profileId);
+        console.log(getMeetingStates(origin.groupId));
         const updatedStates = getMeetingStates(origin.groupId);
         socket.emit('server:meeting:screen:off:success', updatedStates);
         // Broad cast cập nhật trạng thái
