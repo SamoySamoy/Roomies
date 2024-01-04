@@ -2,6 +2,23 @@ import { SERVER_SOCKET_API_PATH, SERVER_URL } from './constants';
 import { io, Socket } from 'socket.io-client';
 import { DirectMessage, MemberRole, Message } from './types';
 
+export type MeetingState = {
+  profileId: string;
+  email: string;
+  imageUrl: string;
+} & (
+  | {
+      type: 'camera';
+      cameraOn: boolean;
+      micOn: boolean;
+    }
+  | {
+      type: 'screen';
+    }
+);
+
+type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
+
 export type ServerToClientEvents = {
   'server:room:join:success': (msg: string) => void;
   'server:room:join:error': (msg: string) => void;
@@ -44,6 +61,20 @@ export type ServerToClientEvents = {
 
   'server:peer:init:success': (id: string) => void;
   'server:user-disconnected': (id: string) => void;
+
+  'server:meeting:join:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:join:error': (msg: string) => void;
+  'server:meeting:leave:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:leave:error': (msg: string) => void;
+  'server:meeting:camera:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:camera:error': (msg: string) => void;
+  'server:meeting:mic:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:mic:error': (msg: string) => void;
+  'server:meeting:screen:on:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:on:error': (msg: string) => void;
+  'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:off:error': (msg: string) => void;
+  'server:meeting:state': (messtingStates: MeetingState[]) => void;
 };
 
 export type RoomOrigin = {
@@ -77,6 +108,7 @@ export type MessageUpload = {
 export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
 
+
 export type ClientToServerEvents = {
   'client:room:join': (origin: RoomOrigin, arg: MessageIdentity) => void;
   'client:room:leave': (origin: RoomOrigin, arg: MessageIdentity) => void;
@@ -100,6 +132,13 @@ export type ClientToServerEvents = {
   'client:conversation:message:delete': (origin: ConversationOrigin, arg: MessageDelete) => void;
 
   'client:peer:init:success': (origin: GroupOrigin) => void;
+
+  'client:meeting:join': (origin: GroupOrigin, arg: MeetingState) => void;
+  'client:meeting:leave': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:camera': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:mic': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
+  'client:meeting:screen:on': (origin: GroupOrigin, arg: MeetingState) => void;
+  'client:meeting:screen:off': (origin: GroupOrigin, arg: MeetingStateIdentity) => void;
 };
 
 export type SocketApi = Socket<ServerToClientEvents, ClientToServerEvents>;
