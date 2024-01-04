@@ -101,7 +101,8 @@ const AudioPage = () => {
   const [micOn, setMicOn] = useState(false);
   const [shareScreenOn, setShareScreenOn] = useState(false);
 
-  const [peerOnConnect, setPeerOnConnect] = useState<{ peerId: string; stream: MediaStream }[]>([]);
+  const [peerOnConnect, setPeerOnConnect] = useState<Record<string, MediaStream>>();
+  
   // Bị gọi thì thêm stream của thằng gọi
   // Thằng gọi được trả lời, thì cũng thêm vào đây
   const [meetingStates, setMeetingStates] = useState<PeopleInMeeting[]>([]);

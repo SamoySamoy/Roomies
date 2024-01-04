@@ -599,12 +599,14 @@ export function setupWs(httpServer: HTTPServer) {
 
       try {
         createMeetingState(origin.groupId, arg);
-
+        console.log(arg.email + ' join the meeting');
+        console.log(fakeRedis);
         const updatedStates = getMeetingStates(origin.groupId);
         // Gửi danh sách trạng thái về người join
         socket.emit('server:meeting:join:success', updatedStates);
         // Broad cast cập nhật trạng thái
         socket.broadcast.to(origin.groupId).emit('server:meeting:state', updatedStates);
+        
       } catch (error: any) {
         console.log(error);
         if (error instanceof ValidationError) {
@@ -617,13 +619,14 @@ export function setupWs(httpServer: HTTPServer) {
     // On user leave meeting
     socket.on('client:meeting:leave', (origin, arg) => {
       socket.leave(origin.groupId);
-
+      
       try {
         deleteMeetingState(origin.groupId, arg);
-
+        console.log(fakeRedis);
         const updatedStates = getMeetingStates(origin.groupId);
         // Broad cast cập nhật trạng thái
-        io.to(origin.groupId).emit('server:meeting:state', updatedStates);
+        socket.to(origin.groupId).emit('server:meeting:state', updatedStates);
+        console.log('user out group: ' + origin.profileId);
       } catch (error: any) {
         console.log(error);
         if (error instanceof ValidationError) {
@@ -637,7 +640,8 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:meeting:camera', (origin, arg) => {
       try {
         updateMeetingState(origin.groupId, arg, 'camera');
-
+        console.log(origin.profileId + ' click camera');
+        console.log(fakeRedis);
         const updatedStates = getMeetingStates(origin.groupId);
         // Cập nhật trạng thái cho tất cả
         io.to(origin.groupId).emit('server:meeting:state', updatedStates);
@@ -654,7 +658,8 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:meeting:mic', (origin, arg) => {
       try {
         updateMeetingState(origin.groupId, arg, 'mic');
-
+        console.log(origin.profileId + ' click mic');
+        console.log(fakeRedis);
         const updatedStates = getMeetingStates(origin.groupId);
         // Cập nhật trạng thái cho tất cả
         io.to(origin.groupId).emit('server:meeting:state', updatedStates);
