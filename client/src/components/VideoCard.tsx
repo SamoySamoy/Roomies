@@ -32,12 +32,14 @@ const VideoCard = (props: VideoProps) => {
   return (
     <div className='h-[300px] w-[300px] gap-y-4 md:flex-1 bg-[#E3E5E8] dark:bg-[#1E1F22] relative flex md:flex-row flex-col items-center justify-center rounded-lg shadow-md shadow-slate-800/30 dark:shadow-slate-200/10'>
       {props.type === 'screen' && (
-        <video ref={videoRef} className='h-full w-full object-cover rounded-2xl' />
+        <video ref={videoRef} playsInline autoPlay className='h-full w-full object-cover rounded-2xl' />
       )}
       {props.type === 'camera' && props.cameraOn && (
         <video
           ref={videoRef}
           muted={props.micOn}
+          autoPlay
+          playsInline
           className='h-full w-full object-cover rounded-2xl'
         />
       )}
