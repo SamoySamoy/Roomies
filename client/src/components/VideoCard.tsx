@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { MicOff, Mic, Video, VideoOff } from 'lucide-react';
 import MemberAvatar from './MemberAvatar';
 import { Stream } from 'stream';
+import { useAuth } from '@/hooks/useAuth';
 
 export type VideoProps = {
   stream: MediaStream | null;
@@ -20,6 +21,7 @@ export type VideoProps = {
 );
 
 const VideoCard = (props: VideoProps) => {
+  const { auth } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (videoRef.current) {
@@ -43,19 +45,30 @@ const VideoCard = (props: VideoProps) => {
       )}
       {props.type === 'camera' && props.cameraOn && (
         <video
+        ref={videoRef}
+        muted={auth.profileId === props.profileId? true : !props.micOn}
+        autoPlay
+        playsInline
+        className='h-full w-full object-cover rounded-2xl'
+      />
+      )}
+      {props.type === 'camera' && !props.cameraOn && (
+        <>
+          <MemberAvatar
+            src={props.imageUrl}
+            fallback={<p>{props.email.split('@')[0].slice(0, 2)}</p>}
+            className='sm:w-[70px] md:w-[110px] lg:w-[150px] sm:h-[70px] md:h-[110px] lg:h-[150px] rounded-full'
+          />
+          <video
           ref={videoRef}
-          muted={props.micOn}
+          muted={auth.profileId === props.profileId? true : !props.micOn}
           autoPlay
           playsInline
           className='h-full w-full object-cover rounded-2xl'
-        />
-      )}
-      {props.type === 'camera' && !props.cameraOn && (
-        <MemberAvatar
-          src={props.imageUrl}
-          fallback={<p>{props.email.split('@')[0].slice(0, 2)}</p>}
-          className='sm:w-[70px] md:w-[110px] lg:w-[150px] sm:h-[70px] md:h-[110px] lg:h-[150px] rounded-full'
-        />
+          />
+        </>
+        
+        
       )}
 
       <div className='gap-y-2 md:absolute bottom-4 inset-x-4 flex flex-col md:flex-row items-center justify-between'>

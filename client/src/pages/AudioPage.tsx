@@ -74,6 +74,7 @@ const AudioPage = () => {
   // const [peerOnConnect, setPeerOnConnect] = useState<Map<string, MediaConnection>>(new Map());
   const localMeetingStates = useRef<Record<string, MeetingState>>({});
   const peerOnConnect = useRef(new Map<string, MediaConnection>());
+  const [useStateLocalMeetingStates, setUseStateLocalMeetingStates] = useState<Record<string, MeetingState>>({});
   const [videoGrid, setVideoGrid] = useState<VideoProps[][]>([]);
 
   const [cameraOn, setCameraOn] = useState<boolean>(false);
@@ -104,7 +105,7 @@ const AudioPage = () => {
           console.log(peer.current!.connections);
         });
 
-        // stream.getTracks().forEach(track => track.enabled = !track.enabled);
+        stream.getTracks().forEach(track => track.enabled = !track.enabled);
         localStream.current = stream;
 
         console.log(stream);
@@ -123,6 +124,7 @@ const AudioPage = () => {
         socket.on('server:meeting:join:success', meetingStates => {
           // setMeetingStates(meetingStates);
           localMeetingStates.current = meetingStates;
+          setUseStateLocalMeetingStates(meetingStates);
           //Call những thằng nằm trong meetingStates mới nhận được.
           console.log('Da nhan meeting state, bat dau goi: ');
           console.log(meetingStates);
@@ -412,6 +414,7 @@ const AudioPage = () => {
       // }
 
       localMeetingStates.current = meetingStates;
+      setUseStateLocalMeetingStates(meetingStates);
 
       // let newVideoList = videoList.filter((video) => {
       //   peerOnConnect.has(video.profileId) || video.profileId === origin.profileId;
@@ -535,7 +538,7 @@ const AudioPage = () => {
     } else {
       console.log('Video grid does not have any thing!');
     }
-  }, [localMeetingStates.current, peerOnConnect.current]);
+  }, [useStateLocalMeetingStates, peerOnConnect.current]);
 
   function addVideo(newVideoProps: VideoProps) {
     // const lastRow = videoGrid.length;
@@ -697,12 +700,14 @@ const AudioPage = () => {
     setCameraOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:camera', origin, identity);
+    localStream.current?.getVideoTracks().forEach(track => track.enabled = !track.enabled);
   };
 
   const clickMic = () => {
     setMicOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:mic', origin, identity);
+    localStream.current?.getAudioTracks().forEach(track => track.enabled = !track.enabled);
   };
 
   const clickShareScreen = () => {
