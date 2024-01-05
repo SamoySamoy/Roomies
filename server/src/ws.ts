@@ -43,8 +43,10 @@ fakeRedis = {
 */
 const fakeRedis: Record<string, Record<string, MeetingState>> = {};
 const getMeetingStates = (groupId: string) => {
-  if (!fakeRedis[groupId]) return [];
-  return Array.from(Object.values(fakeRedis[groupId]));
+  if (!fakeRedis[groupId]) {
+    fakeRedis[groupId] = {};
+  }
+  return fakeRedis[groupId];
 };
 const createMeetingState = (groupId: string, newState: MeetingState) => {
   if (!fakeRedis[groupId]) {
@@ -57,11 +59,13 @@ const updateMeetingState = (
   identity: MeetingStateIdentity,
   toggle: 'camera' | 'mic',
 ) => {
+  console.log(toggle);
+
   if (!fakeRedis[groupId] || !fakeRedis[groupId][`${identity.profileId}`]) {
     return;
   }
   const oldState = fakeRedis[groupId][`${identity.profileId}`];
-  if (oldState.type !== 'camera') {
+  if (oldState.type === 'screen') {
     return;
   }
 
@@ -72,12 +76,16 @@ const updateMeetingState = (
         ...oldState,
         cameraOn: !oldState.cameraOn,
       };
+      break;
     case 'mic':
       newState = {
         ...oldState,
         micOn: !oldState.micOn,
       };
+      break;
   }
+  console.log('Old state', oldState);
+  console.log('New state', newState);
   fakeRedis[groupId][`${identity.profileId}`] = newState;
 };
 const deleteMeetingState = (groupId: string, identity: MeetingStateIdentity) => {
@@ -162,19 +170,19 @@ export type ServerToClientEvents = {
   'server:conversation:message:delete:success': (messages: DirectMessage) => void;
   'server:conversation:message:delete:error': (msg: string) => void;
 
-  'server:meeting:join:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:join:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:join:error': (msg: string) => void;
-  'server:meeting:leave:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:leave:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:leave:error': (msg: string) => void;
-  'server:meeting:camera:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:camera:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:camera:error': (msg: string) => void;
-  'server:meeting:mic:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:mic:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:mic:error': (msg: string) => void;
-  'server:meeting:screen:on:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:on:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:screen:on:error': (msg: string) => void;
-  'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:off:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:screen:off:error': (msg: string) => void;
-  'server:meeting:state': (messtingStates: MeetingState[]) => void;
+  'server:meeting:state': (messtingStates: Record<string, MeetingState>) => void;
   'server:meeting:disconnect': (id: string) => void;
 };
 
@@ -598,7 +606,14 @@ export function setupWs(httpServer: HTTPServer) {
     socket.on('client:meeting:join', (origin, arg) => {
       socket.join(origin.groupId);
       socket.on('disconnect', () => {
-        socket.broadcast.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
+        socket.leave(origin.groupId);
+
+        deleteMeetingState(origin.groupId, {
+          profileId: arg.profileId,
+          type: arg.type,
+        });
+
+        io.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
       });
       try {
         createMeetingState(origin.groupId, arg);
@@ -609,7 +624,6 @@ export function setupWs(httpServer: HTTPServer) {
         socket.emit('server:meeting:join:success', updatedStates);
         // Broad cast cập nhật trạng thái
         socket.broadcast.to(origin.groupId).emit('server:meeting:state', updatedStates);
-        
       } catch (error: any) {
         console.log(error);
         if (error instanceof ValidationError) {
@@ -622,7 +636,7 @@ export function setupWs(httpServer: HTTPServer) {
     // On user leave meeting
     socket.on('client:meeting:leave', (origin, arg) => {
       socket.leave(origin.groupId);
-      
+
       try {
         deleteMeetingState(origin.groupId, arg);
         console.log(fakeRedis);

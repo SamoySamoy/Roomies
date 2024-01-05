@@ -62,19 +62,19 @@ export type ServerToClientEvents = {
   'server:peer:init:success': (id: string) => void;
   'server:user-disconnected': (id: string) => void;
 
-  'server:meeting:join:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:join:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:join:error': (msg: string) => void;
-  'server:meeting:leave:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:leave:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:leave:error': (msg: string) => void;
-  'server:meeting:camera:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:camera:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:camera:error': (msg: string) => void;
-  'server:meeting:mic:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:mic:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:mic:error': (msg: string) => void;
-  'server:meeting:screen:on:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:on:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:screen:on:error': (msg: string) => void;
-  'server:meeting:screen:off:success': (meetingStates: MeetingState[]) => void;
+  'server:meeting:screen:off:success': (meetingStates: Record<string, MeetingState>) => void;
   'server:meeting:screen:off:error': (msg: string) => void;
-  'server:meeting:state': (messtingStates: MeetingState[]) => void;
+  'server:meeting:state': (messtingStates: Record<string, MeetingState>) => void;
   'server:meeting:disconnect': (id: string) => void;
 };
 
@@ -108,7 +108,6 @@ export type MessageUpload = {
 
 export type MessageUpdate = { messageId: string; content: string };
 export type MessageDelete = { messageId: string };
-
 
 export type ClientToServerEvents = {
   'client:room:join': (origin: RoomOrigin, arg: MessageIdentity) => void;
