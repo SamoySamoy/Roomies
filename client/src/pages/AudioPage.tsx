@@ -5,7 +5,7 @@ import Peer, { MediaConnection } from 'peerjs';
 import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
-import { fa, id_ID, vi } from '@faker-js/faker';
+import { fa, id_ID, ro, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/VideoCard';
 import { CallTracker } from 'assert';
 import ActionTooltip from '@/components/ActionToolTip';
@@ -183,6 +183,16 @@ const AudioPage = () => {
                 type: 'camera'
               }
               addVideo(newVideoProps);
+            } else if (callerState.type === 'screen') {
+                let newVideoProps: VideoProps = {
+                  stream: callerStream,
+                  profileId: callerState.profileId,
+                  imageUrl: callerState.imageUrl,
+                  email: callerState.email,
+                  type: 'screen'
+                }
+                addVideo(newVideoProps)
+              
             }
           });
           call.on('close', () => {
@@ -296,21 +306,66 @@ const AudioPage = () => {
       console.log(peerOnConnect);
       console.log(videoGrid);
 
-      // if (localMeetingStates.current.length > meetingStates.length) {
-      //   let leaverState = localMeetingStates.current.filter((state) => {
-      //     let exist = false;
-      //     for (let i = 0; i < meetingStates.length; i++) {
-      //       if (meetingStates[i].profileId === state.profileId) {
-      //         exist = true;
-      //         break;
-      //       }
-      //     }
-      //     return !exist;
-      //   })[0];
-      //   if (leaverState.type === 'screen') {
+      if (localMeetingStates.current.length > meetingStates.length) {
+        let leaverState = localMeetingStates.current.filter((state) => {
+          let exist = false;
+          for (let i = 0; i < meetingStates.length; i++) {
+            if (meetingStates[i].profileId === state.profileId) {
+              exist = true;
+              break;
+            }
+          }
+          return !exist;
+        })[0];
+        if (leaverState.type === 'screen') {
           
-      //   }
-      // }
+        }
+      } else if (localMeetingStates.current.length === meetingStates.length) {
+        // Mic, or Camera toogle
+        let tooglerIndex = -1;
+        for (let i = 0; i < localMeetingStates.current.length; i++) {
+          let oldState = localMeetingStates.current[i];
+          if (oldState.type === 'camera') {
+            for (let j = 0; j < meetingStates.length; j++) {
+              let newState = meetingStates[j];
+              if (newState.type === 'camera') {
+                if (oldState.profileId === newState.profileId 
+                  && (oldState.cameraOn !== newState.cameraOn || oldState.micOn !== newState.micOn)) {
+                    tooglerIndex = j;
+                    break;
+                  }
+              }
+              
+            }
+          }
+        }
+        let tooglerState = meetingStates[tooglerIndex];
+        let tooglerId = tooglerState.profileId;
+        if (tooglerState.type === 'camera') {
+          let row = -1;
+          let col = -1;
+          for (let i = 0; i < videoGrid.length; i++) {
+            for (let j = 0; j < MAX_VIDEO_PER_ROW; j++) {
+              if (videoGrid[i][j].profileId === tooglerState.profileId) {
+                row = i;
+                col = j;
+              }
+            }
+          }
+          let oldStream = videoGrid[row][col].stream;
+
+          let newVideoProp: VideoProps = {
+            stream: oldStream,
+            profileId: tooglerState.profileId,
+            email: tooglerState.email,
+            imageUrl: tooglerState.imageUrl,
+            micOn: tooglerState.micOn,
+            cameraOn: tooglerState.cameraOn,
+            type: 'camera'
+          }
+          updateVideoGrid(newVideoProp, row, col);
+        }
+      }
 
 
 
@@ -399,6 +454,19 @@ const AudioPage = () => {
   
       return newGrid;
     });
+  }
+
+  function updateVideoGrid(newVideoState: VideoProps, tooglerRow: number, tooglerCol: number) {
+    const newGrid = videoGrid.map((videoStates, row) => {
+      return videoStates.map((videoState, col) => {
+        if (row == tooglerCol && col == tooglerCol) {
+          return newVideoState;
+        }
+        return videoState;
+      });
+    });
+
+    setVideoGrid(newGrid);
   }
 
   function removeVideo(id: string) {
