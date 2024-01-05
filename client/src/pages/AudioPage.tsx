@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
 import { fa, id_ID, ro, vi } from '@faker-js/faker';
+import { fa, id_ID, ro, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/VideoCard';
 import { CallTracker } from 'assert';
 import ActionTooltip from '@/components/ActionToolTip';
@@ -194,6 +195,15 @@ const AudioPage = () => {
                 micOn: callerState.micOn,
                 cameraOn: callerState.cameraOn,
                 type: 'camera',
+              };
+              addVideo(newVideoProps);
+            } else if (callerState.type === 'screen') {
+              let newVideoProps: VideoProps = {
+                stream: callerStream,
+                profileId: callerState.profileId,
+                imageUrl: callerState.imageUrl,
+                email: callerState.email,
+                type: 'screen',
               };
               addVideo(newVideoProps);
             } else if (callerState.type === 'screen') {
