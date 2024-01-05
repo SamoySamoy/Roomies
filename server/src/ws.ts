@@ -612,6 +612,16 @@ export function setupWs(httpServer: HTTPServer) {
           profileId: arg.profileId,
           type: arg.type,
         });
+        let leaverEmail = fakeRedis[origin.groupId][arg.profileId].email;
+        //Delete screen from fake redis
+        let leaverId = Object.values(fakeRedis[origin.groupId]).filter(state => {
+          return state.type === 'screen' && state.email === leaverEmail;
+        })[0].profileId;
+        let screenIdentity: MeetingStateIdentity = {
+          profileId: leaverId,
+          type: 'screen'
+        }
+        if (leaverId) deleteMeetingState(origin.groupId, screenIdentity);
 
         io.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
       });
@@ -639,6 +649,15 @@ export function setupWs(httpServer: HTTPServer) {
 
       try {
         deleteMeetingState(origin.groupId, arg);
+        let leaverEmail = fakeRedis[origin.groupId][arg.profileId].email;
+        let leaverId = Object.values(fakeRedis[origin.groupId]).filter(state => {
+          return state.type === 'screen' && state.email === leaverEmail;
+        })[0].profileId;
+        let screenIdentity: MeetingStateIdentity = {
+          profileId: leaverId,
+          type: 'screen'
+        }
+        if (leaverId) deleteMeetingState(origin.groupId, screenIdentity);
         console.log(fakeRedis);
         const updatedStates = getMeetingStates(origin.groupId);
         // Broad cast cập nhật trạng thái

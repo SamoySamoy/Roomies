@@ -246,7 +246,7 @@ const AudioPage = () => {
         socket.on('server:meeting:disconnect', id => {
           let leaverEmail = localMeetingStates.current[id].email;
           let screenId = Object.values(localMeetingStates.current).filter(meetingState => {
-            meetingState.type === 'screen' && meetingState.email === leaverEmail;
+            return meetingState.type === 'screen' && meetingState.email === leaverEmail;
           })[0].profileId;
           peerOnConnect.current.get(screenId)?.close();
           removePeerOnConnect(screenId);
