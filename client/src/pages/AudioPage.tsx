@@ -248,11 +248,14 @@ const AudioPage = () => {
 
         socket.on('server:meeting:disconnect', id => {
           let leaverEmail = localMeetingStates.current[id].email;
-          let screenId = Object.values(localMeetingStates.current).filter(meetingState => {
+          let leaverScreenState = Object.values(localMeetingStates.current).filter(meetingState => {
             return meetingState.type === 'screen' && meetingState.email === leaverEmail;
-          })[0].profileId;
-          peerOnConnect.current.get(screenId)?.close();
-          removePeerOnConnect(screenId);
+          })[0];
+          if (leaverScreenState) {
+            let leaverScreenId = leaverScreenState.profileId;
+            peerOnConnect.current.get(leaverScreenId)?.close();
+            removePeerOnConnect(leaverScreenId);
+          }
           peerOnConnect.current.get(id)?.close();
           removePeerOnConnect(id);
         });
