@@ -84,15 +84,26 @@ const updateMeetingState = (
       };
       break;
   }
-  console.log('Old state', oldState);
-  console.log('New state', newState);
   fakeRedis[groupId][`${identity.profileId}`] = newState;
 };
-const deleteMeetingState = (groupId: string, identity: MeetingStateIdentity) => {
-  if (!fakeRedis[groupId] || !fakeRedis[groupId][`${identity.profileId}`]) {
-    return;
+const deleteMeetingState = (groupId: string, identity: MeetingStateIdentity, email?: string) => {
+  if (email) {
+    if (!fakeRedis[groupId]) return;
+    const profileIdWithSameEmail: string[] = [];
+    Object.keys(fakeRedis[groupId]).forEach(profileId => {
+      const state = fakeRedis[groupId][profileId];
+      if (state.email === email) profileIdWithSameEmail.push(profileId);
+    });
+    profileIdWithSameEmail.forEach(deletedProfileId => {
+      delete fakeRedis[groupId][deletedProfileId];
+    });
+  } else {
+    if (!fakeRedis[groupId] || !fakeRedis[groupId][`${identity.profileId}`]) {
+      return;
+    }
+
+    delete fakeRedis[groupId][`${identity.profileId}`];
   }
-  delete fakeRedis[groupId][`${identity.profileId}`];
 
   if (Array.from(Object.keys(fakeRedis[groupId])).length === 0) {
     delete fakeRedis[groupId];
@@ -605,26 +616,30 @@ export function setupWs(httpServer: HTTPServer) {
     // On user join meeting
     socket.on('client:meeting:join', (origin, arg) => {
       socket.join(origin.groupId);
+
+      console.log('Client join', arg.email);
+
       socket.on('disconnect', () => {
         socket.leave(origin.groupId);
 
-        deleteMeetingState(origin.groupId, {
-          profileId: arg.profileId,
-          type: arg.type,
-        });
-        let leaverEmail = fakeRedis[origin.groupId][arg.profileId].email;
-        //Delete screen from fake redis
-        let leaverId = Object.values(fakeRedis[origin.groupId]).filter(state => {
-          return state.type === 'screen' && state.email === leaverEmail;
-        })[0].profileId;
-        let screenIdentity: MeetingStateIdentity = {
-          profileId: leaverId,
-          type: 'screen'
-        }
-        if (leaverId) deleteMeetingState(origin.groupId, screenIdentity);
+        console.log('Fake redis before: ', fakeRedis);
+
+        deleteMeetingState(
+          origin.groupId,
+          {
+            profileId: origin.profileId,
+            type: arg.type,
+          },
+          arg.email,
+        );
+
+        console.log('Fake redis after: ', fakeRedis);
 
         io.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
+
+        socket.removeAllListeners();
       });
+
       try {
         createMeetingState(origin.groupId, arg);
         console.log(arg.email + ' join the meeting');
@@ -648,17 +663,11 @@ export function setupWs(httpServer: HTTPServer) {
       socket.leave(origin.groupId);
 
       try {
-        deleteMeetingState(origin.groupId, arg);
         let leaverEmail = fakeRedis[origin.groupId][arg.profileId].email;
-        let leaverId = Object.values(fakeRedis[origin.groupId]).filter(state => {
-          return state.type === 'screen' && state.email === leaverEmail;
-        })[0].profileId;
-        let screenIdentity: MeetingStateIdentity = {
-          profileId: leaverId,
-          type: 'screen'
-        }
-        if (leaverId) deleteMeetingState(origin.groupId, screenIdentity);
-        console.log(fakeRedis);
+        console.log('Clinet meeting leave detect', leaverEmail);
+        console.log(leaverEmail);
+        deleteMeetingState(origin.groupId, arg, leaverEmail);
+
         const updatedStates = getMeetingStates(origin.groupId);
         // Broad cast cập nhật trạng thái
         socket.to(origin.groupId).emit('server:meeting:state', updatedStates);

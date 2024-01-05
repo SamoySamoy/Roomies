@@ -126,7 +126,7 @@ const AudioPage = () => {
           //Call những thằng nằm trong meetingStates mới nhận được.
           console.log('Da nhan meeting state, bat dau goi: ');
           console.log(meetingStates);
-          
+
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
               let otherId = meetingState.profileId;
@@ -134,7 +134,7 @@ const AudioPage = () => {
                 let call = peer.current!.call(otherId, localStream.current!);
                 console.log('Calling: ' + otherId + ' with ');
                 console.log(localStream);
-                call.once('stream', (otherStream) => {
+                call.once('stream', otherStream => {
                   addPeerOnConnect(otherId, call);
                   console.log('Receive answer from: ' + otherId);
                   // let otherIndexState = 0;
@@ -147,7 +147,7 @@ const AudioPage = () => {
                   // console.log(localMeetingStates);
                   // let otherState = localMeetingStates.current[otherIndexState];
                   let otherState = meetingState;
-                  
+
                   if (otherState.type === 'camera') {
                     let newVideoProps: VideoProps = {
                       stream: otherStream,
@@ -166,7 +166,7 @@ const AudioPage = () => {
                       profileId: otherState.profileId,
                       imageUrl: otherState.imageUrl,
                       email: otherState.email,
-                      type: 'screen'
+                      type: 'screen',
                     };
                     addVideo(newVideoProps);
                   }
@@ -183,7 +183,7 @@ const AudioPage = () => {
           });
         });
 
-        peer.current.on('call', (call) => {
+        peer.current.on('call', call => {
           let callerId = call.peer;
           call.answer(stream);
           call.once('stream', (callerStream: MediaStream) => {
@@ -197,8 +197,9 @@ const AudioPage = () => {
             //   }
             // }
             let callerStateId = '';
-            Object.keys(localMeetingStates.current).forEach((key) => {
-              if (localMeetingStates.current[key].profileId === callerId) callerStateId = localMeetingStates.current[key].profileId;
+            Object.keys(localMeetingStates.current).forEach(key => {
+              if (localMeetingStates.current[key].profileId === callerId)
+                callerStateId = localMeetingStates.current[key].profileId;
             });
             console.log(localMeetingStates);
             let callerState = localMeetingStates.current[callerStateId];
@@ -224,15 +225,15 @@ const AudioPage = () => {
                 type: 'screen',
               };
               addVideo(newVideoProps);
-            // } else if (callerState.type === 'screen') {
-            //   let newVideoProps: VideoProps = {
-            //     stream: callerStream,
-            //     profileId: callerState.profileId,
-            //     imageUrl: callerState.imageUrl,
-            //     email: callerState.email,
-            //     type: 'screen',
-            //   };
-            //   addVideo(newVideoProps);
+              // } else if (callerState.type === 'screen') {
+              //   let newVideoProps: VideoProps = {
+              //     stream: callerStream,
+              //     profileId: callerState.profileId,
+              //     imageUrl: callerState.imageUrl,
+              //     email: callerState.email,
+              //     type: 'screen',
+              //   };
+              //   addVideo(newVideoProps);
             }
           });
           call.on('close', () => {
@@ -446,16 +447,26 @@ const AudioPage = () => {
       // check mình đang có peer nào
       // Có cái nào thì ném hết lên (tôi đa emit 2 lần)
       socket.emit('client:meeting:leave', origin, identity);
+      if (localScreenStream.current) {
+        socket.emit('client:meeting:leave', origin, {
+          profileId: screenId.current!,
+          type: 'screen',
+        });
+      }
       console.log('clean up group');
       // peerOnConnect.current.forEach((call) => {
       //   call.close();
       // });
-      localStream.current!.getTracks().forEach(track => track.stop());
-      peer.current!.destroy();
+      localStream.current?.getTracks().forEach(track => track.stop());
+      localStream.current = undefined;
+      peer.current?.destroy();
       peer.current = undefined;
-      localScreenStream.current!.getTracks().forEach(track => track.stop());
-      screenPeer.current!.destroy();
+      localScreenStream.current?.getTracks().forEach(track => track.stop());
+      localStream.current = undefined;
+      screenPeer.current?.destroy();
       screenPeer.current = undefined;
+
+      socket.removeAllListeners();
     };
   }, []);
 
@@ -465,30 +476,41 @@ const AudioPage = () => {
   }, [videoGrid]);
 
   useEffect(() => {
+    console.log('Video props set');
+
     let newGrid: VideoProps[][] = [];
     console.log('Grid: ');
     console.log(videoGrid);
     console.log('Peer on connect: ');
     console.log(peerOnConnect.current);
-    console.log('Local meetin State')
+    console.log('Local meetin State');
     console.log(localMeetingStates.current);
     if (videoGrid.length !== 0) {
-      let numOfCurrentVideo = (videoGrid.length - 1) * MAX_VIDEO_PER_ROW + videoGrid[videoGrid.length - 1].length; 
+      let numOfCurrentVideo =
+        (videoGrid.length - 1) * MAX_VIDEO_PER_ROW + videoGrid[videoGrid.length - 1].length;
       let i = 0;
       while (i < numOfCurrentVideo) {
         let row = Math.floor(i / MAX_VIDEO_PER_ROW);
         let col = i % MAX_VIDEO_PER_ROW;
         let oldVideo = videoGrid[row][col];
 
-        if (oldVideo.profileId === origin.profileId || oldVideo.profileId === screenId.current 
-          || (localMeetingStates.current[oldVideo.profileId] && peerOnConnect.current.has(oldVideo.profileId))) {
+        if (
+          oldVideo.profileId === origin.profileId ||
+          oldVideo.profileId === screenId.current ||
+          (localMeetingStates.current[oldVideo.profileId] &&
+            peerOnConnect.current.has(oldVideo.profileId))
+        ) {
           let newState = localMeetingStates.current[oldVideo.profileId];
           if (newState.type === 'camera' && oldVideo.type === 'camera') {
+            console.log(newState);
+
             let newVideo: VideoProps = {
               ...oldVideo,
               cameraOn: newState.cameraOn,
-              micOn: newState.micOn
-            }
+              micOn: newState.micOn,
+            };
+
+            console.log(newVideo);
 
             if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
               newGrid.push([newVideo]);
@@ -497,8 +519,8 @@ const AudioPage = () => {
             }
           } else if (newState.type === 'screen' && oldVideo.type === 'screen') {
             let newVideo: VideoProps = {
-              ...oldVideo
-            }
+              ...oldVideo,
+            };
 
             if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
               newGrid.push([newVideo]);
@@ -506,16 +528,13 @@ const AudioPage = () => {
               newGrid[newGrid.length - 1].push(newVideo);
             }
           }
-          
         }
         i++;
       }
       setVideoGrid(newGrid);
     } else {
-      console.log('Video grid does not have any thing!')
+      console.log('Video grid does not have any thing!');
     }
-    
-    
   }, [localMeetingStates.current, peerOnConnect.current]);
 
   function addVideo(newVideoProps: VideoProps) {
@@ -732,7 +751,7 @@ const AudioPage = () => {
           addVideo(screenProps);
 
           socket.on('server:meeting:screen:on:success', meetingStates => {
-            Object.values(meetingStates).forEach((meetingState) => {
+            Object.values(meetingStates).forEach(meetingState => {
               if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
                 let otherId = meetingState.profileId;
                 try {
@@ -753,7 +772,7 @@ const AudioPage = () => {
     } else {
       // dung share man
       setShareScreenOn(false);
-      localScreenStream.current!.getTracks().forEach(track => track.stop());
+      localScreenStream.current?.getTracks().forEach(track => track.stop());
       let screenState: MeetingState = {
         profileId: screenId.current!,
         email: auth.email!,
