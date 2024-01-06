@@ -120,8 +120,8 @@ const VideoPage = () => {
           setUseStateLocalMeetingStates(meetingStates);
           //Call những thằng nằm trong meetingStates mới nhận được.
 
-          console.log('Da nhan meeting state, bat dau goi: ');
-          console.log(meetingStates);
+          // console.log('Da nhan meeting state, bat dau goi: ');
+          // console.log(meetingStates);
 
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
@@ -129,13 +129,13 @@ const VideoPage = () => {
               try {
                 let call = peer.current!.call(otherId, localStream.current!);
 
-                console.log('Calling: ' + otherId + ' with ');
-                console.log(localStream);
+                // console.log('Calling: ' + otherId + ' with ');
+                // console.log(localStream);
 
                 call.once('stream', otherStream => {
                   addPeerOnConnect(otherId, call);
 
-                  console.log('Receive answer from: ' + otherId);
+                  // console.log('Receive answer from: ' + otherId);
 
                   // let otherIndexState = 0;
                   // for (let i = 0; i < localMeetingStates.current.length; i++) {
@@ -172,7 +172,7 @@ const VideoPage = () => {
                   }
                 });
                 call.on('close', () => {
-                  console.log('second user removing: ' + otherId);
+                  // console.log('second user removing: ' + otherId);
                   removeVideo(otherId);
                   removePeerOnConnect(otherId);
                 });
@@ -187,8 +187,8 @@ const VideoPage = () => {
           let callerId = call.peer;
           call.answer(stream);
           call.once('stream', (callerStream: MediaStream) => {
-            console.log('Receive stream from caller:' + callerId);
-            console.log(localMeetingStates.current);
+            // console.log('Receive stream from caller:' + callerId);
+            // console.log(localMeetingStates.current);
             // for (let i = 0; i < localMeetingStates.current.length; i++) {
             //   if (localMeetingStates.current[i].profileId === callerId) {
             //     callerStateIndex = i;
@@ -200,7 +200,7 @@ const VideoPage = () => {
               if (localMeetingStates.current[key].profileId === callerId)
                 callerStateId = localMeetingStates.current[key].profileId;
             });
-            console.log(localMeetingStates);
+            // console.log(localMeetingStates);
             let callerState = localMeetingStates.current[callerStateId];
 
             addPeerOnConnect(callerId, call);
@@ -236,10 +236,10 @@ const VideoPage = () => {
             }
           });
           call.on('close', () => {
-            console.log('the first user remove: ' + callerId);
+            // console.log('the first user remove: ' + callerId);
             removePeerOnConnect(callerId);
             removeVideo(callerId);
-            console.log(peerOnConnect);
+            // console.log(peerOnConnect);
           });
         });
 
@@ -347,10 +347,10 @@ const VideoPage = () => {
 
     socket.on('server:meeting:state', meetingStates => {
       // setMeetingStates(meetingStates);
-      console.log('update');
-      console.log(meetingStates);
-      console.log(peerOnConnect);
-      console.log(videoGrid);
+      // console.log('update');
+      // console.log(meetingStates);
+      // console.log(peerOnConnect);
+      // console.log(videoGrid);
 
       // if (localMeetingStates.current.length > meetingStates.length) {
       //   let leaverState = localMeetingStates.current.filter(state => {
@@ -456,7 +456,7 @@ const VideoPage = () => {
           type: 'screen',
         });
       }
-      console.log('clean up group');
+      // console.log('clean up group');
       // peerOnConnect.current.forEach((call) => {
       //   call.close();
       // });
@@ -473,71 +473,74 @@ const VideoPage = () => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log('list updated: ');
-    console.log(videoGrid);
-  }, [videoGrid]);
+  // useEffect(() => {
+  //   console.log('list updated: ');
+  //   console.log(videoGrid);
+  // }, [videoGrid]);
 
   useEffect(() => {
-    console.log('Video props set');
+    // console.log('Video props set');
 
     let newGrid: VideoProps[][] = [];
-    console.log('Grid: ');
-    console.log(videoGrid);
-    console.log('Peer on connect: ');
-    console.log(peerOnConnect.current);
-    console.log('Local meetin State');
-    console.log(localMeetingStates.current);
-    if (videoGrid.length !== 0) {
-      let numOfCurrentVideo =
-        (videoGrid.length - 1) * MAX_VIDEO_PER_ROW + videoGrid[videoGrid.length - 1].length;
-      let i = 0;
-      while (i < numOfCurrentVideo) {
-        let row = Math.floor(i / MAX_VIDEO_PER_ROW);
-        let col = i % MAX_VIDEO_PER_ROW;
-        let oldVideo = videoGrid[row][col];
-
-        if (
-          oldVideo.profileId === origin.profileId ||
-          oldVideo.profileId === screenId.current ||
-          (localMeetingStates.current[oldVideo.profileId] &&
-            peerOnConnect.current.has(oldVideo.profileId))
-        ) {
-          let newState = localMeetingStates.current[oldVideo.profileId];
-          if (newState.type === 'camera' && oldVideo.type === 'camera') {
-            console.log(newState);
-
-            let newVideo: VideoProps = {
-              ...oldVideo,
-              cameraOn: newState.cameraOn,
-              micOn: newState.micOn,
-            };
-
-            console.log(newVideo);
-
-            if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
-              newGrid.push([newVideo]);
-            } else {
-              newGrid[newGrid.length - 1].push(newVideo);
-            }
-          } else if (newState.type === 'screen' && oldVideo.type === 'screen') {
-            let newVideo: VideoProps = {
-              ...oldVideo,
-            };
-
-            if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
-              newGrid.push([newVideo]);
-            } else {
-              newGrid[newGrid.length - 1].push(newVideo);
+    // console.log('Grid: ');
+    // console.log(videoGrid);
+    // console.log('Peer on connect: ');
+    // console.log(peerOnConnect.current);
+    // console.log('Local meetin State');
+    // console.log(localMeetingStates.current);
+    setVideoGrid(prevVideoGrid => {
+      if (prevVideoGrid.length !== 0) {
+        let numOfCurrentVideo =
+          (prevVideoGrid.length - 1) * MAX_VIDEO_PER_ROW + prevVideoGrid[prevVideoGrid.length - 1].length;
+        let i = 0;
+        while (i < numOfCurrentVideo) {
+          let row = Math.floor(i / MAX_VIDEO_PER_ROW);
+          let col = i % MAX_VIDEO_PER_ROW;
+          let oldVideo = prevVideoGrid[row][col];
+  
+          if (
+            oldVideo.profileId === origin.profileId ||
+            oldVideo.profileId === screenId.current ||
+            (localMeetingStates.current[oldVideo.profileId] &&
+              peerOnConnect.current.has(oldVideo.profileId))
+          ) {
+            let newState = localMeetingStates.current[oldVideo.profileId];
+            if (newState.type === 'camera' && oldVideo.type === 'camera') {
+              // console.log(newState);
+  
+              let newVideo: VideoProps = {
+                ...oldVideo,
+                cameraOn: newState.cameraOn,
+                micOn: newState.micOn,
+              };
+  
+              // console.log(newVideo);
+  
+              if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
+                newGrid.push([newVideo]);
+              } else {
+                newGrid[newGrid.length - 1].push(newVideo);
+              }
+            } else if (newState.type === 'screen' && oldVideo.type === 'screen') {
+              let newVideo: VideoProps = {
+                ...oldVideo,
+              };
+  
+              if (newGrid.length === 0 || newGrid[newGrid.length - 1].length === MAX_VIDEO_PER_ROW) {
+                newGrid.push([newVideo]);
+              } else {
+                newGrid[newGrid.length - 1].push(newVideo);
+              }
             }
           }
+          i++;
         }
-        i++;
+        return newGrid;
+      } else {
+        console.log('Video grid does not have any thing!');
+        return [];
       }
-      setVideoGrid(newGrid);
-    } else {
-      console.log('Video grid does not have any thing!');
-    }
+    })
   }, [useStateLocalMeetingStates, peerOnConnect.current]);
 
   function addVideo(newVideoProps: VideoProps) {
@@ -711,7 +714,7 @@ const VideoPage = () => {
   };
 
   const clickShareScreen = () => {
-    console.log(shareScreenOn);
+    // console.log(shareScreenOn);
 
     if (!shareScreenOn) {
       navigator.mediaDevices.getDisplayMedia({ audio: true, video: true }).then(screenStream => {
@@ -734,7 +737,7 @@ const VideoPage = () => {
         screenId.current = screenPeer.current.id;
         //
         screenPeer.current.on('call', call => {
-          console.log('Screen received call from user: ' + call.peer);
+          // console.log('Screen received call from user: ' + call.peer);
           call.answer(localStream.current!);
         });
         //
@@ -762,8 +765,8 @@ const VideoPage = () => {
                 try {
                   //Gửi stream screen cho các người dùng
                   // let call = screenPeer.current!.call(otherId, localScreenStream.current!);
-                  console.log('Calling: ' + otherId + ' with ');
-                  console.log(localStream);
+                  // console.log('Calling: ' + otherId + ' with ');
+                  // console.log(localStream);
                 } catch (err) {
                   console.log(err);
                 }
@@ -831,7 +834,7 @@ const VideoPage = () => {
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
       <div
         className={cn('flex-1 flex flex-col gap-y-4 overflow-y-auto', {
-          'justify-center': videoGrid.length <= 2 && !videoOnFocus,
+          'justify-center': videoGrid.length < 2 && !videoOnFocus,
         })}
       >
         {videoOnFocus && (
