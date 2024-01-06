@@ -1,7 +1,14 @@
 import hero from '../../assets/img/hero2.webp';
 import { SearchIcon } from 'lucide-react';
+import React from 'react';
 
-const Search = () => {
+
+interface SearchProps {
+  query: string;
+  onChange: (e :React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const Search = ({query, onChange}: SearchProps) => {
   return (
     <div className='relative  h-[13rem] sm:h-[16rem]  md:h-[19rem] rounded-[0.3rem] z-10'>
       {/* Background Image */}
@@ -16,13 +23,15 @@ const Search = () => {
 
       {/* Search */}
       <div className='relative z-20   flex flex-col items-center justify-center  h-full font-bold text-white  pb-0 space-y-2'>
-        <p className='text-[19px] md:text-[24px] font-black'>Find your community on Discord</p>
-        <p className='pb-2 text-[13.5px] md:text-[17px]    text-white/70'>
+        <p className='text-[19px] md:text-[24px] font-black'>Find your community on Roomies</p>
+        <p className='pb-2 text-[13.5px] md:text-[17px] text-white/70'>
           From gaming, to music, to study, there's a place for you.
         </p>
         <div className='relative flex items-center      mb-4'>
           <input
             type='search '
+            value={query}
+            onChange={onChange}
             placeholder='Explore servers'
             className='rounded-[0.3rem] pl-3 placeholder:text-[14px]  md:placeholder:text-[16px] placeholder:text-gray-500 outline-0     py-2 md:py-3 w-[25rem] md:w-[35rem] text-black'
           />

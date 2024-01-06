@@ -3,6 +3,8 @@ import Featured from './Featured';
 import Search from './Search';
 import { LoadingPage } from '@/components/Loading';
 import { Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { normalizeStr } from '@/lib/utils';
 
 const ExplorePage = () => {
   const {
@@ -21,8 +23,32 @@ const ExplorePage = () => {
     },
     {
       refetchOnMount: true,
+      select: data => {
+        if (!query) return data;
+
+        const filteredData = data.filter(room => {
+          const normalizedSearch = normalizeStr(query);
+          const isNameConform = normalizeStr(room.name).includes(normalizedSearch);
+          const isTypeConform = normalizeStr(room.type).includes(normalizedSearch);
+          // const is
+        });
+
+        return filteredData;
+      },
     },
   );
+
+  const [query, setQuery] = useState('');
+  const filterdRoom = rooms?.filter(room => {
+    if (query.length === 0) return true;
+    return room.name.split(' ').some(word => {
+      return word.toLowerCase().startsWith(query);
+    });
+  });
+
+  function handleChane(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+  }
 
   if (isPending || isFetching) {
     return <LoadingPage />;
@@ -34,8 +60,8 @@ const ExplorePage = () => {
 
   return (
     <div className='bg-white dark:bg-[#313338] w-full min-h-full px-4 py-2'>
-      <Search />
-      <Featured rooms={rooms} />
+      <Search query={query} onChange={handleChane} />
+      <Featured rooms={filterdRoom} />
     </div>
   );
 };

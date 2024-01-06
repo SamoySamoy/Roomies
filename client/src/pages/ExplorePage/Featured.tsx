@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 
 type FeaturedProps = {
-  rooms: Room[];
+  rooms: Room[] | undefined;
 };
 
 const Featured = ({ rooms }: FeaturedProps) => {
@@ -25,7 +25,7 @@ const Featured = ({ rooms }: FeaturedProps) => {
 
       {/* Cards*/}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 sm:gap-x-4 mb-4'>
-        {rooms.map(room => (
+        {rooms?.map(room => (
           <RoomCard key={room.id} room={room} />
         ))}
       </div>
