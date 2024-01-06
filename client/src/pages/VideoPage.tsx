@@ -121,7 +121,7 @@ const VideoPage = () => {
           //Call những thằng nằm trong meetingStates mới nhận được.
 
           // console.log('Da nhan meeting state, bat dau goi: ');
-          // console.log(meetingStates);
+          console.log(meetingStates);
 
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
@@ -187,8 +187,8 @@ const VideoPage = () => {
           let callerId = call.peer;
           call.answer(stream);
           call.once('stream', (callerStream: MediaStream) => {
-            // console.log('Receive stream from caller:' + callerId);
-            // console.log(localMeetingStates.current);
+            console.log('Receive stream from caller:' + callerId);
+            console.log(localMeetingStates.current);
             // for (let i = 0; i < localMeetingStates.current.length; i++) {
             //   if (localMeetingStates.current[i].profileId === callerId) {
             //     callerStateIndex = i;
@@ -758,13 +758,13 @@ const VideoPage = () => {
           };
           addVideo(screenProps);
 
-          socket.on('server:meeting:screen:on:success', meetingStates => {
+          socket.once('server:meeting:screen:on:success', meetingStates => {
             Object.values(meetingStates).forEach(meetingState => {
               if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
                 let otherId = meetingState.profileId;
                 try {
                   //Gửi stream screen cho các người dùng
-                  let call = screenPeer.current!.call(otherId, localScreenStream.current!);
+                  let call = screenPeer.current!.call(otherId, screenStream);
                   // console.log('Calling: ' + otherId + ' with ');
                   // console.log(localStream);
                 } catch (err) {
