@@ -27,6 +27,7 @@ import { useModal } from '@/hooks/useModal';
 import { CreateGroupSchema, useCreateGroupForm } from '@/hooks/forms';
 import { useUpdateGroupMutation } from '@/hooks/mutations';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const EditGroupModal = () => {
   const {
@@ -35,6 +36,7 @@ const EditGroupModal = () => {
     closeModal,
     data: { room, group },
   } = useModal();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const form = useCreateGroupForm({
     groupName: group?.name!,
@@ -54,7 +56,8 @@ const EditGroupModal = () => {
             description: 'Edit group successfully',
             variant: 'success',
           });
-          handleClose();
+          closeModal();
+          navigate(`/rooms/${room?.id}`);
         },
         onError: () => {
           toast({

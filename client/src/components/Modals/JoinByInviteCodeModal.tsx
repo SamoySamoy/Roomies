@@ -61,7 +61,6 @@ const JoinByInviteCodeModal = () => {
           description: 'Join room by invite code failed',
           variant: 'error',
         });
-        closeModal();
       },
       onSettled: () => {
         clearForm();

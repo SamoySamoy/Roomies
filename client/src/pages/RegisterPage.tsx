@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { LoginSchema, useLoginForm } from '@/hooks/forms';
+import { LoginSchema, RegisterSchema, useLoginForm, useRegisterForm } from '@/hooks/forms';
 import { useRegisterMutation } from '@/hooks/mutations';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -18,11 +18,18 @@ import bg from '@/assets/bg.jpg';
 const RegisterPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const form = useLoginForm();
+  const form = useRegisterForm();
   const mutation = useRegisterMutation();
   const isLoading = form.formState.isSubmitting || mutation.isPending;
 
-  const onSubmit = async (values: LoginSchema) => {
+  const onSubmit = async (values: RegisterSchema) => {
+    const { confirmPassword, password } = form.getValues();
+    if (confirmPassword !== password) {
+      return form.setError('confirmPassword', {
+        message: 'Confirm password not match',
+      });
+    }
+
     mutation.mutate(values, {
       onSuccess: () => {
         toast({
@@ -84,6 +91,26 @@ const RegisterPage = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='shad-form_label text-white'>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type='password'
+                        className='shad-input'
+                        {...field}
+                        placeholder='Password'
+                        autoComplete='current-password'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='confirmPassword'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='shad-form_label text-white'>Confirm password</FormLabel>
                     <FormControl>
                       <Input
                         type='password'

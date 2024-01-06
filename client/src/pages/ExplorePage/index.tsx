@@ -25,32 +25,34 @@ const ExplorePage = () => {
     {
       refetchOnMount: true,
       select: data => {
-        if (!search) return data;
-        if (!data) return data;
+        if (!normalizeStr(search)) return data;
+        if (!data || data.length === 0) return data;
 
-        // Filter function 1
-        // const filteredData = data.filter(room => {
-        //   if (search.length === 0) return true;
-        //   return search.split(' ').some(queryWord => {
-        //     if (queryWord.length === 0) return false;
-        //     return room.name.includes(queryWord);
-        //   });
-        // });
-
-        // Filter function 2
-        const filteredData = data.filter(room => {
+        const isIncluded = (target: string, search: string, some: boolean = false) => {
+          const normalizedTarget = normalizeStr(target);
           const normalizedSearch = normalizeStr(search);
-          const isNameConform = normalizeStr(room.name).includes(normalizedSearch);
-          const isTypeConform = normalizeStr(room.type).includes(normalizedSearch);
-          const isIdConform =
-            normalizeStr(room.id).includes(normalizedSearch) ||
-            normalizeStr(room.profileId).includes(normalizedSearch);
-          const isInviteCodeConform = normalizeStr(room.inviteCode).includes(normalizedSearch);
-          const isEmailConform = normalizeStr(room.profile.email).includes(normalizedSearch);
 
-          return (
-            isNameConform || isTypeConform || isIdConform || isInviteCodeConform || isEmailConform
-          );
+          if (some) {
+            return normalizedSearch.split(' ').some(searchWord => {
+              if (searchWord.length === 0) return false;
+              return normalizedTarget.includes(searchWord);
+            });
+          } else {
+            return normalizedSearch.split(' ').every(searchWord => {
+              if (searchWord.length === 0) return false;
+              return normalizedTarget.includes(searchWord);
+            });
+          }
+        };
+
+        const filteredData = data.filter(room => {
+          const isNameConform = isIncluded(room.name, search, true);
+          const isTypeConform = isIncluded(room.type, search);
+          // const isIdConform = isIncluded(room.id, search) || isIncluded(room.profileId, search);
+          const isInviteCodeConform = isIncluded(room.inviteCode, search);
+          const isEmailConform = isIncluded(room.profile.email, search);
+
+          return isNameConform || isTypeConform || isInviteCodeConform || isEmailConform;
         });
 
         return filteredData;

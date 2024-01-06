@@ -21,6 +21,26 @@ export const useLoginForm = (init?: LoginSchema) =>
     },
   });
 
+export const registerSchema = z.object({
+  email: z.string().min(1).email({
+    message: 'Require email',
+  }),
+  password: z.string().min(3, {
+    message: 'Password at least 3 character',
+  }),
+  confirmPassword: z.string().trim(),
+});
+export type RegisterSchema = z.infer<typeof registerSchema>;
+export const useRegisterForm = (init?: RegisterSchema) =>
+  useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: init?.email || '',
+      password: init?.password || '',
+      confirmPassword: init?.confirmPassword || '',
+    },
+  });
+
 export const forgotSchema = z.object({
   email: z.string().min(1).email({
     message: 'Require email',
