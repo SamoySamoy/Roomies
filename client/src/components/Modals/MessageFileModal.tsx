@@ -49,7 +49,6 @@ const MessageFileModal = () => {
   };
 
   const onSubmit = async (_: FormSchema) => {
-    // console.log(uploadedFile);
     if (!uploadedFile || uploadedFile?.type === 'online') return;
 
     if (uploadedFile.file.size > convertMbToBytes(IMAGE_SIZE_LIMIT_IN_MB)) {
@@ -59,9 +58,6 @@ const MessageFileModal = () => {
         variant: 'warning',
       });
     }
-
-    // console.log('Group origin', groupOrigin);
-    // console.log('Conversation origin', conversationOrigin);
 
     if (groupOrigin) {
       socket.emit('client:group:message:upload', groupOrigin!, {
@@ -91,10 +87,12 @@ const MessageFileModal = () => {
         clearForm();
       }}
     >
-      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-2xl text-center font-bold'>Add an attachment</DialogTitle>
-          <DialogDescription className='text-center text-zinc-500'>Send a file</DialogDescription>
+          <DialogDescription className='text-center text-zinc-500 dark:text-zinc-400'>
+            Send a file
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
@@ -126,7 +124,7 @@ const MessageFileModal = () => {
                 />
               </div>
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={form.formState.isLoading}>
                 <span className='text-foreground'>Send</span>
               </Button>

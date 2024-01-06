@@ -37,8 +37,8 @@ const ChatMessages = ({
 
   const [typing, setTyping] = useState('');
   const typingTimer = useRef<any>(null);
-  const [join, setJoin] = useState('');
-  const [leave, setLeave] = useState('');
+  // const [join, setJoin] = useState('');
+  // const [leave, setLeave] = useState('');
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -61,12 +61,12 @@ const ChatMessages = ({
       email: auth.email!,
     });
 
-    const onJoin: ServerToClientEvents['server:conversation:join:success'] = msg => {
-      setJoin(msg);
-    };
-    const onLeave: ServerToClientEvents['server:conversation:leave:success'] = msg => {
-      setLeave(msg);
-    };
+    // const onJoin: ServerToClientEvents['server:conversation:join:success'] = msg => {
+    //   setJoin(msg);
+    // };
+    // const onLeave: ServerToClientEvents['server:conversation:leave:success'] = msg => {
+    //   setLeave(msg);
+    // };
     const onTyping: ServerToClientEvents['server:conversation:typing:success'] = msg => {
       setTyping(msg);
       if (typingTimer?.current) {
@@ -156,8 +156,8 @@ const ChatMessages = ({
         );
       };
 
-    socket.on('server:conversation:join:success', onJoin);
-    socket.on('server:conversation:leave:success', onLeave);
+    // socket.on('server:conversation:join:success', onJoin);
+    // socket.on('server:conversation:leave:success', onLeave);
     socket.on('server:conversation:typing:success', onTyping);
     socket.on('server:conversation:message:post:success', onNewMessage);
     socket.on('server:conversation:message:upload:success', onNewMessage);
@@ -184,8 +184,8 @@ const ChatMessages = ({
         email: auth.email!,
       });
 
-      socket.off('server:conversation:join:success', onJoin);
-      socket.off('server:conversation:leave:success', onLeave);
+      // socket.off('server:conversation:join:success', onJoin);
+      // socket.off('server:conversation:leave:success', onLeave);
       socket.off('server:conversation:typing:success', onTyping);
       socket.off('server:conversation:message:post:success', onNewMessage);
       socket.off('server:conversation:message:upload:success', onNewMessage);

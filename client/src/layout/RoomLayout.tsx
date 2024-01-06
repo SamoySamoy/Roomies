@@ -1,25 +1,21 @@
 import { LoadingPage } from '@/components/Loading';
 import RoomSidebar from '@/components/Sidebar/RoomSidebar';
-import { queryKeyFactory, useRoomQuery } from '@/hooks/queries';
+import { useRoomQuery } from '@/hooks/queries';
 import { useAuth } from '@/hooks/useAuth';
-import { ClientToServerEvents, RoomOrigin, ServerToClientEvents, socket } from '@/lib/socket';
-import { useEffect } from 'react';
-import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { Room } from '@/lib/types';
+// import { RoomOrigin } from '@/lib/socket';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 
 const RoomLayout = () => {
-  const { toast } = useToast();
   const { auth } = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  // const { toast } = useToast();
+  // const navigate = useNavigate();
+  // const queryClient = useQueryClient();
 
   const { roomId } = useParams<{ roomId: string }>();
-  const origin: RoomOrigin = {
-    profileId: auth.profileId!,
-    roomId: roomId!,
-  };
+  // const origin: RoomOrigin = {
+  //   profileId: auth.profileId!,
+  //   roomId: roomId!,
+  // };
 
   const {
     data: room,

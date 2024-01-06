@@ -52,15 +52,15 @@ const LeaveRoomModal = () => {
 
   return (
     <Dialog open={isOpen && modalType === 'leaveRoom'} onOpenChange={closeModal}>
-      <DialogContent className='bg-white text-black p-0 overflow-hidden'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Leave Room</DialogTitle>
-          <DialogDescription className='text-center text-zinc-500'>
+          <DialogDescription className='text-center text-zinc-500 dark:text-zinc-400'>
             Are you sure you want to leave{' '}
             <span className='font-semibold text-indigo-500'>{room?.name}</span>?
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className='bg-gray-100 px-6 py-4'>
+        <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
           <div className='flex items-center justify-between w-full'>
             <Button
               // disabled={isLoading}

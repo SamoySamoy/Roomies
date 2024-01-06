@@ -1,4 +1,4 @@
-import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react';
+import { Hash, ShieldAlert, ShieldCheck, Video } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 

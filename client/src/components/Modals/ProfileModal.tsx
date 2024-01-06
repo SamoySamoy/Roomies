@@ -150,10 +150,10 @@ const ProfileModal = () => {
         clearImageForm();
       }}
     >
-      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-center text-2xl font-bold'>Profile</DialogTitle>
-          <DialogDescription className='text-center text-zinc-500'>
+          <DialogDescription className='text-center text-zinc-500 dark:text-zinc-400'>
             Customize your personal profile
           </DialogDescription>
         </DialogHeader>
@@ -173,11 +173,11 @@ const ProfileModal = () => {
                 name=''
                 render={() => (
                   <FormItem>
-                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                       Email
                     </FormLabel>
                     <div className='flex items-center justify-between'>
-                      <p className='text-black text-md font-bold'>{auth.email}</p>
+                      <p className='text-foreground text-md font-bold'>{auth.email}</p>
                       <Badge
                         variant={'public'}
                         className='font-bold text-xs flex items-center gap-x-1 py-1 px-2'
@@ -196,7 +196,7 @@ const ProfileModal = () => {
                   name='currentPassword'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                         Current Password
                       </FormLabel>
                       <FormControl>
@@ -204,7 +204,7 @@ const ProfileModal = () => {
                           type='password'
                           placeholder='Current Password'
                           autoComplete='current-password'
-                          className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                          className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                           {...field}
                           disabled={isLoading}
                         />
@@ -221,7 +221,7 @@ const ProfileModal = () => {
                   name='newPassword'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                         New Password
                       </FormLabel>
                       <FormControl>
@@ -229,7 +229,7 @@ const ProfileModal = () => {
                           type='password'
                           placeholder='New Password'
                           autoComplete='new-password'
-                          className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                          className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                           {...field}
                           disabled={isLoading}
                         />
@@ -246,7 +246,7 @@ const ProfileModal = () => {
                   name='confirmNewPassword'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                         Confirm New Password
                       </FormLabel>
                       <FormControl>
@@ -254,7 +254,7 @@ const ProfileModal = () => {
                           type='password'
                           placeholder='Confirm New Password'
                           autoComplete='confirm-password'
-                          className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                          className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                           {...field}
                           disabled={isLoading}
                         />
@@ -266,7 +266,7 @@ const ProfileModal = () => {
               )}
             </div>
 
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
               {isImageChanged && (
                 <Button
                   disabled={isLoading}

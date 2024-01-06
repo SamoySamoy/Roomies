@@ -1,9 +1,8 @@
 import { Hash } from 'lucide-react';
 
-import MobileToggle from '@/components/MobileToggle';
+// import MobileToggle from '@/components/MobileToggle';
 import MemberAvatar from '@/components/MemberAvatar';
 import SocketIndicator from '@/components/SocketIndicator';
-import VideoButton from '../CameraButton';
 import { getFileUrl } from '@/lib/utils';
 
 interface ChatHeaderProps {

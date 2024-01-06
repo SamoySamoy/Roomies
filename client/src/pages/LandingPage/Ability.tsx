@@ -1,4 +1,4 @@
-import img from '@/assets/img1.svg';
+import img from '../../assets/img1.svg';
 import { cn } from '@/lib/utils';
 import { MessageCircleIcon, Mic, Users, Video } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
@@ -26,10 +26,12 @@ const Ability = () => {
             <p className='text-lg text-gray-600'>Roomies offers many chat channels</p>
             <div ref={ref}>
               <div className='grid grid-cols-2 py-8 gap-8 justify-evenly w-[640px]'>
-                <div className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
+                <div
+                  className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
                 hover:-skew-x-3 hover:scale-105 hover:shadow-[2rem_2rem_2rem_-1rem_#0004,inset_1rem_1rem_4rem_-1rem_#fff1] 
                 border-zinc-800 bg-zinc-900 hover:border-zinc-600
-                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'>
+                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'
+                >
                   <div className='p-4 bg-[#E9F8F3] rounded-xl'>
                     <MessageCircleIcon size={30} className='text-emerald-500' />
                   </div>
@@ -39,10 +41,12 @@ const Ability = () => {
                     <p className='text-[#6D737A]'>express endlessly</p>
                   </div>
                 </div>
-                <div className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
+                <div
+                  className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
                 hover:-skew-x-3 hover:scale-105 hover:shadow-[2rem_2rem_2rem_-1rem_#0004,inset_1rem_1rem_4rem_-1rem_#fff1] 
                 border-zinc-800 bg-zinc-900 hover:border-zinc-600
-                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'>
+                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'
+                >
                   <div className='p-4 bg-[#FFFAF5] rounded-xl'>
                     <Video size={30} className='text-yellow-400' />
                   </div>
@@ -52,10 +56,12 @@ const Ability = () => {
                     <p className='text-[#6D737A]'>bridging distances</p>
                   </div>
                 </div>
-                <div className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
+                <div
+                  className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
                 hover:-skew-x-3 hover:scale-105 hover:shadow-[2rem_2rem_2rem_-1rem_#0004,inset_1rem_1rem_4rem_-1rem_#fff1] 
                 border-zinc-800 bg-zinc-900 hover:border-zinc-600
-                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'>
+                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'
+                >
                   <div className='p-4 bg-[#FFEEF0] rounded-xl'>
                     <Mic size={30} className='text-red-400' />
                   </div>
@@ -65,10 +71,12 @@ const Ability = () => {
                     <p className='text-[#6D737A]'>hear the world</p>
                   </div>
                 </div>
-                <div className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
+                <div
+                  className='pl-2 py-2 items-center flex flex-row rounded-2xl border drop-shadow-[0_0_15px_rgba(49,49,49,0.2)] duration-300 
                 hover:-skew-x-3 hover:scale-105 hover:shadow-[2rem_2rem_2rem_-1rem_#0004,inset_1rem_1rem_4rem_-1rem_#fff1] 
                 border-zinc-800 bg-zinc-900 hover:border-zinc-600
-                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'>
+                dark:border-zinc-800 dark:bg-zinc-900 dark:drop-shadow-[0_0_15px_rgba(49,49,49,0.35)] dark:hover:border-zinc-600 bis_skin_checked="1"'
+                >
                   <div className='p-4 bg-[#F0F7FF] rounded-xl'>
                     <Users size={30} className='text-blue-400' />
                   </div>

@@ -13,7 +13,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -88,10 +87,10 @@ const JoinPrivateRoomModal = () => {
         clearForm();
       }}
     >
-      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-2xl text-center font-bold'>Join Room</DialogTitle>
-          <DialogDescription className='text-left text-zinc-500'>
+          <DialogDescription className='text-left text-zinc-500 dark:text-zinc-400'>
             If you want to join private room{' '}
             <span className='text-indigo-500 font-semibold'>{room?.name}</span>, you must provide
             secret password
@@ -105,14 +104,13 @@ const JoinPrivateRoomModal = () => {
                 name='roomPassword'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                       Room password
                     </FormLabel>
-                    <FormDescription>Private room require a password</FormDescription>
                     <FormControl>
                       <Input
                         disabled={isLoading}
-                        className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                        className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                         placeholder='Enter password for private room'
                         {...field}
                         type='password'
@@ -124,7 +122,7 @@ const JoinPrivateRoomModal = () => {
                 )}
               />
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={isLoading}>
                 Join
               </Button>

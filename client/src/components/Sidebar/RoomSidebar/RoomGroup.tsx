@@ -1,10 +1,10 @@
-import { Edit, Hash, Lock, Mic, Trash, Video } from 'lucide-react';
+import { Edit, Hash, Lock, Trash, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ActionTooltip from '@/components/ActionToolTip';
 import { useModal } from '@/hooks/useModal';
 import { ModalType } from '@/hooks/useModal';
 import { Group, GroupType, MemberRole, Room } from '@/lib/types';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface RoomGroupProps {
   group: Group;

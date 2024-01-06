@@ -22,7 +22,7 @@ export const useLoginMutation = () => {
       const res = await api.post<{ accessToken: string }>('/auth/login', data);
       return res.data;
     },
-    onSuccess: data => {
+    onSuccess: () => {
       // console.log(data.accessToken);
     },
     onError: () => {

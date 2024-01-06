@@ -1,9 +1,7 @@
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversationQuery, useRoomQuery } from '@/hooks/queries';
 import { LoadingPage } from '@/components/Loading';
-import { useToast } from '@/components/ui/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
 import ChatHeader from '@/components/Conversation/ChatHeader';
 import ChatInput from '@/components/Conversation/ChatInput';
 import ChatMessages from '@/components/Conversation/ChatMessages';
@@ -12,9 +10,9 @@ import { ConversationOrigin } from '@/lib/socket';
 const ConversationPage = () => {
   const { auth } = useAuth();
   const { memberId: otherMemberId, roomId } = useParams<{ memberId: string; roomId: string }>();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  // const { toast } = useToast();
+  // const navigate = useNavigate();
+  // const queryClient = useQueryClient();
   const queryObj = {
     groups: true,
     members: true,

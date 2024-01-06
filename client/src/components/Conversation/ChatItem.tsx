@@ -35,8 +35,8 @@ const ChatItem = ({ directMessage, currentMember, conversationOrigin }: ChatItem
     content: directMessage.content,
   });
 
-  const isAdmin = currentMember.role === MemberRole.ADMIN;
-  const isModerator = currentMember.role === MemberRole.MODERATOR;
+  // const isAdmin = currentMember.role === MemberRole.ADMIN;
+  // const isModerator = currentMember.role === MemberRole.MODERATOR;
   const isMessageOwner = currentMember.id === directMessage.memberId;
   const isFile = Boolean(directMessage.fileUrl);
   const isImage = isFile && isImageFile(directMessage.fileUrl);
@@ -105,18 +105,24 @@ const ChatItem = ({ directMessage, currentMember, conversationOrigin }: ChatItem
             </span>
           </div>
           {isImage && (
-            <a
-              href={getFileUrl(directMessage.fileUrl)}
-              target='_blank'
+            <span
+              onClick={() => {
+                openModal({
+                  modalType: 'image',
+                  data: {
+                    imageUrl: getFileUrl(directMessage.fileUrl),
+                  },
+                });
+              }}
               rel='noopener noreferrer'
-              className={`relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[${CLIENT_MESSAGE_FILE_HEIGHT}px] w-[${CLIENT_MESSAGE_FILE_WIDTH}px]`}
+              className={`relative rounded-md mt-2 overflow-hidden border flex items-center w-fit h-fit`}
             >
               <img
                 src={getFileUrl(directMessage.fileUrl)}
                 alt={directMessage.content}
-                className='object-cover'
+                className={`h-[${CLIENT_MESSAGE_FILE_HEIGHT}px] w-[${CLIENT_MESSAGE_FILE_WIDTH}px]`}
               />
-            </a>
+            </span>
           )}
           {isOtherFileType && (
             <div className='relative flex items-center p-2 mt-2 rounded-md bg-background/10'>

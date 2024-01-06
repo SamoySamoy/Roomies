@@ -1,4 +1,4 @@
-import hero from '../photos/hero2.webp';
+import hero from '../../assets/img/hero2.webp';
 import { SearchIcon } from 'lucide-react';
 
 const Search = () => {

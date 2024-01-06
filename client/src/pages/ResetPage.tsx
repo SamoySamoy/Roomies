@@ -67,10 +67,10 @@ const ResetPage = () => {
 
   return (
     <Dialog open>
-      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-center text-2xl font-bold'>Reset your password</DialogTitle>
-          <DialogDescription className='text-left text-zinc-500'>
+          <DialogDescription className='text-left text-zinc-500 dark:text-zinc-400'>
             Provide new password for your profile. New password will be activated immediately
           </DialogDescription>
         </DialogHeader>
@@ -84,7 +84,7 @@ const ResetPage = () => {
                     name='password'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                           Password
                         </FormLabel>
                         <FormControl>
@@ -93,7 +93,7 @@ const ResetPage = () => {
                             placeholder='New password'
                             autoComplete='current-password'
                             disabled={isLoading}
-                            className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                            className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                             {...field}
                           />
                         </FormControl>
@@ -110,7 +110,7 @@ const ResetPage = () => {
                     name='confirmPassword'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                           Confirm password
                         </FormLabel>
                         <FormControl>
@@ -119,7 +119,7 @@ const ResetPage = () => {
                             placeholder='Confirm your new password'
                             autoComplete='current-password'
                             disabled={isLoading}
-                            className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                            className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                             {...field}
                           />
                         </FormControl>
@@ -130,7 +130,7 @@ const ResetPage = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4 flex sm:items-center sm:justify-between'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4 flex sm:items-center sm:justify-between'>
               <div className='flex items-center justify-between sm:justify-start'>
                 <Link to={'/'}>
                   <Button type='button' variant='link'>

@@ -27,8 +27,8 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
 
   const [typing, setTyping] = useState('');
   const typingTimer = useRef<any>(null);
-  const [join, setJoin] = useState('');
-  const [leave, setLeave] = useState('');
+  // const [join, setJoin] = useState('');
+  // const [leave, setLeave] = useState('');
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -51,12 +51,12 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
       email: auth.email!,
     });
 
-    const onJoin: ServerToClientEvents['server:group:join:success'] = msg => {
-      setJoin(msg);
-    };
-    const onLeave: ServerToClientEvents['server:group:leave:success'] = msg => {
-      setLeave(msg);
-    };
+    // const onJoin: ServerToClientEvents['server:group:join:success'] = msg => {
+    //   setJoin(msg);
+    // };
+    // const onLeave: ServerToClientEvents['server:group:leave:success'] = msg => {
+    //   setLeave(msg);
+    // };
     const onTyping: ServerToClientEvents['server:group:typing:success'] = msg => {
       setTyping(msg);
       if (typingTimer?.current) {
@@ -145,8 +145,8 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
         );
       };
 
-    socket.on('server:group:join:success', onJoin);
-    socket.on('server:group:leave:success', onLeave);
+    // socket.on('server:group:join:success', onJoin);
+    // socket.on('server:group:leave:success', onLeave);
     socket.on('server:group:typing:success', onTyping);
     socket.on('server:group:message:post:success', onNewMessage);
     socket.on('server:group:message:upload:success', onNewMessage);
@@ -173,8 +173,8 @@ const ChatMessages = ({ currentGroup, currentMember, origin, name, type }: ChatM
         email: auth.email!,
       });
 
-      socket.off('server:group:join:success', onJoin);
-      socket.off('server:group:leave:success', onLeave);
+      // socket.off('server:group:join:success', onJoin);
+      // socket.off('server:group:leave:success', onLeave);
       socket.off('server:group:typing:success', onTyping);
       socket.off('server:group:message:post:success', onNewMessage);
       socket.off('server:group:message:upload:success', onNewMessage);

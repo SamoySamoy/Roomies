@@ -78,7 +78,7 @@ const CreateGroupModal = () => {
 
   return (
     <Dialog open={isOpen && modalType === 'createGroup'} onOpenChange={handleClose}>
-      <DialogContent className='bg-white text-black p-0 overflow-hidden'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Create Group</DialogTitle>
         </DialogHeader>
@@ -90,13 +90,13 @@ const CreateGroupModal = () => {
                 name='groupName'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                       Group name
                     </FormLabel>
                     <FormControl>
                       <Input
                         disabled={isLoading}
-                        className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                        className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                         placeholder='Enter group name'
                         {...field}
                       />
@@ -110,14 +110,16 @@ const CreateGroupModal = () => {
                 name='groupType'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Group Type</FormLabel>
+                    <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                      Group Type
+                    </FormLabel>
                     <Select
                       disabled={isLoading}
                       onValueChange={field.onChange}
                       defaultValue={field.value.toString()}
                     >
                       <FormControl>
-                        <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
+                        <SelectTrigger className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white capitalize outline-none'>
                           <SelectValue placeholder='Select a group type' />
                         </SelectTrigger>
                       </FormControl>
@@ -134,7 +136,7 @@ const CreateGroupModal = () => {
                 )}
               />
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={isLoading}>
                 Create
               </Button>

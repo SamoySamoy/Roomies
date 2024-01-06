@@ -102,7 +102,6 @@ const MembersModal = () => {
     };
     const onKickError: ServerToClientEvents['server:room:kick:error'] = msg => {
       toast({
-        description: 'Kick member failed',
         description: msg,
         variant: 'error',
       });
@@ -117,7 +116,6 @@ const MembersModal = () => {
     };
     const onChangeRoleError: ServerToClientEvents['server:room:role:error'] = msg => {
       toast({
-        description: 'Change role failed',
         description: msg,
         variant: 'error',
       });
@@ -138,11 +136,11 @@ const MembersModal = () => {
 
   return (
     <Dialog open={isOpen && modalType === 'members'} onOpenChange={closeModal}>
-      <DialogContent className='bg-white text-black overflow-hidden'>
+      <DialogContent className='overflow-hidden bg-white text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='pt-8 px-6'>
           <DialogTitle className='text-2xl text-center font-bold'>Manage Members</DialogTitle>
           {!isPending && !isFetching && (
-            <DialogDescription className='text-center text-zinc-500'>
+            <DialogDescription className='text-center text-zinc-500 dark:text-zinc-400'>
               {members.length} Members
             </DialogDescription>
           )}
@@ -197,7 +195,7 @@ export const MemberCard = ({ member, origin }: MemberCardProps) => {
           {member.profile.email}
           {roleIconMap[member.role]}
         </div>
-        <p className='text-xs text-zinc-500 capitalize'>
+        <p className='text-xs text-zinc-500 dark:text-zinc-400 capitalize'>
           {member.role.toLowerCase()}
           {isYourself && '- Yourself'}
         </p>

@@ -2,8 +2,8 @@ import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
-import NavigationSidebar from './Sidebar/NavigationSidebar';
-import RoomSidebar from './Sidebar/RoomSidebar';
+// import NavigationSidebar from './Sidebar/NavigationSidebar';
+// import RoomSidebar from './Sidebar/RoomSidebar';
 
 const MobileToggle = () => {
   return (
@@ -14,11 +14,9 @@ const MobileToggle = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side='left' className='p-0 flex gap-0'>
-        <div className='w-[72px]'>
-          <NavigationSidebar />
-        </div>
+        <div className='w-[72px]'>{/* <NavigationSidebar /> */}</div>
         {/* <ChannelListSidebar roomId={roomId} /> */}
-        <RoomSidebar />
+        {/* <RoomSidebar /> */}
       </SheetContent>
     </Sheet>
   );

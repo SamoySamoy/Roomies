@@ -58,11 +58,11 @@ const AudioPage = () => {
   const [micOn, setMicOn] = useState(false);
   const [shareScreenOn, setShareScreenOn] = useState(false);
 
-  const [videoGrid, setVideoGrid] = useState<VideoProps[][]>(genFakeVideoProps());
+  const [videoGrid] = useState<VideoProps[][]>(genFakeVideoProps());
 
-  const addVideo = (newVid: VideoProps) => {};
+  // const addVideo = (newVid: VideoProps) => {};
 
-  const removeVideo = (id: string) => {};
+  // const removeVideo = (id: string) => {};
 
   const clickCamera = () => {
     setCameraOn(prev => !prev);
@@ -85,7 +85,7 @@ const AudioPage = () => {
           return (
             <div className='flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center' key={i}>
               {row.map(col => (
-                <Video key={col.profileId} {...col} />
+                <Video key={col.profileId} {...col} onPinClick={() => {}} />
               ))}
             </div>
           );

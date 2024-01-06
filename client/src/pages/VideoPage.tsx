@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Video from '@/components/VideoCard';
 import Peer, { MediaConnection } from 'peerjs';
-// import { Peer } from "peerjs";
 import { useNavigate, useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,7 +12,6 @@ import VideoButton from '@/components/CameraButton';
 import PhoneButton from '@/components/PhoneButton';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '@/lib/utils';
-import { profile } from 'console';
 
 /* 
 1. Kill local screen stream, local sreen peer
@@ -55,7 +53,7 @@ type MeetingState = {
 type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
 
 const MAX_VIDEO_PER_ROW = 4;
-const ITEM_LIMIT = 27;
+// const ITEM_LIMIT = 27;
 
 const VideoPage = () => {
   const navigate = useNavigate();
@@ -101,14 +99,10 @@ const VideoPage = () => {
             cameraOn: false,
           };
           socket.emit('client:meeting:join', origin, meetingState);
-          console.log(peer.current!.connections);
         });
 
         stream.getTracks().forEach(track => (track.enabled = !track.enabled));
         localStream.current = stream;
-
-        console.log(stream);
-        console.log(localStream);
 
         addVideo({
           stream: localStream.current!,
@@ -125,6 +119,7 @@ const VideoPage = () => {
           localMeetingStates.current = meetingStates;
           setUseStateLocalMeetingStates(meetingStates);
           //Call những thằng nằm trong meetingStates mới nhận được.
+
           console.log('Da nhan meeting state, bat dau goi: ');
           console.log(meetingStates);
 
@@ -133,11 +128,15 @@ const VideoPage = () => {
               let otherId = meetingState.profileId;
               try {
                 let call = peer.current!.call(otherId, localStream.current!);
+
                 console.log('Calling: ' + otherId + ' with ');
                 console.log(localStream);
+
                 call.once('stream', otherStream => {
                   addPeerOnConnect(otherId, call);
+
                   console.log('Receive answer from: ' + otherId);
+
                   // let otherIndexState = 0;
                   // for (let i = 0; i < localMeetingStates.current.length; i++) {
                   //   if (localMeetingStates.current[i].profileId === otherId) {
@@ -190,7 +189,6 @@ const VideoPage = () => {
           call.once('stream', (callerStream: MediaStream) => {
             console.log('Receive stream from caller:' + callerId);
             console.log(localMeetingStates.current);
-            let callerStateIndex = 0;
             // for (let i = 0; i < localMeetingStates.current.length; i++) {
             //   if (localMeetingStates.current[i].profileId === callerId) {
             //     callerStateIndex = i;
@@ -313,39 +311,39 @@ const VideoPage = () => {
     //   // removeVideo(id);
     // });
 
-    function syncVideoListState(videoList: VideoProps[], meetingStates: MeetingState[]) {
-      console.log(videoList);
-      let newVideoList = [];
-      for (let i = 0; i < videoList.length; i++) {
-        //Find  the state
-        let profileId = videoList[i].profileId;
-        let stateIndex = -1;
-        for (let j = 0; j < meetingStates.length; j++) {
-          if (meetingStates[i].profileId === profileId) {
-            stateIndex = j;
-            break;
-          }
-        }
+    // function syncVideoListState(videoList: VideoProps[], meetingStates: MeetingState[]) {
+    //   console.log(videoList);
+    //   let newVideoList = [];
+    //   for (let i = 0; i < videoList.length; i++) {
+    //     //Find  the state
+    //     let profileId = videoList[i].profileId;
+    //     let stateIndex = -1;
+    //     for (let j = 0; j < meetingStates.length; j++) {
+    //       if (meetingStates[i].profileId === profileId) {
+    //         stateIndex = j;
+    //         break;
+    //       }
+    //     }
 
-        //Sync the state to vidList
-        // let meetingState = meetingStates[stateIndex];
-        // if (meetingState.type === 'camera') {
-        //   let newVideoProps: VideoProps = {
-        //     stream: videoList[i].stream,
-        //     profileId: profileId,
-        //     email: meetingState.email,
-        //     imageUrl: meetingState.imageUrl,
-        //     cameraOn: meetingState.cameraOn,
-        //     micOn: meetingState.micOn
-        //   }
-        //   newVideoList.push(newVideoProps);
-        // }
+    //     //Sync the state to vidList
+    //     // let meetingState = meetingStates[stateIndex];
+    //     // if (meetingState.type === 'camera') {
+    //     //   let newVideoProps: VideoProps = {
+    //     //     stream: videoList[i].stream,
+    //     //     profileId: profileId,
+    //     //     email: meetingState.email,
+    //     //     imageUrl: meetingState.imageUrl,
+    //     //     cameraOn: meetingState.cameraOn,
+    //     //     micOn: meetingState.micOn
+    //     //   }
+    //     //   newVideoList.push(newVideoProps);
+    //     // }
 
-        // if (newVideoList.length !== videoList.length) console.log('Sync video list problem');
+    //     // if (newVideoList.length !== videoList.length) console.log('Sync video list problem');
 
-        // setVideoList(newVideoList);
-      }
-    }
+    //     // setVideoList(newVideoList);
+    //   }
+    // }
 
     socket.on('server:meeting:state', meetingStates => {
       // setMeetingStates(meetingStates);
@@ -580,18 +578,18 @@ const VideoPage = () => {
     });
   }
 
-  function updateVideoGrid(newVideoState: VideoProps, tooglerRow: number, tooglerCol: number) {
-    const newGrid = videoGrid.map((videoStates, row) => {
-      return videoStates.map((videoState, col) => {
-        if (row == tooglerCol && col == tooglerCol) {
-          return newVideoState;
-        }
-        return videoState;
-      });
-    });
+  // function updateVideoGrid(newVideoState: VideoProps, tooglerRow: number, tooglerCol: number) {
+  //   const newGrid = videoGrid.map((videoStates, row) => {
+  //     return videoStates.map((videoState, col) => {
+  //       if (row == tooglerCol && col == tooglerCol) {
+  //         return newVideoState;
+  //       }
+  //       return videoState;
+  //     });
+  //   });
 
-    setVideoGrid(newGrid);
-  }
+  //   setVideoGrid(newGrid);
+  // }
 
   function removeVideo(id: string) {
     // // Create a new grid without the video with the specified profileId
@@ -763,7 +761,7 @@ const VideoPage = () => {
                 let otherId = meetingState.profileId;
                 try {
                   //Gửi stream screen cho các người dùng
-                  let call = screenPeer.current!.call(otherId, localScreenStream.current!);
+                  // let call = screenPeer.current!.call(otherId, localScreenStream.current!);
                   console.log('Calling: ' + otherId + ' with ');
                   console.log(localStream);
                 } catch (err) {
@@ -809,6 +807,7 @@ const VideoPage = () => {
           }
         });
       });
+      removeVideo(profileId);
     } else {
       videoGrid.forEach(row => {
         row.forEach(col => {
@@ -832,7 +831,7 @@ const VideoPage = () => {
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
       <div
         className={cn('flex-1 flex flex-col gap-y-4 overflow-y-auto', {
-          'justify-center': videoGrid.length <= 2,
+          'justify-center': videoGrid.length <= 2 && !videoOnFocus,
         })}
       >
         {videoOnFocus && (
@@ -852,7 +851,7 @@ const VideoPage = () => {
                   {...col}
                   onPinClick={onPinClick}
                   className={cn({
-                    'h-[700px]': videoGrid.length === 1,
+                    'h-[600px]': videoGrid.length === 1,
                     'h-[500px]': videoGrid.length === 1 && videoGrid[0].length > 2,
                     'h-[400px]': videoGrid.length === 2,
                     'h-[300px]': videoGrid.length > 2,
@@ -863,7 +862,7 @@ const VideoPage = () => {
           );
         })}
       </div>
-      <div className='absolute inset-x-0 mx-auto bottom-10 opacity-0 flex translate-y-[100px] group-hover:translate-y-0 group-hover:opacity-1 group-hover:opacity-100 item-center justify-center gap-x-6 transition-all duration-500'>
+      <div className='absolute inset-x-0 z-10 mx-auto bottom-10 opacity-0 flex translate-y-[100px] group-hover:translate-y-0 group-hover:opacity-1 group-hover:opacity-100 item-center justify-center gap-x-6 transition-all duration-500'>
         <VideoButton on={cameraOn} onClick={clickCamera} />
         <MicButton on={micOn} onClick={clickMic} />
         <ShareScreenButton on={shareScreenOn} onClick={clickShareScreen} />

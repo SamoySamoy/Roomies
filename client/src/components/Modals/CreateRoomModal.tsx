@@ -87,10 +87,10 @@ const CreateRoomModal = () => {
         clearForm();
       }}
     >
-      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
           <DialogTitle className='text-center text-2xl font-bold'>Create your room</DialogTitle>
-          <DialogDescription className='text-left text-zinc-500'>
+          <DialogDescription className='text-left text-zinc-500 dark:text-zinc-400'>
             Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>
         </DialogHeader>
@@ -134,13 +134,13 @@ const CreateRoomModal = () => {
                     name='roomName'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                           Room name
                         </FormLabel>
                         <FormControl>
                           <Input
                             disabled={isLoading}
-                            className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                            className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                             placeholder='Enter room name'
                             {...field}
                           />
@@ -157,7 +157,7 @@ const CreateRoomModal = () => {
                     name='roomType'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                        <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                           Room Type
                         </FormLabel>
                         <FormControl>
@@ -167,7 +167,7 @@ const CreateRoomModal = () => {
                             value={field.value}
                             defaultValue={field.value}
                           >
-                            <SelectTrigger className='bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none'>
+                            <SelectTrigger className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white capitalize outline-none'>
                               <SelectValue placeholder='Select a room type' />
                             </SelectTrigger>
                             <SelectContent>
@@ -192,14 +192,14 @@ const CreateRoomModal = () => {
                   name='roomPassword'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70'>
+                      <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
                         Room password
                       </FormLabel>
                       <FormDescription>Private room require a password</FormDescription>
                       <FormControl>
                         <Input
                           disabled={isLoading}
-                          className='bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0'
+                          className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-zinc-300/50 text-black dark:bg-black dark:text-white'
                           placeholder='Enter password for private room'
                           {...field}
                         />
@@ -210,7 +210,7 @@ const CreateRoomModal = () => {
                 />
               )}
             </div>
-            <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
               <Button type='submit' variant='primary' disabled={isLoading}>
                 Create
               </Button>
