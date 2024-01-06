@@ -7,6 +7,7 @@ import { useModal } from '@/hooks/useModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getFileUrl } from '@/lib/utils';
+import { CLIENT_AVATAR_WIDTH, CLIENT_AVATAR_HEIGHT } from '@/lib/constants';
 
 export const HomeButton = () => {
   return (
@@ -179,7 +180,9 @@ export const ProfileButton = () => {
             })
           }
         >
-          <Avatar className='duration-400 h-11 w-11 cursor-pointer transition-all hover:scale-110'>
+          <Avatar
+            className={`duration-400 h-[${CLIENT_AVATAR_HEIGHT}px] w-[${CLIENT_AVATAR_WIDTH}px] cursor-pointer transition-all hover:scale-110`}
+          >
             <AvatarImage src={getFileUrl(auth.imageUrl)} />
             <AvatarFallback>{auth.email?.split('@')[0].slice(0, 2)}</AvatarFallback>
           </Avatar>

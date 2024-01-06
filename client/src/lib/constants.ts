@@ -73,3 +73,12 @@ export const IMAGE_EXT_LIST = [
   'jfi',
 ];
 export const IMAGE_SIZE_LIMIT_IN_MB = 5;
+
+export const REAL_AVATAR_WIDTH = 300;
+export const REAL_AVATAR_HEIGHT = 300;
+export const REAL_MESSAGE_FILE_WIDTH = 1000;
+export const REAL_MESSAGE_FILE_HEIGHT = 600;
+export const CLIENT_AVATAR_WIDTH = 48;
+export const CLIENT_AVATAR_HEIGHT = 48;
+export const CLIENT_MESSAGE_FILE_WIDTH = 350;
+export const CLIENT_MESSAGE_FILE_HEIGHT = 200;

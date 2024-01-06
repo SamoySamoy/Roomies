@@ -12,5 +12,5 @@ export { default as MyRoomsPage } from './MyRoomsPage';
 export { default as RoomRedirectPage } from './RoomRedirectPage';
 export { default as ErrorPage } from './ErrorPage';
 export { default as NotMemberPage } from './NotMemberPage';
-export { default as AudioPage } from './AudioPage';
+export { default as VideoPage } from './VideoPage';
 export { default as MeetingPageUI } from './MeetingPageUI';

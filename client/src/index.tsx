@@ -14,7 +14,7 @@ import {
   MyRoomsPage,
   FirstRoomPage,
   RoomRedirectPage,
-  AudioPage,
+  VideoPage,
   ForgotPage,
   ResetPage,
   InvitePage,
@@ -31,7 +31,6 @@ import {
   PersistAuthLayout,
 } from '@/layout';
 import { Toaster } from '@/components/ui/toaster';
-import AudioPageTest from './pages/AudioPageTest';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ThemeProvider>
@@ -56,8 +55,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   <Route path=':roomId' Component={RoomLayout}>
                     <Route index Component={RoomRedirectPage} />
                     <Route path='groups/:groupId' Component={ChannelPage} />
-                    <Route path='audiogroups/:groupId' Component={AudioPage} />
-                    <Route path='audiogroups/test' Component={MeetingPageUI} />
+                    <Route path='videogroups/:groupId' Component={VideoPage} />
+                    {/* <Route path='audiogroups/test' Component={MeetingPageUI} /> */}
                     <Route path='conversations/:memberId' Component={ConversationPage} />
                   </Route>
                 </Route>

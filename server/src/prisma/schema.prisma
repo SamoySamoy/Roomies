@@ -99,7 +99,7 @@ model Member {
 
 enum GroupType {
   TEXT
-  AUDIO
+  // AUDIO
   VIDEO
 }
 

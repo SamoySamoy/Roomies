@@ -41,7 +41,7 @@ export const RoomCard = ({ room }: RoomCardProps) => {
   const { openModal } = useModal();
 
   const textGroups = room.groups.filter(group => group.type === GroupType.TEXT);
-  const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
+  // const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
   const videoGroups = room.groups.filter(group => group.type === GroupType.VIDEO);
   const members = room.members;
 
@@ -112,12 +112,12 @@ export const RoomCard = ({ room }: RoomCardProps) => {
               {textGroups.length}
             </div>
           )}
-          {audioGroups.length > 0 && (
+          {/* {audioGroups.length > 0 && (
             <div className='flex gap-1 items-center'>
               <Mic className='flex-shrink-0 w-4 h-4 text-zinc-500 dark:text-zinc-400' />
               {audioGroups.length}
             </div>
-          )}
+          )} */}
           {videoGroups.length > 0 && (
             <div className='flex gap-1 items-center'>
               <Video className='flex-shrink-0 w-4 h-4 text-zinc-500 dark:text-zinc-400' />

@@ -14,6 +14,7 @@ import JoinPublicRoomModal from '@/components/Modals/JoinPublicRoomModal';
 import JoinByInviteCodeModal from '@/components/Modals/JoinByInviteCodeModal';
 import ProfileModal from '@/components/Modals/ProfileModal';
 import { useModal, ModalType } from '@/hooks/useModal';
+import ImageModal from '@/components/Modals/ImageModal';
 
 const modalMap: Record<ModalType, React.FC> = {
   createRoom: CreateRoomModal,
@@ -31,6 +32,7 @@ const modalMap: Record<ModalType, React.FC> = {
   joinPublicRoom: JoinPublicRoomModal,
   joinByInviteCode: JoinByInviteCodeModal,
   profile: ProfileModal,
+  image: ImageModal,
 };
 
 export default function ModalProvider() {

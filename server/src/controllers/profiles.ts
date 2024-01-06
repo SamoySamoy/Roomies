@@ -12,6 +12,7 @@ import {
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { AuthenticatedRequest } from '@/lib/types';
+import { AVATAR_HEIGHT, AVATAR_WIDTH } from '@/lib/constants';
 
 type ParamsProfileId = {
   profileId: string;
@@ -95,7 +96,7 @@ export const uploadProfileImage = async (
     const absImagePath = path.join(absFolderPath, imageName);
 
     await mkdirIfNotExist(absFolderPath);
-    await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
+    await sharp(image.buffer).resize(AVATAR_WIDTH, AVATAR_HEIGHT).webp().toFile(absImagePath);
     if (profile.imageUrl) {
       const oldImagePath = path.join(absFolderPath, profile.imageUrl);
       removeIfExist(oldImagePath);

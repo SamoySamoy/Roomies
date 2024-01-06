@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Video from '@/components/VideoCard';
-import { Button } from '@/components/ui/button';
 import Peer, { MediaConnection } from 'peerjs';
 // import { Peer } from "peerjs";
 import { useNavigate, useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
-// import { fa, id_ID, ro, vi } from '@faker-js/faker';
-import { fa, id_ID, ro, vi } from '@faker-js/faker';
 import { VideoProps } from '@/components/VideoCard';
-import { CallTracker } from 'assert';
-import ActionTooltip from '@/components/ActionToolTip';
-// import ChatVideoButton from '@/components/ChatVideoButton';
 import MicButton from '@/components/MicButton';
 import ShareScreenButton from '@/components/ShareScreenButton';
 // import { PeopleInMeeting } from '@/lib/socket';
@@ -19,6 +13,7 @@ import VideoButton from '@/components/CameraButton';
 import PhoneButton from '@/components/PhoneButton';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '@/lib/utils';
+import { profile } from 'console';
 
 /* 
 1. Kill local screen stream, local sreen peer
@@ -62,7 +57,7 @@ type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
 const MAX_VIDEO_PER_ROW = 4;
 const ITEM_LIMIT = 27;
 
-const AudioPage = () => {
+const VideoPage = () => {
   const navigate = useNavigate();
   const { auth } = useAuth();
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
@@ -803,6 +798,36 @@ const AudioPage = () => {
     navigate(`/rooms/${roomId}`);
   };
 
+  const [videoOnFocus, setVideoOnFocus] = useState<VideoProps | null>(null);
+  const onPinClick = (profileId: string) => {
+    if (videoOnFocus) {
+      addVideo(videoOnFocus);
+      videoGrid.forEach(row => {
+        row.forEach(col => {
+          if (col.profileId === profileId) {
+            setVideoOnFocus(col);
+          }
+        });
+      });
+    } else {
+      videoGrid.forEach(row => {
+        row.forEach(col => {
+          if (col.profileId === profileId) {
+            setVideoOnFocus(col);
+          }
+        });
+      });
+      removeVideo(profileId);
+    }
+  };
+
+  const onUnpinClick = () => {
+    if (videoOnFocus) {
+      addVideo(videoOnFocus);
+      setVideoOnFocus(null);
+    }
+  };
+
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
       <div
@@ -810,18 +835,29 @@ const AudioPage = () => {
           'justify-center': videoGrid.length <= 2,
         })}
       >
+        {videoOnFocus && (
+          <div className={cn('flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center')}>
+            <Video {...videoOnFocus} onPinClick={onUnpinClick} pin={true} className='h-[700px]' />
+          </div>
+        )}
         {videoGrid.map((row, i) => {
           return (
             <div
-              className={cn('flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center', {
-                'h-[500px]': videoGrid.length === 1,
-                'h-[400px]': videoGrid.length === 2,
-                'h-[300px]': videoGrid.length > 2,
-              })}
+              className={cn('flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center')}
               key={i}
             >
               {row.map(col => (
-                <Video key={col.profileId} {...col} />
+                <Video
+                  key={col.profileId}
+                  {...col}
+                  onPinClick={onPinClick}
+                  className={cn({
+                    'h-[700px]': videoGrid.length === 1,
+                    'h-[500px]': videoGrid.length === 1 && videoGrid[0].length > 2,
+                    'h-[400px]': videoGrid.length === 2,
+                    'h-[300px]': videoGrid.length > 2,
+                  })}
+                />
               ))}
             </div>
           );
@@ -837,4 +873,4 @@ const AudioPage = () => {
   );
 };
 
-export default AudioPage;
+export default VideoPage;

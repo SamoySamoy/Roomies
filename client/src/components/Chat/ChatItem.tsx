@@ -12,6 +12,7 @@ import { useModal } from '@/hooks/useModal';
 import { ChatSchema, useChatForm } from '@/hooks/forms';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
+import { CLIENT_MESSAGE_FILE_HEIGHT, CLIENT_MESSAGE_FILE_WIDTH } from '@/lib/constants';
 
 type ChatItemProps = {
   message: Message;
@@ -102,18 +103,26 @@ const ChatItem = ({ message, currentMember, origin }: ChatItemProps) => {
             </span>
           </div>
           {isImage && (
-            <a
-              href={getFileUrl(message.fileUrl)}
-              target='_blank'
+            <div
+              // href={getFileUrl(message.fileUrl)}
+              // target='_blank'
+              onClick={() => {
+                openModal({
+                  modalType: 'image',
+                  data: {
+                    imageUrl: getFileUrl(message.fileUrl),
+                  },
+                });
+              }}
               rel='noopener noreferrer'
-              className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[200px] w-[350px]'
+              className={`relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[${CLIENT_MESSAGE_FILE_HEIGHT}px] w-[${CLIENT_MESSAGE_FILE_WIDTH}px]`}
             >
               <img
                 src={getFileUrl(message.fileUrl)}
                 alt={message.content}
                 className='object-cover'
               />
-            </a>
+            </div>
           )}
           {isOtherFileType && (
             <div className='relative flex items-center p-2 mt-2 rounded-md bg-background/10'>

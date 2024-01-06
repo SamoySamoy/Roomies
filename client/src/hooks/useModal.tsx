@@ -18,7 +18,8 @@ export type ModalType =
   | 'joinPublicRoom'
   | 'joinPrivateRoom'
   | 'joinByInviteCode'
-  | 'profile';
+  | 'profile'
+  | 'image';
 
 export type ModalData = {
   room?: Room;
@@ -27,6 +28,7 @@ export type ModalData = {
   groupOrigin?: GroupOrigin;
   conversationOrigin?: ConversationOrigin;
   messageId?: string;
+  imageUrl?: string;
 };
 
 export type ModalState = {

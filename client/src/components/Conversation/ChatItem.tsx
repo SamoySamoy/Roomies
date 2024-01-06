@@ -12,6 +12,7 @@ import { ChatSchema, useChatForm } from '@/hooks/forms';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ConversationOrigin, socket } from '@/lib/socket';
 import { DirectMessage, Member, MemberRole } from '@/lib/types';
+import { CLIENT_MESSAGE_FILE_HEIGHT, CLIENT_MESSAGE_FILE_WIDTH } from '@/lib/constants';
 
 type ChatItemProps = {
   directMessage: DirectMessage;
@@ -108,7 +109,7 @@ const ChatItem = ({ directMessage, currentMember, conversationOrigin }: ChatItem
               href={getFileUrl(directMessage.fileUrl)}
               target='_blank'
               rel='noopener noreferrer'
-              className='relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[200px] w-[350px]'
+              className={`relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-[${CLIENT_MESSAGE_FILE_HEIGHT}px] w-[${CLIENT_MESSAGE_FILE_WIDTH}px]`}
             >
               <img
                 src={getFileUrl(directMessage.fileUrl)}

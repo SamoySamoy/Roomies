@@ -13,7 +13,7 @@ import { Navigate } from 'react-router-dom';
 
 const groupIcon = {
   [GroupType.TEXT]: <Hash className='mr-2 h-4 w-4' />,
-  [GroupType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
+  // [GroupType.AUDIO]: <Mic className='mr-2 h-4 w-4' />,
   [GroupType.VIDEO]: <Video className='mr-2 h-4 w-4' />,
 } as const;
 
@@ -30,7 +30,7 @@ type Props = {
 const RoomSidebar = ({ room }: Props) => {
   const { auth } = useAuth();
   const textGroups = room.groups.filter(group => group.type === GroupType.TEXT);
-  const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
+  // const audioGroups = room.groups.filter(group => group.type === GroupType.AUDIO);
   const videoGroups = room.groups.filter(group => group.type === GroupType.VIDEO);
   const otherMembers = room.members.filter(member => member.profileId !== auth.profileId!);
   const role = room.members.find(member => member.profileId === auth.profileId!)?.role;
@@ -55,15 +55,15 @@ const RoomSidebar = ({ room }: Props) => {
                   icon: groupIcon[group.type],
                 })),
               },
-              {
-                label: 'Voice Groups',
-                type: 'group',
-                data: audioGroups?.map(group => ({
-                  id: group.id,
-                  name: group.name,
-                  icon: groupIcon[group.type],
-                })),
-              },
+              // {
+              //   label: 'Voice Groups',
+              //   type: 'group',
+              //   data: audioGroups?.map(group => ({
+              //     id: group.id,
+              //     name: group.name,
+              //     icon: groupIcon[group.type],
+              //   })),
+              // },
               {
                 label: 'Video Groups',
                 type: 'group',
@@ -102,7 +102,7 @@ const RoomSidebar = ({ room }: Props) => {
             </div>
           </div>
         )}
-        {!!audioGroups?.length && (
+        {/* {!!audioGroups?.length && (
           <div className='mb-2'>
             <GroupListSection
               sectionType='groups'
@@ -117,7 +117,7 @@ const RoomSidebar = ({ room }: Props) => {
               ))}
             </div>
           </div>
-        )}
+        )} */}
         {!!videoGroups?.length && (
           <div className='mb-2'>
             <GroupListSection

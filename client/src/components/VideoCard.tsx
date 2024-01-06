@@ -1,8 +1,9 @@
 import { useRef, useEffect } from 'react';
-import { MicOff, Mic, Video, VideoOff } from 'lucide-react';
+import { MicOff, Mic, Video, VideoOff, Pin, PinOff } from 'lucide-react';
 import MemberAvatar from './MemberAvatar';
-import { Stream } from 'stream';
 import { useAuth } from '@/hooks/useAuth';
+import ActionTooltip from './ActionToolTip';
+import { cn } from '@/lib/utils';
 
 export type VideoProps = {
   stream: MediaStream | null;
@@ -20,7 +21,13 @@ export type VideoProps = {
     }
 );
 
-const VideoCard = (props: VideoProps) => {
+export type ExtraProps = {
+  onPinClick: (profileId: string) => void;
+  pin?: boolean;
+  className?: string;
+};
+
+const VideoCard = (props: VideoProps & ExtraProps) => {
   const { auth } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -32,9 +39,15 @@ const VideoCard = (props: VideoProps) => {
 
   const MicIcon = props.type === 'camera' && props.micOn ? Mic : MicOff;
   const VideoIcon = props.type === 'camera' && props.cameraOn ? Video : VideoOff;
+  const PinIcon = Boolean(props.pin) ? PinOff : Pin;
 
   return (
-    <div className='h-full w-[300px] gap-y-4 md:flex-1 bg-[#E3E5E8] dark:bg-[#1E1F22] relative flex md:flex-row flex-col items-center justify-center rounded-lg shadow-md shadow-slate-800/30 dark:shadow-slate-200/10'>
+    <div
+      className={cn(
+        'h-full w-[300px] gap-y-4 md:flex-1 bg-[#E3E5E8] dark:bg-[#1E1F22] relative flex md:flex-row flex-col items-center justify-center rounded-lg shadow-md shadow-slate-800/30 dark:shadow-slate-200/10',
+        props.className,
+      )}
+    >
       {props.type === 'screen' && (
         <video
           ref={videoRef}
@@ -69,10 +82,24 @@ const VideoCard = (props: VideoProps) => {
         </>
       )}
 
-      <div className='gap-y-2 md:absolute bottom-4 inset-x-4 flex flex-col md:flex-row items-center justify-between'>
-        <p className='font-bold text-sm text-slate-800 dark:text-slate-500/90'>{props.email}</p>
+      <div className='gap-y-2 md:absolute top-4 right-4 flex flex-col md:flex-row items-center justify-between'>
+        <ActionTooltip side='top' label={'Pin this video'}>
+          <div className='bg-white/80 dark:bg-black p-2 rounded-lg'>
+            <PinIcon onClick={() => props.onPinClick(props.profileId)} />
+          </div>
+        </ActionTooltip>
+      </div>
+
+      <div className='gap-y-2 md:absolute z-10 bottom-4 inset-x-4 flex flex-col md:flex-row items-center justify-between'>
+        <p
+          className={cn(
+            'font-bold text-sm bg-white/80 text-dark dark:bg-black dark:text-white px-2 py-1 rounded-lg',
+          )}
+        >
+          {props.email}
+        </p>
         {props.type === 'camera' && (
-          <div className='flex items-center gap-x-4'>
+          <div className='flex items-center gap-x-4 bg-white/80 dark:bg-black p-2 rounded-lg'>
             <MicIcon className='w-6 h-6 text-black dark:text-white' />
             <VideoIcon className='w-6 h-6 text-black dark:text-white' />
           </div>

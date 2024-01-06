@@ -14,6 +14,7 @@ import sharp from 'sharp';
 import path from 'path';
 import fsPromises from 'fs/promises';
 import { AuthenticatedRequest } from '@/lib/types';
+import { AVATAR_HEIGHT, AVATAR_WIDTH } from '@/lib/constants';
 
 type QueryInclude = {
   profile: string;
@@ -244,7 +245,7 @@ export const createRoom = async (
     const absImagePath = path.join(absFolderPath, imageName);
 
     await mkdirIfNotExist(absFolderPath);
-    await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
+    await sharp(image.buffer).resize(AVATAR_WIDTH, AVATAR_HEIGHT).webp().toFile(absImagePath);
 
     const hashedPassword = roomType === 'PRIVATE' ? await bcrypt.hash(roomPassword, 10) : '';
     const newRoom = await db.room.create({
@@ -631,7 +632,7 @@ export const updateRoom = async (
       const absImagePath = path.join(absFolderPath, imageName);
 
       await mkdirIfNotExist(absFolderPath);
-      await sharp(image.buffer).resize(300, 300).webp().toFile(absImagePath);
+      await sharp(image.buffer).resize(AVATAR_WIDTH, AVATAR_HEIGHT).webp().toFile(absImagePath);
       if (room.imageUrl) {
         const oldImagePath = path.join(absFolderPath, room.imageUrl);
         removeIfExist(oldImagePath);

@@ -75,3 +75,8 @@ export const CLIENT_LOCATION =
   process.env.NODE_ENV === 'development'
     ? 'http://localhost:5173'
     : 'http://fall2324w3g13.int3306.freeddns.org';
+
+export const AVATAR_WIDTH = 300;
+export const AVATAR_HEIGHT = 300;
+export const MESSAGE_FILE_WIDTH = 1000;
+export const MESSAGE_FILE_HEIGHT = 600;

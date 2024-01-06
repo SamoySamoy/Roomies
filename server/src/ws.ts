@@ -6,7 +6,7 @@ import { Server as HTTPServer } from 'http';
 import { db } from './prisma/db';
 import { DirectMessage, Message, MemberRole, Member } from '@prisma/client';
 import { corsOptions } from '@/lib/config';
-import { IMAGE_SIZE_LIMIT_IN_MB } from '@/lib/constants';
+import { IMAGE_SIZE_LIMIT_IN_MB, MESSAGE_FILE_HEIGHT, MESSAGE_FILE_WIDTH } from '@/lib/constants';
 import { ValidationError } from '@/lib/types';
 import {
   convertMbToBytes,
@@ -991,7 +991,7 @@ const uploadMessageFile = async (
   await mkdirIfNotExist(absFolderPath);
   if (isImageFile(filename)) {
     await sharp(file.buffer as Buffer)
-      .resize(350, 200)
+      .resize(MESSAGE_FILE_WIDTH, MESSAGE_FILE_HEIGHT)
       .webp()
       .toFile(absFilePath);
   } else {
@@ -1251,7 +1251,7 @@ const uploadDirectMessageFile = async (
   await mkdirIfNotExist(absFolderPath);
   if (isImageFile(filename)) {
     await sharp(file.buffer as Buffer)
-      .resize(350, 200)
+      .resize(MESSAGE_FILE_WIDTH, MESSAGE_FILE_HEIGHT)
       .webp()
       .toFile(absFilePath);
   } else {

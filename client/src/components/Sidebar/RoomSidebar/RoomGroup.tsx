@@ -14,13 +14,13 @@ interface RoomGroupProps {
 
 const iconMap = {
   [GroupType.TEXT]: Hash,
-  [GroupType.AUDIO]: Mic,
+  // [GroupType.AUDIO]: Mic,
   [GroupType.VIDEO]: Video,
 } as const;
 
 const groupMap = {
   [GroupType.TEXT]: 'groups',
-  [GroupType.AUDIO]: 'audiogroups',
+  // [GroupType.AUDIO]: 'audiogroups',
   [GroupType.VIDEO]: 'videogroups',
 } as const;
 

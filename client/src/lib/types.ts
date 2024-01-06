@@ -15,7 +15,6 @@ export enum MemberRole {
 
 export enum GroupType {
   TEXT = 'TEXT',
-  AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
 }
 
@@ -23,13 +22,28 @@ export interface Profile {
   id: string;
   email: string;
   password: string;
-  ip?: string;
   imageUrl?: string;
   rooms: Room[];
   groups: Group[];
   members: Member[];
+  ResetToken: ResetToken[];
+  RefreshToken: RefreshToken[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ResetToken {
+  id: string;
+  profileId: string;
+  profile: Profile;
+  resetToken: string;
+}
+
+export interface RefreshToken {
+  id: string;
+  profileId: string;
+  profile: Profile;
+  refreshToken: string;
 }
 
 export interface Room {
@@ -108,10 +122,4 @@ export interface DirectMessage {
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface UserData {
-  id: string;
-  username: string;
-  email: string;
 }
