@@ -59,7 +59,9 @@ const RoomMember = ({ member }: RoomMemberProps) => {
               },
             )}
           >
-            {member.profile.email}
+            {member.profile.email.length > 15
+              ? member.profile.email.slice(0, 12) + '...'
+              : member.profile.email}
           </p>
           {icon}
         </div>
