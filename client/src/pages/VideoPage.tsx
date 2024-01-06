@@ -764,7 +764,7 @@ const VideoPage = () => {
                 let otherId = meetingState.profileId;
                 try {
                   //Gửi stream screen cho các người dùng
-                  // let call = screenPeer.current!.call(otherId, localScreenStream.current!);
+                  let call = screenPeer.current!.call(otherId, localScreenStream.current!);
                   // console.log('Calling: ' + otherId + ' with ');
                   // console.log(localStream);
                 } catch (err) {
