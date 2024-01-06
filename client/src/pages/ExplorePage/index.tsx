@@ -39,11 +39,18 @@ const ExplorePage = () => {
   );
 
   const [query, setQuery] = useState('');
+  //Tìm xem trong room name có chứa một từ trong query hay không
   const filterdRoom = rooms?.filter(room => {
     if (query.length === 0) return true;
-    return room.name.split(' ').some(word => {
-      return word.toLowerCase().startsWith(query);
-    });
+    return query.split(' ').every(queryWord => {
+      if (queryWord.length === 0) return false;
+      return room.name.includes(queryWord);
+      // return room.name.split(' ').some(word => {
+      //   if (queryWord.length === 0) return false;
+      //   return word.toLowerCase().includes(queryWord);
+      // });
+    })
+    
   });
 
   function handleChane(e: React.ChangeEvent<HTMLInputElement>) {
