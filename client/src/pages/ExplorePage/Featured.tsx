@@ -8,16 +8,31 @@ import { Button } from '@/components/ui/button';
 import { useModal } from '@/hooks/useModal';
 
 type FeaturedProps = {
-  rooms: Room[] | undefined;
+  rooms: Room[];
 };
 
+const roomIntros = [
+  "🌟 **Welcome to Our Dynamic Community!** 🌟 Dive into a world where connections flourish and friendships evolve. Our Discord server is an energetic hub for individuals seeking more than just a community; it's a thriving ecosystem of shared passions and diverse personalities.",
+  'Embark on a gaming odyssey with like-minded enthusiasts! From strategic discussions on the latest releases to exhilarating multiplayer sessions, our gaming channels provide a haven for players seeking camaraderie and epic adventures. Join the ranks of dedicated gamers and forge bonds that transcend the virtual realm.',
+  'Unleash your creativity in our vibrant artistic community! Writers, artists, musicians—everyone is embraced. Share your latest masterpieces, engage in collaborative projects, and immerse yourself in a supportive environment that values and celebrates the boundless expressions of creativity.',
+  "🤝 **Harmony in Diversity: A Welcoming Oasis** 🤝 In our community, diversity isn't just accepted; it's celebrated. Mutual respect is the cornerstone of our foundation. Join a welcoming environment where open dialogue and positive interactions create a sense of belonging. Every voice is heard, every perspective valued.",
+  "🔍 **Discover, Engage, Expand!** 🔍 Immerse yourself in a myriad of interest-based channels! Whether you're exploring the latest in tech, delving into scientific wonders, or staying ahead of fashion trends, our server is the platform to share your passions and discover new realms of interest.",
+  '🎉 **Celebrate the Extraordinary: Events & Giveaways** 🎉 Elevate your experience with our regular events and thrilling giveaways! From engaging game nights to themed contests with enticing prizes, join the festivities as we celebrate together, creating memorable moments that last a lifetime.',
+  '🌐 **Connect Globally, Bond Locally** 🌐 Our server transcends geographical boundaries, offering a global network of friends. Engage in enriching conversations with members from diverse cultures, broaden your perspectives, and establish connections that bridge continents.',
+  "🚀 **Ready for an Unforgettable Journey?** 🚀 Immerse yourself in an unparalleled Discord experience by joining our community today! Click the invite link below, and step into a world where every interaction is an adventure. We're excited to welcome you—let the extraordinary journey commence!",
+  "🛡️ **Guardians of Positivity: Our Community Pledge** 🛡️ Within our server, positivity isn't just encouraged; it's protected. We're committed to fostering an environment where encouragement and support thrive. Join us in building a haven that elevates everyone, ensuring every member feels valued and empowered.",
+  '🎊 **A Decade of Friendship Awaits!** 🎊 Join our community today and become part of a legacy in the making. As we embark on this journey together, we look forward to creating stories, sharing laughter, and building friendships that will stand the test of time. Ready to make history? Join us now!',
+];
+
 const Featured = ({ rooms }: FeaturedProps) => {
-  "className='flex-shrink-0 w-5 h-5 text-zinc-500 dark:text-zinc-400'";
+  if (rooms.length === 0) {
+    return <p className='font-bold text-4xl text-foreground my-auto mx-auto'>No room available</p>;
+  }
+
   return (
     <div className='flex flex-col gap-y-4 m-2'>
-      {/* Titles */}
       <div className='gap-y-2'>
-        <p className='font-bold text-2xl'>Featured Rooms</p>
+        <p className='font-bold text-2xl text-foreground'>Featured Rooms</p>
         <p className='dark:text-slate-400/80 text-slate-600/80 text-sm'>
           Some awesome rooms we think you'd love
         </p>
@@ -25,8 +40,8 @@ const Featured = ({ rooms }: FeaturedProps) => {
 
       {/* Cards*/}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-8 gap-x-2 sm:gap-x-4 mb-4'>
-        {rooms?.map(room => (
-          <RoomCard key={room.id} room={room} />
+        {rooms.map((room, i) => (
+          <RoomCard key={room.id} room={room} index={i} />
         ))}
       </div>
     </div>
@@ -35,9 +50,10 @@ const Featured = ({ rooms }: FeaturedProps) => {
 
 type RoomCardProps = {
   room: Room;
+  index: number;
 };
 
-export const RoomCard = ({ room }: RoomCardProps) => {
+export const RoomCard = ({ room, index }: RoomCardProps) => {
   const { openModal } = useModal();
 
   const textGroups = room.groups.filter(group => group.type === GroupType.TEXT);
@@ -65,9 +81,9 @@ export const RoomCard = ({ room }: RoomCardProps) => {
   };
 
   return (
-    <Card className='bg-[#E3E5E8] text-primary dark:bg-[#1E1F22] relative rounded-b-[0.8rem] drop-shadow-md'>
+    <Card className='bg-[#E3E5E8] text-primary dark:bg-[#1E1F22] relative rounded-md drop-shadow-md'>
       <div className='relative'>
-        <img src={getFileUrl(room.imageUrl)} className='rounded-md object-cover w-full h-[250px]' />
+        <img src={getFileUrl(room.imageUrl)} className='rounded-md object-cover w-full h-[280px]' />
         <div className='absolute -bottom-4 left-4'>
           <MemberAvatar
             src={getFileUrl(room.profile.imageUrl)}
@@ -89,10 +105,8 @@ export const RoomCard = ({ room }: RoomCardProps) => {
             Join
           </Button>
         </div>
-        <p className='dark:text-slate-400/80 text-slate-600/80 text-sm line-clamp-4 mt-2'>
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Expedita, fugiat? Quidem
-          repudiandae quae obcaecati soluta cum, libero voluptatibus eius quos, iusto fugiat a
-          nobis, ipsam illo nisi praesentium nostrum natus.
+        <p className='dark:text-slate-400/80 text-slate-600/80 text-sm line-clamp-5 my-2'>
+          {roomIntros[index % roomIntros.length]}
         </p>
       </CardContent>
       <CardFooter className='flex justify-between items-center px-4'>
