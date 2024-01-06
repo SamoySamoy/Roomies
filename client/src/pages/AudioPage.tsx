@@ -3,7 +3,7 @@ import Video from '@/components/VideoCard';
 import { Button } from '@/components/ui/button';
 import Peer, { MediaConnection } from 'peerjs';
 // import { Peer } from "peerjs";
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { GroupOrigin, socket } from '@/lib/socket';
 import { useAuth } from '@/hooks/useAuth';
 // import { fa, id_ID, ro, vi } from '@faker-js/faker';
@@ -18,6 +18,7 @@ import ShareScreenButton from '@/components/ShareScreenButton';
 import VideoButton from '@/components/CameraButton';
 import PhoneButton from '@/components/PhoneButton';
 import { v4 as uuidv4 } from 'uuid';
+import { cn } from '@/lib/utils';
 
 /* 
 1. Kill local screen stream, local sreen peer
@@ -62,6 +63,7 @@ const MAX_VIDEO_PER_ROW = 4;
 const ITEM_LIMIT = 27;
 
 const AudioPage = () => {
+  const navigate = useNavigate();
   const { auth } = useAuth();
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
   const origin: GroupOrigin = {
@@ -74,7 +76,9 @@ const AudioPage = () => {
   // const [peerOnConnect, setPeerOnConnect] = useState<Map<string, MediaConnection>>(new Map());
   const localMeetingStates = useRef<Record<string, MeetingState>>({});
   const peerOnConnect = useRef(new Map<string, MediaConnection>());
-  const [useStateLocalMeetingStates, setUseStateLocalMeetingStates] = useState<Record<string, MeetingState>>({});
+  const [useStateLocalMeetingStates, setUseStateLocalMeetingStates] = useState<
+    Record<string, MeetingState>
+  >({});
   const [videoGrid, setVideoGrid] = useState<VideoProps[][]>([]);
 
   const [cameraOn, setCameraOn] = useState<boolean>(false);
@@ -105,7 +109,7 @@ const AudioPage = () => {
           console.log(peer.current!.connections);
         });
 
-        stream.getTracks().forEach(track => track.enabled = !track.enabled);
+        stream.getTracks().forEach(track => (track.enabled = !track.enabled));
         localStream.current = stream;
 
         console.log(stream);
@@ -703,14 +707,14 @@ const AudioPage = () => {
     setCameraOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:camera', origin, identity);
-    localStream.current?.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+    localStream.current?.getVideoTracks().forEach(track => (track.enabled = !track.enabled));
   };
 
   const clickMic = () => {
     setMicOn(prev => !prev);
     let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:mic', origin, identity);
-    localStream.current?.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+    localStream.current?.getAudioTracks().forEach(track => (track.enabled = !track.enabled));
   };
 
   const clickShareScreen = () => {
@@ -795,14 +799,27 @@ const AudioPage = () => {
     // setShareScreenOn(prev => !prev);
   };
 
-  const onEndCall = () => {};
+  const onEndCall = () => {
+    navigate(`/rooms/${roomId}`);
+  };
 
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
-      <div className='flex-1 flex flex-col gap-y-4 overflow-y-auto'>
+      <div
+        className={cn('flex-1 flex flex-col gap-y-4 overflow-y-auto', {
+          'justify-center': videoGrid.length <= 2,
+        })}
+      >
         {videoGrid.map((row, i) => {
           return (
-            <div className='flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center' key={i}>
+            <div
+              className={cn('flex flex-col gap-y-1 md:flex-row md:gap-x-4 items-center', {
+                'h-[500px]': videoGrid.length === 1,
+                'h-[400px]': videoGrid.length === 2,
+                'h-[300px]': videoGrid.length > 2,
+              })}
+              key={i}
+            >
               {row.map(col => (
                 <Video key={col.profileId} {...col} />
               ))}

@@ -34,7 +34,7 @@ const VideoCard = (props: VideoProps) => {
   const VideoIcon = props.type === 'camera' && props.cameraOn ? Video : VideoOff;
 
   return (
-    <div className='h-[300px] w-[300px] gap-y-4 md:flex-1 bg-[#E3E5E8] dark:bg-[#1E1F22] relative flex md:flex-row flex-col items-center justify-center rounded-lg shadow-md shadow-slate-800/30 dark:shadow-slate-200/10'>
+    <div className='h-full w-[300px] gap-y-4 md:flex-1 bg-[#E3E5E8] dark:bg-[#1E1F22] relative flex md:flex-row flex-col items-center justify-center rounded-lg shadow-md shadow-slate-800/30 dark:shadow-slate-200/10'>
       {props.type === 'screen' && (
         <video
           ref={videoRef}
@@ -45,12 +45,12 @@ const VideoCard = (props: VideoProps) => {
       )}
       {props.type === 'camera' && props.cameraOn && (
         <video
-        ref={videoRef}
-        muted={auth.profileId === props.profileId? true : !props.micOn}
-        autoPlay
-        playsInline
-        className='h-full w-full object-cover rounded-2xl'
-      />
+          ref={videoRef}
+          muted={auth.profileId === props.profileId ? true : !props.micOn}
+          autoPlay
+          playsInline
+          className='h-full w-full object-cover rounded-2xl'
+        />
       )}
       {props.type === 'camera' && !props.cameraOn && (
         <>
@@ -60,15 +60,13 @@ const VideoCard = (props: VideoProps) => {
             className='sm:w-[70px] md:w-[110px] lg:w-[150px] sm:h-[70px] md:h-[110px] lg:h-[150px] rounded-full'
           />
           <video
-          ref={videoRef}
-          muted={auth.profileId === props.profileId? true : !props.micOn}
-          autoPlay
-          playsInline
-          className='h-full w-full object-cover rounded-2xl'
+            ref={videoRef}
+            muted={auth.profileId === props.profileId ? true : !props.micOn}
+            autoPlay
+            playsInline
+            className='h-0 w-0 object-cover rounded-2xl'
           />
         </>
-        
-        
       )}
 
       <div className='gap-y-2 md:absolute bottom-4 inset-x-4 flex flex-col md:flex-row items-center justify-between'>
