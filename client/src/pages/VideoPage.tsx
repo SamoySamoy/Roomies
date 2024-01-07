@@ -359,7 +359,8 @@ const VideoPage = () => {
 
     socket.on('server:meeting:state', meetingStates => {
       // setMeetingStates(meetingStates);
-      // console.log('update');
+      console.log('received new meeting states from server');
+
       console.log(meetingStates);
       // console.log(peerOnConnect);
       // console.log(videoGrid);
@@ -564,14 +565,31 @@ const VideoPage = () => {
     console.log(peerOnConnect.current);
     console.log(videoOnFocus?.profileId);
     // Có thể localMeetingStates và PeerOnConnect chưa kịp đồng bộ trạng thái, nên ta sử dụng điều kiện || thay vì &&
-    if (
-      videoOnFocus &&
-      (!localMeetingStates.current[videoOnFocus.profileId] ||
-        !peerOnConnect.current[videoOnFocus.profileId])
-    ) {
+    if (videoOnFocus && !localMeetingStates.current[videoOnFocus.profileId]) {
       console.log(peerOnConnect.current[videoOnFocus.profileId]);
       console.log('remove video on focuts');
-      setVideoOnFocus(null);
+      setVideoOnFocus(undefined);
+    } else if (videoOnFocus) {
+      //Find the props of videoOnFocus
+      
+      setVideoOnFocus(prevVideoOnFocus => {
+        if (prevVideoOnFocus) {
+          let newState: MeetingState = localMeetingStates.current[prevVideoOnFocus.profileId];
+          if (newState.type === 'screen' && prevVideoOnFocus?.type == 'screen') {
+            let newVideo: VideoProps = {
+              ...prevVideoOnFocus,
+            }
+            return newVideo;
+          } else if (newState.type === 'camera' && prevVideoOnFocus?.type === 'camera') {
+            let newVideo: VideoProps = {
+              ...prevVideoOnFocus,
+              cameraOn: newState.cameraOn,
+              micOn: newState.micOn,
+            }
+            return newVideo;
+          }
+        } 
+      });
     }
   }, [useStateLocalMeetingStates, peerOnConnect.current]);
 
@@ -838,7 +856,7 @@ const VideoPage = () => {
     navigate(`/rooms/${roomId}`);
   };
 
-  const [videoOnFocus, setVideoOnFocus] = useState<VideoProps | null>(null);
+  const [videoOnFocus, setVideoOnFocus] = useState<VideoProps>();
   const onPinClick = (profileId: string) => {
     if (videoOnFocus) {
       addVideo(videoOnFocus);
@@ -865,7 +883,7 @@ const VideoPage = () => {
   const onUnpinClick = () => {
     if (videoOnFocus) {
       addVideo(videoOnFocus);
-      setVideoOnFocus(null);
+      setVideoOnFocus(undefined);
     }
   };
   if (isLoading) return <LoadingPage />;
