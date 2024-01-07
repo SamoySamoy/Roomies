@@ -12,6 +12,7 @@ import VideoButton from '@/components/CameraButton';
 import PhoneButton from '@/components/PhoneButton';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '@/lib/utils';
+import { LoadingPage } from '@/components/Loading';
 
 /* 
 1. Kill local screen stream, local sreen peer
@@ -68,7 +69,7 @@ const VideoPage = () => {
   // const [meetingStates, setMeetingStates] = useState<PeopleInMeeting[]>([]);
   // const [peerOnConnect, setPeerOnConnect] = useState<Map<string, MediaConnection>>(new Map());
   const localMeetingStates = useRef<Record<string, MeetingState>>({});
-  const peerOnConnect = useRef(new Map<string, MediaConnection>());
+  const peerOnConnect = useRef<Record<string, MediaConnection>>({});
   const [useStateLocalMeetingStates, setUseStateLocalMeetingStates] = useState<
     Record<string, MeetingState>
   >({});
@@ -83,6 +84,7 @@ const VideoPage = () => {
   const localScreenStream = useRef<MediaStream>();
   const screenPeer = useRef<Peer>();
   const screenId = useRef<string>();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -122,7 +124,7 @@ const VideoPage = () => {
 
           // console.log('Da nhan meeting state, bat dau goi: ');
           console.log(meetingStates);
-
+          if (Object.keys(localMeetingStates.current).length === 1) setIsLoading(false);
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
               let otherId = meetingState.profileId;
@@ -134,7 +136,7 @@ const VideoPage = () => {
 
                 call.once('stream', otherStream => {
                   addPeerOnConnect(otherId, call);
-
+                  
                   // console.log('Receive answer from: ' + otherId);
 
                   // let otherIndexState = 0;
@@ -169,7 +171,9 @@ const VideoPage = () => {
                       type: 'screen',
                     };
                     addVideo(newVideoProps);
+                    
                   }
+                  setIsLoading(false);
                 });
                 call.on('close', () => {
                   // console.log('second user removing: ' + otherId);
@@ -236,7 +240,7 @@ const VideoPage = () => {
             }
           });
           call.on('close', () => {
-            // console.log('the first user remove: ' + callerId);
+            console.log('the first user remove: ' + callerId);
             removePeerOnConnect(callerId);
             removeVideo(callerId);
             // console.log(peerOnConnect);
@@ -250,10 +254,10 @@ const VideoPage = () => {
           })[0];
           if (leaverScreenState) {
             let leaverScreenId = leaverScreenState.profileId;
-            peerOnConnect.current.get(leaverScreenId)?.close();
+            peerOnConnect.current[leaverScreenId]?.close();
             removePeerOnConnect(leaverScreenId);
           }
-          peerOnConnect.current.get(id)?.close();
+          peerOnConnect.current[id]?.close();
           removePeerOnConnect(id);
         });
 
@@ -348,7 +352,7 @@ const VideoPage = () => {
     socket.on('server:meeting:state', meetingStates => {
       // setMeetingStates(meetingStates);
       // console.log('update');
-      // console.log(meetingStates);
+      console.log(meetingStates);
       // console.log(peerOnConnect);
       // console.log(videoGrid);
 
@@ -450,12 +454,12 @@ const VideoPage = () => {
       // check mình đang có peer nào
       // Có cái nào thì ném hết lên (tôi đa emit 2 lần)
       socket.emit('client:meeting:leave', origin, identity);
-      if (localScreenStream.current) {
-        socket.emit('client:meeting:leave', origin, {
-          profileId: screenId.current!,
-          type: 'screen',
-        });
-      }
+      // if (localScreenStream.current) {
+      //   socket.emit('client:meeting:leave', origin, {
+      //     profileId: screenId.current!,
+      //     type: 'screen',
+      //   });
+      // }
       // console.log('clean up group');
       // peerOnConnect.current.forEach((call) => {
       //   call.close();
@@ -502,7 +506,7 @@ const VideoPage = () => {
             oldVideo.profileId === origin.profileId ||
             oldVideo.profileId === screenId.current ||
             (localMeetingStates.current[oldVideo.profileId] &&
-              peerOnConnect.current.has(oldVideo.profileId))
+              peerOnConnect.current[oldVideo.profileId])
           ) {
             let newState = localMeetingStates.current[oldVideo.profileId];
             if (newState.type === 'camera' && oldVideo.type === 'camera') {
@@ -540,7 +544,16 @@ const VideoPage = () => {
         console.log('Video grid does not have any thing!');
         return [];
       }
-    })
+    });
+    console.log(localMeetingStates.current);
+    console.log(peerOnConnect.current);
+    console.log(videoOnFocus?.profileId);
+    // Có thể localMeetingStates và PeerOnConnect chưa kịp đồng bộ trạng thái, nên ta sử dụng điều kiện || thay vì &&
+    if (videoOnFocus && (!localMeetingStates.current[videoOnFocus.profileId] || !peerOnConnect.current[videoOnFocus.profileId])) {
+      console.log(peerOnConnect.current[videoOnFocus.profileId]);
+      console.log('remove video on focuts');
+      setVideoOnFocus(null);
+    }  
   }, [useStateLocalMeetingStates, peerOnConnect.current]);
 
   function addVideo(newVideoProps: VideoProps) {
@@ -689,14 +702,14 @@ const VideoPage = () => {
     // let newPeerOnConnect = new Map(peerOnConnect);
     // newPeerOnConnect.set(id, call);
     // setPeerOnConnect(newPeerOnConnect);
-    peerOnConnect.current.set(id, call);
+    peerOnConnect.current[id] = call;
   }
 
   function removePeerOnConnect(id: string) {
     // let newPeerOnConnect = new Map(peerOnConnect);
     // newPeerOnConnect.delete(id);
     // setPeerOnConnect(newPeerOnConnect);
-    peerOnConnect.current.delete(id);
+    delete peerOnConnect.current[id];
   }
 
   const clickCamera = () => {
@@ -765,7 +778,7 @@ const VideoPage = () => {
                 try {
                   //Gửi stream screen cho các người dùng
                   let call = screenPeer.current!.call(otherId, screenStream);
-                  // console.log('Calling: ' + otherId + ' with ');
+                  console.log('Calling: ' + otherId + ' with ');
                   // console.log(localStream);
                 } catch (err) {
                   console.log(err);
@@ -829,7 +842,7 @@ const VideoPage = () => {
       setVideoOnFocus(null);
     }
   };
-
+  if (isLoading) return <LoadingPage />
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
       <div
