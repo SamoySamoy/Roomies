@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { LoginSchema, RegisterSchema, useLoginForm, useRegisterForm } from '@/hooks/forms';
+import { RegisterSchema, useRegisterForm } from '@/hooks/forms';
 import { useRegisterMutation } from '@/hooks/mutations';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';

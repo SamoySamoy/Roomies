@@ -90,7 +90,7 @@ const VideoPage = () => {
       .then(function (stream) {
         peer.current = new Peer(origin.profileId);
         peer.current.on('open', () => {
-          let meetingState: MeetingState = {
+          const meetingState: MeetingState = {
             profileId: origin.profileId,
             email: auth.email!,
             imageUrl: auth.imageUrl!,
@@ -125,9 +125,9 @@ const VideoPage = () => {
 
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
-              let otherId = meetingState.profileId;
+              const otherId = meetingState.profileId;
               try {
-                let call = peer.current!.call(otherId, localStream.current!);
+                const call = peer.current!.call(otherId, localStream.current!);
 
                 // console.log('Calling: ' + otherId + ' with ');
                 // console.log(localStream);
@@ -146,10 +146,10 @@ const VideoPage = () => {
                   // }
                   // console.log(localMeetingStates);
                   // let otherState = localMeetingStates.current[otherIndexState];
-                  let otherState = meetingState;
+                  const otherState = meetingState;
 
                   if (otherState.type === 'camera') {
-                    let newVideoProps: VideoProps = {
+                    const newVideoProps: VideoProps = {
                       stream: otherStream,
                       profileId: otherState.profileId,
                       imageUrl: otherState.imageUrl,
@@ -161,7 +161,7 @@ const VideoPage = () => {
                     addVideo(newVideoProps);
                   } else if (otherState.type === 'screen') {
                     //Khi peer bên kia là screen
-                    let newVideoProps: VideoProps = {
+                    const newVideoProps: VideoProps = {
                       stream: otherStream,
                       profileId: otherState.profileId,
                       imageUrl: otherState.imageUrl,
@@ -184,7 +184,7 @@ const VideoPage = () => {
         });
 
         peer.current.on('call', call => {
-          let callerId = call.peer;
+          const callerId = call.peer;
           call.answer(stream);
           call.once('stream', (callerStream: MediaStream) => {
             console.log('Receive stream from caller:' + callerId);
@@ -201,11 +201,11 @@ const VideoPage = () => {
                 callerStateId = localMeetingStates.current[key].profileId;
             });
             // console.log(localMeetingStates);
-            let callerState = localMeetingStates.current[callerStateId];
+            const callerState = localMeetingStates.current[callerStateId];
 
             addPeerOnConnect(callerId, call);
             if (callerState.type === 'camera') {
-              let newVideoProps: VideoProps = {
+              const newVideoProps: VideoProps = {
                 stream: callerStream,
                 profileId: callerState.profileId,
                 imageUrl: callerState.imageUrl,
@@ -216,7 +216,7 @@ const VideoPage = () => {
               };
               addVideo(newVideoProps);
             } else if (callerState.type === 'screen') {
-              let newVideoProps: VideoProps = {
+              const newVideoProps: VideoProps = {
                 stream: callerStream,
                 profileId: callerState.profileId,
                 imageUrl: callerState.imageUrl,
@@ -244,12 +244,12 @@ const VideoPage = () => {
         });
 
         socket.on('server:meeting:disconnect', id => {
-          let leaverEmail = localMeetingStates.current[id].email;
-          let leaverScreenState = Object.values(localMeetingStates.current).filter(meetingState => {
+          const leaverEmail = localMeetingStates.current[id].email;
+          const leaverScreenState = Object.values(localMeetingStates.current).filter(meetingState => {
             return meetingState.type === 'screen' && meetingState.email === leaverEmail;
           })[0];
           if (leaverScreenState) {
-            let leaverScreenId = leaverScreenState.profileId;
+            const leaverScreenId = leaverScreenState.profileId;
             peerOnConnect.current.get(leaverScreenId)?.close();
             removePeerOnConnect(leaverScreenId);
           }
@@ -446,7 +446,7 @@ const VideoPage = () => {
     // });
 
     return function () {
-      let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
+      const identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
       // check mình đang có peer nào
       // Có cái nào thì ném hết lên (tôi đa emit 2 lần)
       socket.emit('client:meeting:leave', origin, identity);
@@ -481,7 +481,7 @@ const VideoPage = () => {
   useEffect(() => {
     // console.log('Video props set');
 
-    let newGrid: VideoProps[][] = [];
+    const newGrid: VideoProps[][] = [];
     // console.log('Grid: ');
     // console.log(videoGrid);
     // console.log('Peer on connect: ');
@@ -490,13 +490,13 @@ const VideoPage = () => {
     // console.log(localMeetingStates.current);
     setVideoGrid(prevVideoGrid => {
       if (prevVideoGrid.length !== 0) {
-        let numOfCurrentVideo =
+        const numOfCurrentVideo =
           (prevVideoGrid.length - 1) * MAX_VIDEO_PER_ROW + prevVideoGrid[prevVideoGrid.length - 1].length;
         let i = 0;
         while (i < numOfCurrentVideo) {
-          let row = Math.floor(i / MAX_VIDEO_PER_ROW);
-          let col = i % MAX_VIDEO_PER_ROW;
-          let oldVideo = prevVideoGrid[row][col];
+          const row = Math.floor(i / MAX_VIDEO_PER_ROW);
+          const col = i % MAX_VIDEO_PER_ROW;
+          const oldVideo = prevVideoGrid[row][col];
   
           if (
             oldVideo.profileId === origin.profileId ||
@@ -504,11 +504,11 @@ const VideoPage = () => {
             (localMeetingStates.current[oldVideo.profileId] &&
               peerOnConnect.current.has(oldVideo.profileId))
           ) {
-            let newState = localMeetingStates.current[oldVideo.profileId];
+            const newState = localMeetingStates.current[oldVideo.profileId];
             if (newState.type === 'camera' && oldVideo.type === 'camera') {
               // console.log(newState);
   
-              let newVideo: VideoProps = {
+              const newVideo: VideoProps = {
                 ...oldVideo,
                 cameraOn: newState.cameraOn,
                 micOn: newState.micOn,
@@ -522,7 +522,7 @@ const VideoPage = () => {
                 newGrid[newGrid.length - 1].push(newVideo);
               }
             } else if (newState.type === 'screen' && oldVideo.type === 'screen') {
-              let newVideo: VideoProps = {
+              const newVideo: VideoProps = {
                 ...oldVideo,
               };
   
@@ -627,7 +627,7 @@ const VideoPage = () => {
 
     setVideoGrid(prevGrid => {
       // Find the position of the value in the 2D array
-      let numberOfItem =
+      const numberOfItem =
         (prevGrid.length - 1) * MAX_VIDEO_PER_ROW + prevGrid[prevGrid.length - 1].length;
       let rowIndex = -1;
       let columnIndex = -1;
@@ -671,10 +671,10 @@ const VideoPage = () => {
       //   }
       // }
       for (let i = rowIndex * MAX_VIDEO_PER_ROW + columnIndex; i < numberOfItem - 1; i++) {
-        let oldRow = Math.floor(i / MAX_VIDEO_PER_ROW);
-        let newRow = Math.floor((i + 1) / MAX_VIDEO_PER_ROW);
-        let oldCol = i % MAX_VIDEO_PER_ROW;
-        let newCol = (i + 1) % MAX_VIDEO_PER_ROW;
+        const oldRow = Math.floor(i / MAX_VIDEO_PER_ROW);
+        const newRow = Math.floor((i + 1) / MAX_VIDEO_PER_ROW);
+        const oldCol = i % MAX_VIDEO_PER_ROW;
+        const newCol = (i + 1) % MAX_VIDEO_PER_ROW;
 
         newGrid[oldRow][oldCol] = newGrid[newRow][newCol];
       }
@@ -701,14 +701,14 @@ const VideoPage = () => {
 
   const clickCamera = () => {
     setCameraOn(prev => !prev);
-    let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
+    const identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:camera', origin, identity);
     localStream.current?.getVideoTracks().forEach(track => (track.enabled = !track.enabled));
   };
 
   const clickMic = () => {
     setMicOn(prev => !prev);
-    let identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
+    const identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
     socket.emit('client:meeting:mic', origin, identity);
     localStream.current?.getAudioTracks().forEach(track => (track.enabled = !track.enabled));
   };
@@ -721,7 +721,7 @@ const VideoPage = () => {
         setShareScreenOn(true);
         screenStream.getVideoTracks()[0].onended = () => {
           setShareScreenOn(false);
-          let screenState: MeetingState = {
+          const screenState: MeetingState = {
             profileId: screenId.current!,
             email: auth.email!,
             imageUrl: auth.imageUrl!,
@@ -742,14 +742,14 @@ const VideoPage = () => {
         });
         //
         screenPeer.current.on('open', screenId => {
-          let screenState: MeetingState = {
+          const screenState: MeetingState = {
             profileId: screenId,
             email: auth.email!,
             imageUrl: auth.imageUrl!,
             type: 'screen',
           };
 
-          let screenProps: VideoProps = {
+          const screenProps: VideoProps = {
             stream: screenStream,
             type: 'screen',
             email: auth.email!,
@@ -761,10 +761,10 @@ const VideoPage = () => {
           socket.once('server:meeting:screen:on:success', meetingStates => {
             Object.values(meetingStates).forEach(meetingState => {
               if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
-                let otherId = meetingState.profileId;
+                // const otherId = meetingState.profileId;
                 try {
                   //Gửi stream screen cho các người dùng
-                  let call = screenPeer.current!.call(otherId, screenStream);
+                  // const call = screenPeer.current!.call(otherId, screenStream);
                   // console.log('Calling: ' + otherId + ' with ');
                   // console.log(localStream);
                 } catch (err) {
@@ -781,7 +781,7 @@ const VideoPage = () => {
       // dung share man
       setShareScreenOn(false);
       localScreenStream.current?.getTracks().forEach(track => track.stop());
-      let screenState: MeetingState = {
+      const screenState: MeetingState = {
         profileId: screenId.current!,
         email: auth.email!,
         imageUrl: auth.imageUrl!,
