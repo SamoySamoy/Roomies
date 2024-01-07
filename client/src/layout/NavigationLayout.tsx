@@ -18,7 +18,6 @@ const NavigationLayout = () => {
       // refetchOnMount: true,
     },
   );
-
   // console.log('In navigation layout');
 
   if (isPending || isFetching) {
@@ -29,9 +28,10 @@ const NavigationLayout = () => {
     return <Navigate to={'/error-page'} />;
   }
 
-  if (rooms.length === 0) {
+   if (rooms.length === 0) {
     return <Navigate to={'/first-room'} replace />;
   }
+
 
   return (
     <div className='h-full'>

@@ -29,7 +29,7 @@ import FileUploadZone, { FileUpload } from '@/components/FileUploadZone';
 import { useCreateRoomMutation } from '@/hooks/mutations';
 import { CreateRoomSchema, useCreateRoomForm } from '@/hooks/forms';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { RoomType } from '@/lib/types';
 
 const FirstRoomPage = () => {
@@ -88,7 +88,7 @@ const FirstRoomPage = () => {
     <Dialog open>
       <DialogContent className='overflow-hidden bg-white p-0 text-black dark:bg-zinc-900 dark:text-white'>
         <DialogHeader className='px-6 pt-8'>
-          <DialogTitle className='text-center text-2xl font-bold'>Customize your room</DialogTitle>
+          <DialogTitle className='text-center text-2xl font-bold'>Create your first room</DialogTitle>
           <DialogDescription className='text-left text-zinc-500 dark:text-zinc-400'>
             Give your room a personality with a name and an image. You can always change it later.
           </DialogDescription>
@@ -110,8 +110,8 @@ const FirstRoomPage = () => {
                               !uploadFile
                                 ? ''
                                 : uploadFile.type === 'online'
-                                ? uploadFile.fileUrl
-                                : uploadFile.file.name,
+                                  ? uploadFile.fileUrl
+                                  : uploadFile.file.name,
                             );
                           }}
                           value={imageFile}
@@ -209,9 +209,21 @@ const FirstRoomPage = () => {
                 />
               )}
             </div>
-            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4'>
+            <DialogFooter className='bg-gray-100 dark:bg-zinc-800 px-6 py-4 flex sm:items-center sm:justify-between'>
+              <div className='flex items-center justify-between sm:justify-start'>
+                <Link to={'/'}>
+                  <Button type='button' variant='link'>
+                    To landing page
+                  </Button>
+                </Link>
+                <Link to={'/explore'}>
+                  <Button type='button' variant='link'>
+                    To explore page
+                  </Button>
+                </Link>
+              </div>
               <Button type='submit' variant='primary' disabled={isLoading}>
-                Create
+                Submit
               </Button>
             </DialogFooter>
           </form>
