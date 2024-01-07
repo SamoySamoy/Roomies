@@ -82,7 +82,7 @@ const VideoCard = (props: VideoProps & ExtraProps) => {
         </>
       )}
 
-      <div className='gap-y-2 md:absolute top-4 right-4 flex flex-col md:flex-row items-center justify-between'>
+      <div className='gap-y-2 md:absolute top-4 right-4 flex flex-col md:flex-row items-center justify-between cursor-pointer'>
         <ActionTooltip side='top' label={'Pin this video'}>
           <div className='bg-white/80 dark:bg-black p-2 rounded-lg'>
             <PinIcon onClick={() => props.onPinClick(props.profileId)} />
