@@ -619,7 +619,7 @@ export function setupWs(httpServer: HTTPServer) {
 
       console.log('Client join', arg.email);
 
-      socket.on('disconnect', () => {
+      socket.once('disconnect', () => {
         socket.leave(origin.groupId);
 
         console.log('Fake redis before: ', fakeRedis);
@@ -635,7 +635,8 @@ export function setupWs(httpServer: HTTPServer) {
 
         console.log('Fake redis after: ', fakeRedis);
 
-        io.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
+        // io.to(origin.groupId).emit('server:meeting:disconnect', origin.profileId);
+        io.to(origin.groupId).emit('server:meeting:state', getMeetingStates(origin.groupId));
 
         socket.removeAllListeners();
       });
@@ -663,10 +664,13 @@ export function setupWs(httpServer: HTTPServer) {
       socket.leave(origin.groupId);
 
       try {
-        let leaverEmail = fakeRedis[origin.groupId][arg.profileId].email;
-        console.log('Clinet meeting leave detect', leaverEmail);
-        console.log(leaverEmail);
-        deleteMeetingState(origin.groupId, arg, leaverEmail);
+        console.log(arg.profileId);
+        let leaver = fakeRedis[origin.groupId][arg.profileId];
+        if (leaver) {
+          console.log('Clinet meeting leave detect', leaver.email);
+          console.log(leaver.email);
+          deleteMeetingState(origin.groupId, arg, leaver.email);
+        }
 
         const updatedStates = getMeetingStates(origin.groupId);
         // Broad cast cập nhật trạng thái
