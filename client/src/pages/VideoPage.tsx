@@ -13,6 +13,7 @@ import PhoneButton from '@/components/PhoneButton';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '@/lib/utils';
 import { LoadingPage } from '@/components/Loading';
+import { useToast } from '@/components/ui/use-toast';
 
 /* 
 1. Kill local screen stream, local sreen peer
@@ -59,6 +60,7 @@ const MAX_VIDEO_PER_ROW = 4;
 const VideoPage = () => {
   const navigate = useNavigate();
   const { auth } = useAuth();
+  const { toast } = useToast();
   const { groupId, roomId } = useParams<{ groupId: string; roomId: string }>();
   const origin: GroupOrigin = {
     groupId: groupId!,
@@ -303,6 +305,11 @@ const VideoPage = () => {
       })
       .catch(function (err) {
         console.log(err);
+        toast({
+          title: 'Warning',
+          description: 'Please allow access to camera and microphone',
+          variant: 'warning'
+        })
       });
 
     // socket.on('server:user-disconnected', function (id) {
@@ -802,6 +809,12 @@ const VideoPage = () => {
 
           socket.emit('client:meeting:screen:on', origin, screenState);
         });
+      }).catch(function (err) {
+        toast({
+          title: 'Screen share canceled',
+          description: 'You canceled the screen sharing',
+          variant: 'info'
+        })
       });
     } else {
       // dung share man
