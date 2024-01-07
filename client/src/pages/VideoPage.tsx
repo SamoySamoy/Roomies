@@ -763,7 +763,8 @@ const VideoPage = () => {
         //
         screenPeer.current.on('call', call => {
           // console.log('Screen received call from user: ' + call.peer);
-          call.answer(localStream.current!);
+          call.answer(screenStream);
+          console.log(localScreenStream.current);
         });
         //
         screenPeer.current.on('open', screenId => {
@@ -789,7 +790,7 @@ const VideoPage = () => {
                 const otherId = meetingState.profileId;
                 try {
                   //Gửi stream screen cho các người dùng
-                  // const call = screenPeer.current!.call(otherId, screenStream);
+                  const call = screenPeer.current!.call(otherId, screenStream);
                   console.log('Calling: ' + otherId + ' with ');
                   // console.log(localStream);
                 } catch (err) {
