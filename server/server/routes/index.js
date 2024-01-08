@@ -1,0 +1,25 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var auth_1 = __importDefault(require("./auth"));
+var profiles_1 = __importDefault(require("./profiles"));
+var rooms_1 = __importDefault(require("./rooms"));
+var groups_1 = __importDefault(require("./groups"));
+var verifyToken_1 = __importDefault(require("../middlewares/verifyToken"));
+var members_1 = __importDefault(require("./members"));
+var messages_1 = __importDefault(require("./messages"));
+var directMessages_1 = __importDefault(require("./directMessages"));
+var conversations_1 = __importDefault(require("./conversations"));
+var apiRouter = (0, express_1.Router)();
+apiRouter.use('/auth', auth_1.default);
+apiRouter.use('/profiles', verifyToken_1.default, profiles_1.default);
+apiRouter.use('/rooms', verifyToken_1.default, rooms_1.default);
+apiRouter.use('/groups', verifyToken_1.default, groups_1.default);
+apiRouter.use('/members', verifyToken_1.default, members_1.default);
+apiRouter.use('/messages', verifyToken_1.default, messages_1.default);
+apiRouter.use('/conversations', verifyToken_1.default, conversations_1.default);
+apiRouter.use('/direct-messages', verifyToken_1.default, directMessages_1.default);
+exports.default = apiRouter;

@@ -108,7 +108,7 @@ npm run db:client
 - Đối với các máy Linux hoặc Window có thể chạy file `.sh`, chạy file `build.sh` như sau:
 
 ```bash
-# Đảm bảo đang đừng ở folder roomies
+# Đảm bảo đang đứng ở folder roomies
 # /path/to/roomies
 
 sudo chmod +x ./build.sh
