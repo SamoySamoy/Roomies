@@ -9,6 +9,18 @@
 
 ### Môi trường local
 
+- Clone project:
+
+```bash
+git clone https://github.com/SamoySamoy/roomies.git
+```
+
+- Checkout nhánh `local`:
+
+```bash
+git checkout origin/local
+```
+
 #### B1: Set up biến môi trường ở server
 
 - Di chuyển vào thư mục `server`
@@ -47,7 +59,7 @@ SMTP_PASSWORD=
   - Ví dụ: `DATABASE_URL_LOCAL=mysql://root:123@localhost:3306/roomies`
   - Đảm bảo DB chạy và trong DB đã có sẵn bảng `roomies`
 
-- Lưu ý bới biến môi trường `SMTP_`:
+- Lưu ý với biến môi trường `SMTP_`:
   - Được sử dụng cho chức năng lấy lại mật khẩu bằng email
   - Sử dụng SMTP của Gmail
 
@@ -81,11 +93,14 @@ export const SERVER_PORT_LOCAL = 5173 as const;
 
 ```bash
 cd server
+npm install
 
 # Reset DB
 npm run db:reset
 # Tạo bảng
 npm run db:push
+# Tạo client code
+npm run db:client
 ```
 
 #### B4: Build

@@ -1,9 +1,13 @@
 export const SERVER_PORT_DEV = 8000 as const;
 export const SERVER_PORT_LOCAL = 5173 as const;
 export const SERVER_PORT_DEPLOY = 5173 as const;
-export const SERVER_URL =
+/* export const SERVER_URL =
   process.env.NODE_ENV === 'production'
     ? `${window.location.origin}`
+    : (`${window.location.protocol}//${window.location.hostname}:${SERVER_PORT_DEV}` as const); */
+export const SERVER_URL =
+  process.env.NODE_ENV === 'production'
+    ? (`${window.location.protocol}//${window.location.hostname}:${SERVER_PORT_LOCAL}` as const)
     : (`${window.location.protocol}//${window.location.hostname}:${SERVER_PORT_DEV}` as const);
 export const SERVER_API_PATH = '/api' as const;
 export const SERVER_API_URL = `${SERVER_URL}${SERVER_API_PATH}` as const;
