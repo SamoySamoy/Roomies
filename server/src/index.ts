@@ -6,7 +6,6 @@ import helmet from 'helmet';
 import { PeerServer } from 'peer';
 import cookieParser from 'cookie-parser';
 import { createServer as setupHttpServer } from 'http';
-
 import apiRouter from './routes';
 import { setupWs } from './ws';
 import { corsOptions } from './lib/config';
