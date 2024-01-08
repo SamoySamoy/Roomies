@@ -14,7 +14,7 @@ import { setupPeerServer } from './peerServer';
 
 dotenv.config();
 export const PORT = Number(
-  (process.env.NODE_ENV === 'development' ? process.env.PORT_DEV : process.env.PORT_LOCAL) || 8000,
+  (process.env.NODE_ENV === 'development' ? process.env.PORT_DEV : process.env.PORT_DEPLOY) || 8000,
 );
 const app = express();
 const httpServer = setupHttpServer(app);
