@@ -3,6 +3,7 @@ node_modules
 build
 out
 dist
+public
 .env*
 !.env.example
 .env.local
