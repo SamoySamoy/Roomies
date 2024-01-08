@@ -3,6 +3,7 @@ import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { PeerServer } from 'peer';
 import cookieParser from 'cookie-parser';
 import { createServer as setupHttpServer } from 'http';
 
@@ -13,10 +14,17 @@ import { logger } from './middlewares/logger';
 import { setupPeerServer } from './peerServer';
 
 dotenv.config();
-const PORT = process.env.PORT || 8000;
+export const PORT = Number(
+  (process.env.NODE_ENV === 'development' ? process.env.PORT_DEV : process.env.PORT_LOCAL) || 8000,
+);
 const app = express();
 const httpServer = setupHttpServer(app);
-const peerServer = setupPeerServer(httpServer);
+export const peerServer = PeerServer({
+  port: PORT + 1,
+  path: '/',
+  corsOptions,
+});
+// const peerServer = setupPeerServer(httpServer);
 const io = setupWs(httpServer);
 
 app.use(cors(corsOptions));

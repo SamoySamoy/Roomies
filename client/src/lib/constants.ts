@@ -1,12 +1,14 @@
-export const SERVER_PORT_DEV = 8000;
+export const SERVER_PORT_DEV = 8000 as const;
+export const SERVER_PORT_LOCAL = 5173 as const;
+export const SERVER_PORT_DEPLOY = 5173 as const;
 export const SERVER_URL =
   process.env.NODE_ENV === 'production'
     ? `${window.location.origin}`
-    : `${window.location.protocol}//${window.location.hostname}:${SERVER_PORT_DEV}`;
-export const SERVER_API_PATH = '/api';
-export const SERVER_API_URL = `${SERVER_URL}${SERVER_API_PATH}`;
-export const SERVER_SOCKET_API_PATH = `/api/socket`;
-export const SERVER_SOCKET_API_URL = `${SERVER_URL}${SERVER_SOCKET_API_PATH}`;
+    : (`${window.location.protocol}//${window.location.hostname}:${SERVER_PORT_DEV}` as const);
+export const SERVER_API_PATH = '/api' as const;
+export const SERVER_API_URL = `${SERVER_URL}${SERVER_API_PATH}` as const;
+export const SERVER_SOCKET_API_PATH = `/api/socket` as const;
+export const SERVER_SOCKET_API_URL = `${SERVER_URL}${SERVER_SOCKET_API_PATH}` as const;
 
 export const IMAGE_EXT_LIST = [
   'avif',

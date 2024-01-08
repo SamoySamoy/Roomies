@@ -1,4 +1,4 @@
-import { ExpressPeerServer } from 'peer';
+import { ExpressPeerServer, PeerServer } from 'peer';
 import { Server as HTTPServer } from 'http';
 import { corsOptions } from './lib/config';
 
@@ -8,8 +8,8 @@ export const setupPeerServer = (httpServer: HTTPServer) => {
     corsOptions,
   });
 
-  peerServer.on('connection', client => {});
-  peerServer.on('disconnect', client => {});
+  peerServer.on('connection', client => { });
+  peerServer.on('disconnect', client => { });
 
   return peerServer;
 };

@@ -13,21 +13,22 @@ import { v4 as uuidv4 } from 'uuid';
 import { cn } from '@/lib/utils';
 import { LoadingPage } from '@/components/Loading';
 import { useToast } from '@/components/ui/use-toast';
+import { createNewPeer } from '@/lib/peer';
 
 type MeetingState = {
   profileId: string;
   email: string;
   imageUrl: string;
 } & (
-  | {
+    | {
       type: 'camera';
       cameraOn: boolean;
       micOn: boolean;
     }
-  | {
+    | {
       type: 'screen';
     }
-);
+  );
 
 type MeetingStateIdentity = Pick<MeetingState, 'profileId' | 'type'>;
 
@@ -66,8 +67,8 @@ const VideoPage = () => {
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
-      .then(function (stream) {
-        peer.current = new Peer(origin.profileId);
+      .then(function(stream) {
+        peer.current = createNewPeer(origin.profileId);
         peer.current.on('open', () => {
           const meetingState: MeetingState = {
             profileId: origin.profileId,
@@ -203,7 +204,7 @@ const VideoPage = () => {
           removePeerOnConnect(id);
         });
       })
-      .catch(function (err) {
+      .catch(function(err) {
         setIsLoading(false);
         setIsDenied(true);
         console.error(err);
@@ -219,7 +220,7 @@ const VideoPage = () => {
       setUseStateLocalMeetingStates(meetingStates);
     });
 
-    return function () {
+    return function() {
       const identity: MeetingStateIdentity = { profileId: origin.profileId, type: 'camera' };
       // check mình đang có peer nào
       // Có cái nào thì ném hết lên (tôi đa emit 2 lần)
@@ -405,7 +406,7 @@ const VideoPage = () => {
             removeVideo(screenId.current!);
           };
           localScreenStream.current = screenStream;
-          screenPeer.current = new Peer(uuidv4());
+          screenPeer.current = createNewPeer(uuidv4());
           screenId.current = screenPeer.current.id;
           //
           screenPeer.current.on('call', call => {
@@ -446,7 +447,7 @@ const VideoPage = () => {
             socket.emit('client:meeting:screen:on', origin, screenState);
           });
         })
-        .catch(function () {
+        .catch(function() {
           toast({
             title: 'Screen share canceled',
             description: 'You canceled the screen sharing',
