@@ -46,7 +46,7 @@ const JoinPrivateRoomModal = () => {
   };
 
   const onSubmit = async (values: JoinRoomSchema) => {
-    console.log(values);
+    // console.log(values);
 
     mutation.mutate(values, {
       onSuccess: data => {

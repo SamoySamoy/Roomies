@@ -61,6 +61,7 @@ const VideoPage = () => {
   const screenPeer = useRef<Peer>();
   const screenId = useRef<string>();
   const [isLoading, setIsLoading] = useState(true);
+  const [isDenied, setIsDenied] = useState(false);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -97,7 +98,10 @@ const VideoPage = () => {
           setUseStateLocalMeetingStates(meetingStates);
           //Call những peer nằm trong meetingStates mới nhận được.
 
-          if (Object.keys(localMeetingStates.current).length === 1) setIsLoading(false);
+          if (Object.keys(localMeetingStates.current).length === 1) {
+            return setIsLoading(false);
+          }
+
           Object.values(meetingStates).forEach(meetingState => {
             if (meetingState.profileId !== origin.profileId) {
               const otherId = meetingState.profileId;
@@ -137,7 +141,7 @@ const VideoPage = () => {
                   removePeerOnConnect(otherId);
                 });
               } catch (err) {
-                console.log(err);
+                console.error(err);
               }
             }
           });
@@ -200,12 +204,14 @@ const VideoPage = () => {
         });
       })
       .catch(function (err) {
-        console.log(err);
+        setIsLoading(false);
+        setIsDenied(true);
+        console.error(err);
         toast({
           title: 'Warning',
           description: 'Please allow access to camera and microphone',
-          variant: 'warning'
-        })
+          variant: 'warning',
+        });
       });
 
     socket.on('server:meeting:state', meetingStates => {
@@ -218,16 +224,6 @@ const VideoPage = () => {
       // check mình đang có peer nào
       // Có cái nào thì ném hết lên (tôi đa emit 2 lần)
       socket.emit('client:meeting:leave', origin, identity);
-      // if (localScreenStream.current) {
-      //   socket.emit('client:meeting:leave', origin, {
-      //     profileId: screenId.current!,
-      //     type: 'screen',
-      //   });
-      // }
-      // console.log('clean up group');
-      // peerOnConnect.current.forEach((call) => {
-      //   call.close();
-      // });
       localStream.current?.getTracks().forEach(track => track.stop());
       localStream.current = undefined;
       peer.current?.destroy();
@@ -302,21 +298,21 @@ const VideoPage = () => {
     } else if (videoOnFocus) {
       setVideoOnFocus(prevVideoOnFocus => {
         if (prevVideoOnFocus) {
-          let newState: MeetingState = localMeetingStates.current[prevVideoOnFocus.profileId];
+          const newState: MeetingState = localMeetingStates.current[prevVideoOnFocus.profileId];
           if (newState.type === 'screen' && prevVideoOnFocus?.type == 'screen') {
-            let newVideo: VideoProps = {
+            const newVideo: VideoProps = {
               ...prevVideoOnFocus,
-            }
+            };
             return newVideo;
           } else if (newState.type === 'camera' && prevVideoOnFocus?.type === 'camera') {
-            let newVideo: VideoProps = {
+            const newVideo: VideoProps = {
               ...prevVideoOnFocus,
               cameraOn: newState.cameraOn,
               micOn: newState.micOn,
-            }
+            };
             return newVideo;
           }
-        } 
+        }
       });
     }
   }, [useStateLocalMeetingStates, peerOnConnect.current]);
@@ -336,7 +332,6 @@ const VideoPage = () => {
   }
 
   function removeVideo(id: string) {
-
     setVideoGrid(prevGrid => {
       const numberOfItem =
         (prevGrid.length - 1) * MAX_VIDEO_PER_ROW + prevGrid[prevGrid.length - 1].length;
@@ -344,12 +339,6 @@ const VideoPage = () => {
       let columnIndex = -1;
 
       for (let i = 0; i < prevGrid.length; i++) {
-        // const indexInRow = prevGrid[i].findIndex((video) => video.profileId === id);
-        // if (indexInRow !== -1) {
-        //   rowIndex = i;
-        //   columnIndex = indexInRow;
-        //   break;
-        // }
         for (let j = 0; j < prevGrid[i].length; j++) {
           if (prevGrid[i][j].profileId === id) {
             rowIndex = i;
@@ -399,68 +388,71 @@ const VideoPage = () => {
 
   const clickShareScreen = () => {
     if (!shareScreenOn) {
-      navigator.mediaDevices.getDisplayMedia({ audio: true, video: true }).then(screenStream => {
-        setShareScreenOn(true);
-        screenStream.getVideoTracks()[0].onended = () => {
-          setShareScreenOn(false);
-          const screenState: MeetingState = {
-            profileId: screenId.current!,
-            email: auth.email!,
-            imageUrl: auth.imageUrl!,
-            type: 'screen',
+      navigator.mediaDevices
+        .getDisplayMedia({ audio: true, video: true })
+        .then(screenStream => {
+          setShareScreenOn(true);
+          screenStream.getVideoTracks()[0].onended = () => {
+            setShareScreenOn(false);
+            const screenState: MeetingState = {
+              profileId: screenId.current!,
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              type: 'screen',
+            };
+            screenPeer.current?.destroy();
+            socket.emit('client:meeting:screen:off', origin, screenState);
+            removeVideo(screenId.current!);
           };
-          screenPeer.current?.destroy();
-          socket.emit('client:meeting:screen:off', origin, screenState);
-          removeVideo(screenId.current!);
-        };
-        localScreenStream.current = screenStream;
-        screenPeer.current = new Peer(uuidv4());
-        screenId.current = screenPeer.current.id;
-        //
-        screenPeer.current.on('call', call => {
-          call.answer(screenStream);
-        });
-        //
-        screenPeer.current.on('open', screenId => {
-          const screenState: MeetingState = {
-            profileId: screenId,
-            email: auth.email!,
-            imageUrl: auth.imageUrl!,
-            type: 'screen',
-          };
-
-          const screenProps: VideoProps = {
-            stream: screenStream,
-            type: 'screen',
-            email: auth.email!,
-            imageUrl: auth.imageUrl!,
-            profileId: screenId,
-          };
-          addVideo(screenProps);
-
-          socket.once('server:meeting:screen:on:success', meetingStates => {
-            Object.values(meetingStates).forEach(meetingState => {
-              if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
-                const otherId = meetingState.profileId;
-                try {
-                  //Gửi stream screen cho các người dùng
-                  const call = screenPeer.current!.call(otherId, screenStream);
-                } catch (err) {
-                  console.log(err);
-                }
-              }
-            });
+          localScreenStream.current = screenStream;
+          screenPeer.current = new Peer(uuidv4());
+          screenId.current = screenPeer.current.id;
+          //
+          screenPeer.current.on('call', call => {
+            call.answer(screenStream);
           });
+          //
+          screenPeer.current.on('open', screenId => {
+            const screenState: MeetingState = {
+              profileId: screenId,
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              type: 'screen',
+            };
 
-          socket.emit('client:meeting:screen:on', origin, screenState);
-        });
-      }).catch(function (err) {
-        toast({
-          title: 'Screen share canceled',
-          description: 'You canceled the screen sharing',
-          variant: 'info'
+            const screenProps: VideoProps = {
+              stream: screenStream,
+              type: 'screen',
+              email: auth.email!,
+              imageUrl: auth.imageUrl!,
+              profileId: screenId,
+            };
+            addVideo(screenProps);
+
+            socket.once('server:meeting:screen:on:success', meetingStates => {
+              Object.values(meetingStates).forEach(meetingState => {
+                if (meetingState.profileId !== origin.profileId && meetingState.type === 'camera') {
+                  const otherId = meetingState.profileId;
+                  try {
+                    //Gửi stream screen cho các người dùng
+                    screenPeer.current!.call(otherId, screenStream);
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }
+              });
+            });
+
+            socket.emit('client:meeting:screen:on', origin, screenState);
+          });
         })
-      });
+        .catch(function () {
+          toast({
+            title: 'Screen share canceled',
+            description: 'You canceled the screen sharing',
+            variant: 'info',
+          });
+        });
     } else {
       // dung share man
       setShareScreenOn(false);
@@ -512,7 +504,19 @@ const VideoPage = () => {
       setVideoOnFocus(undefined);
     }
   };
-  if (isLoading) return <LoadingPage />;
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isDenied) {
+    return (
+      <div className='bg-white dark:bg-[#313338] flex items-center justify-center h-full px-4 py-2 text-4xl font-bold'>
+        Require permission for camera and microphone
+      </div>
+    );
+  }
+
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full group relative px-4 py-2'>
       <div
